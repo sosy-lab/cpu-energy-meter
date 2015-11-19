@@ -28,7 +28,6 @@ char         *progname;
 const char   *version = "2.2";
 uint64_t      num_node = 0;
 uint64_t      delay_us = 1000000;
-double        duration = 3600.0;
 double        delay_unit = 1000000.0;
 
 double **cum_energy_J = NULL;
@@ -165,7 +164,7 @@ usage()
 {
     fprintf(stdout, "\nIntel(r) Power Gadget %s\n", version);
     fprintf(stdout, "\nUsage: \n");
-    fprintf(stdout, "%s [-e [sampling delay (ms) ] optional] -d [duration (sec)]\n", progname);
+    fprintf(stdout, "%s [-e [sampling delay (ms) ] optional]\n", progname);
     fprintf(stdout, "\nExample: %s -e 1000 -d 10\n", progname);
     fprintf(stdout, "\n");
 }
@@ -179,7 +178,7 @@ cmdline(int argc, char **argv)
 
     progname = argv[0];
 
-    while ((opt = getopt(argc, argv, "e:d:")) != -1) {
+    while ((opt = getopt(argc, argv, "e:")) != -1) {
         switch (opt) {
         case 'e':
             delay_ms_temp = atoi(optarg);
@@ -187,13 +186,6 @@ cmdline(int argc, char **argv)
                 delay_us = delay_ms_temp * 1000;
             } else {
                 fprintf(stdout, "Sampling delay must be greater than 50 ms.\n");
-                return -1;
-            }
-            break;
-        case 'd':
-            duration = atof(optarg);
-            if(duration <= 0.0){
-                fprintf(stdout, "Duration must be greater than 0 seconds.\n");
                 return -1;
             }
             break;
@@ -245,12 +237,6 @@ main(int argc, char **argv)
 
     /* Clean up if we're told to exit */
     signal(SIGINT, sigint_handler);
-
-    if (argc < 2) {
-        usage();
-        terminate_rapl();
-        return 0;
-    }
 
     // First init the RAPL library
     if (0 != init_rapl()) {
