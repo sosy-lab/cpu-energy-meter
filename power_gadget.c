@@ -118,7 +118,7 @@ do_print_energy_info()
         if(is_supported_domain(RAPL_PP0))
             fprintf(stdout, "IA Power_%d (Watt),Cumulative IA Energy_%d (Joules),Cumulative IA Energy_%d(mWh),", i,i,i);
         if(is_supported_domain(RAPL_PP1))
-            fprintf(stdout, "GT Power_%d (Watt),Cumulative GT Energy_%d (Joules),Cumulative GT Energy_%d(mWh)", i,i,i);
+            fprintf(stdout, "GT Power_%d (Watt),Cumulative GT Energy_%d (Joules),Cumulative GT Energy_%d(mWh),", i,i,i);
         if(is_supported_domain(RAPL_DRAM))
             fprintf(stdout, "DRAM Power_%d (Watt),Cumulative DRAM Energy_%d (Joules),Cumulative DRAM Energy_%d(mWh),", i,i,i);
     }
