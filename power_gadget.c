@@ -241,7 +241,7 @@ main(int argc, char **argv)
     // First init the RAPL library
     if (0 != init_rapl()) {
         fprintf(stdout, "Init failed!\n");
-	terminate_rapl();
+        terminate_rapl();
         return MY_ERROR;
     }
     num_node = get_num_rapl_nodes_pkg();
