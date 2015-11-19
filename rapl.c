@@ -1312,13 +1312,13 @@ get_os_freq(uint64_t cpu, uint64_t *freq)
     int out = 0;
     FILE *fp;
 
-    out = sprintf(path, "%s%u%s", "/sys/devices/system/cpu/cpu",cpu,"/cpufreq/cpuinfo_cur_freq");
+    out = sprintf(path, "%s%lu%s", "/sys/devices/system/cpu/cpu",cpu,"/cpufreq/cpuinfo_cur_freq");
 
     if(out > 0)
         fp = fopen(path, "r");
 
     if(NULL != fp){
-        fscanf(fp, "%u", freq);
+        fscanf(fp, "%lu", freq);
         fclose(fp);
     }
     else{

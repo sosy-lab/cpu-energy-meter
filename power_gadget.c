@@ -113,7 +113,7 @@ do_print_energy_info()
     /* don't buffer if piped */
     setbuf(stdout, NULL);
 
-    fprintf(stdout, "num_node=%d\n", num_node);
+    fprintf(stdout, "num_node=%lu\n", num_node);
 
     /* Read initial values */
     for (i = node; i < num_node; i++) {
