@@ -1,5 +1,5 @@
-Intel(r) Power Gadget    {#mainpage}
-=======================
+Intel(r) Power Gadget
+=====================
 
 Intel(r) Power Gadget is a software utility and library, which allows developers
 to monitor power at very fine time granularities (few tens of milliseconds).
@@ -14,8 +14,14 @@ Intel(r) processors which is called RAPL (Runtime Average Power Limiting).
 RAPL is available on Intel(r) codename Sandy Bridge and later processors.
 
 
+Source
+------
+
+Source (as of 2015-11-19): https://software.intel.com/en-us/articles/intel-power-gadget-20
+
+
 How to use it
------------------------------------
+-------------
 
 Prerequisites:
 This tool uses the msr and cpuid kernel modules. You may have to do:
