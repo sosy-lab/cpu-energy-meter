@@ -31,6 +31,9 @@ uint64_t      delay_us = 1000000;
 double        duration = 3600.0;
 double        delay_unit = 1000000.0;
 
+double **cum_energy_J;
+double **cum_energy_mWh;
+
 double
 get_rapl_energy_info(uint64_t power_domain, uint64_t node)
 {
@@ -94,8 +97,12 @@ do_print_energy_info()
 
     double prev_sample[num_node][RAPL_NR_DOMAIN];
     double power_watt[num_node][RAPL_NR_DOMAIN];
-    double cum_energy_J[num_node][RAPL_NR_DOMAIN];
-    double cum_energy_mWh[num_node][RAPL_NR_DOMAIN];
+    cum_energy_J = malloc(num_node * sizeof(double*));
+    cum_energy_mWh = malloc(num_node * sizeof(double*));
+    for (i = 0; i < num_node; i++) {
+        cum_energy_J[i] = malloc(RAPL_NR_DOMAIN * sizeof(double));
+        cum_energy_mWh[i] = malloc(RAPL_NR_DOMAIN * sizeof(double));
+    }
 
     char time_buffer[32];
     struct timeval tv;
