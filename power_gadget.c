@@ -31,7 +31,6 @@ uint64_t      delay_us = 1000000;
 double        delay_unit = 1000000.0;
 
 double **cum_energy_J = NULL;
-double **cum_energy_mWh = NULL;
 double measurement_start_time, measurement_end_time;
 
 double
@@ -98,10 +97,8 @@ do_print_energy_info()
     double prev_sample[num_node][RAPL_NR_DOMAIN];
     double power_watt[num_node][RAPL_NR_DOMAIN];
     cum_energy_J = malloc(num_node * sizeof(double*));
-    cum_energy_mWh = malloc(num_node * sizeof(double*));
     for (i = 0; i < num_node; i++) {
         cum_energy_J[i] = malloc(RAPL_NR_DOMAIN * sizeof(double));
-        cum_energy_mWh[i] = malloc(RAPL_NR_DOMAIN * sizeof(double));
     }
 
     char time_buffer[32];
@@ -149,7 +146,6 @@ do_print_energy_info()
                     prev_sample[i][domain] = new_sample;
 
                     cum_energy_J[i][domain] += delta;
-                    cum_energy_mWh[i][domain] = cum_energy_J[i][domain] / 3.6; // mWh
                 }
             }
         }
@@ -209,9 +205,9 @@ void sigint_handler(int signum)
     fprintf(stdout, "end_time=%f\n", measurement_end_time);
     fprintf(stdout, "duration=%f\n", measurement_end_time - measurement_start_time);
 
-    if (cum_energy_J != NULL && cum_energy_mWh != NULL) {
+    if (cum_energy_J != NULL) {
         for (i = 0; i < num_node; i++) {
-            if (cum_energy_J[i] == NULL || cum_energy_mWh == NULL) {
+            if (cum_energy_J[i] == NULL) {
                 continue;
             }
 
@@ -219,7 +215,6 @@ void sigint_handler(int signum)
                 if (is_supported_domain(domain)) {
                     char *domain_string = RAPL_DOMAIN_STRINGS[domain];
                     fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
-                    fprintf(stdout, "cpu%d_%s_mWh=%f\n", i, domain_string, cum_energy_mWh[i][domain]);
                 }
             }
         }
