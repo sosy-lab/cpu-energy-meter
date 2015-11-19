@@ -36,6 +36,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "msr.h"
 #include "rapl.h"
 
+char* domain_strings[RAPL_NR_DOMAIN] = {
+    "package",
+    "core",
+    "uncore",
+    "dram"
+};
+
+
 /* rapl msr availablility */
 #define MSR_SUPPORT_MASK 0xff
 unsigned char *msr_support_table;

@@ -33,6 +33,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM };
 
+char* domain_strings[RAPL_NR_DOMAIN];
+
 typedef struct APIC_ID_t {
     uint64_t smt_id;
     uint64_t core_id;

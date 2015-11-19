@@ -31,8 +31,9 @@ uint64_t      delay_us = 1000000;
 double        duration = 3600.0;
 double        delay_unit = 1000000.0;
 
-double **cum_energy_J;
-double **cum_energy_mWh;
+double **cum_energy_J = NULL;
+double **cum_energy_mWh = NULL;
+double measurement_start_time, measurement_end_time;
 
 double
 get_rapl_energy_info(uint64_t power_domain, uint64_t node)
@@ -109,27 +110,11 @@ do_print_energy_info()
     int msec;
     uint64_t tsc;
     uint64_t freq;
-    double start, end, interval_start;
-    double total_elapsed_time;
-    double interval_elapsed_time;
 
     /* don't buffer if piped */
     setbuf(stdout, NULL);
 
-    /* Print header */
-    fprintf(stdout, "System Time,RDTSC,Elapsed Time (sec),");
-    for (i = node; i < num_node; i++) {
-        fprintf(stdout, "IA Frequency_%d (MHz),",i);
-        if(is_supported_domain(RAPL_PKG))
-            fprintf(stdout,"Processor Power_%d (Watt),Cumulative Processor Energy_%d (Joules),Cumulative Processor Energy_%d (mWh),", i,i,i);
-        if(is_supported_domain(RAPL_PP0))
-            fprintf(stdout, "IA Power_%d (Watt),Cumulative IA Energy_%d (Joules),Cumulative IA Energy_%d(mWh),", i,i,i);
-        if(is_supported_domain(RAPL_PP1))
-            fprintf(stdout, "GT Power_%d (Watt),Cumulative GT Energy_%d (Joules),Cumulative GT Energy_%d(mWh),", i,i,i);
-        if(is_supported_domain(RAPL_DRAM))
-            fprintf(stdout, "DRAM Power_%d (Watt),Cumulative DRAM Energy_%d (Joules),Cumulative DRAM Energy_%d(mWh),", i,i,i);
-    }
-    fprintf(stdout, "\n");
+    fprintf(stdout, "num_node=%d\n", num_node);
 
     /* Read initial values */
     for (i = node; i < num_node; i++) {
@@ -141,17 +126,15 @@ do_print_energy_info()
     }
 
     gettimeofday(&tv, NULL);
-    start = convert_time_to_sec(tv);
-    end = start;
+    measurement_start_time = convert_time_to_sec(tv);
+    measurement_end_time = measurement_start_time;
+
+    fprintf(stdout, "start_time=%f\n", measurement_start_time);
 
     /* Begin sampling */
     while (1) {
 
         usleep(delay_us);
-
-        gettimeofday(&tv, NULL);
-        interval_start = convert_time_to_sec(tv);
-        interval_elapsed_time = interval_start - end;
 
         for (i = node; i < num_node; i++) {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
@@ -166,10 +149,6 @@ do_print_energy_info()
 
                     prev_sample[i][domain] = new_sample;
 
-                    // Use the computed elapsed time between samples (and not
-                    // just the sleep delay, in order to more accourately account for
-                    // the delay between samples
-                    power_watt[i][domain] = delta / interval_elapsed_time;
                     cum_energy_J[i][domain] += delta;
                     cum_energy_mWh[i][domain] = cum_energy_J[i][domain] / 3.6; // mWh
                 }
@@ -177,57 +156,8 @@ do_print_energy_info()
         }
 
         gettimeofday(&tv, NULL);
-        end = convert_time_to_sec(tv);
-        total_elapsed_time = end - start;
-        convert_time_to_string(tv, time_buffer);
-
-        read_tsc(&tsc);
-        fprintf(stdout,"%s,%llu,%.4lf,", time_buffer, tsc, total_elapsed_time);
-        for (i = node; i < num_node; i++) {
-            get_pp0_freq_mhz(i, &freq);
-            fprintf(stdout, "%u,", freq);
-            for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-                if(is_supported_domain(domain)) {
-                    fprintf(stdout, "%.4lf,%.4lf,%.4lf,",
-                            power_watt[i][domain], cum_energy_J[i][domain], cum_energy_mWh[i][domain]);
-                }
-            }
-        }
-        fprintf(stdout, "\n");
-
-        // check to see if we are done
-        if(total_elapsed_time >= duration)
-            break;
+        measurement_end_time = convert_time_to_sec(tv);
     }
-
-    end = clock();
-
-    /* Print summary */
-    fprintf(stdout, "\nTotal Elapsed Time(sec)=%.4lf\n\n", total_elapsed_time);
-    for (i = node; i < num_node; i++) {
-        if(is_supported_domain(RAPL_PKG)){
-            fprintf(stdout, "Total Processor Energy_%d(Joules)=%.4lf\n", i, cum_energy_J[i][RAPL_PKG]);
-            fprintf(stdout, "Total Processor Energy_%d(mWh)=%.4lf\n", i, cum_energy_mWh[i][RAPL_PKG]);
-            fprintf(stdout, "Average Processor Power_%d(Watt)=%.4lf\n\n", i, cum_energy_J[i][RAPL_PKG]/total_elapsed_time);
-        }
-        if(is_supported_domain(RAPL_PP0)){
-            fprintf(stdout, "Total IA Energy_%d(Joules)=%.4lf\n", i, cum_energy_J[i][RAPL_PP0]);
-            fprintf(stdout, "Total IA Energy_%d(mWh)=%.4lf\n", i, cum_energy_mWh[i][RAPL_PP0]);
-            fprintf(stdout, "Average IA Power_%d(Watt)=%.4lf\n\n", i, cum_energy_J[i][RAPL_PP0]/total_elapsed_time);
-        }
-        if(is_supported_domain(RAPL_PP1)){
-            fprintf(stdout, "Total GT Energy_%d(Joules)=%.4lf\n", i, cum_energy_J[i][RAPL_PP1]);
-            fprintf(stdout, "Total GT Energy_%d(mWh)=%.4lf\n", i, cum_energy_mWh[i][RAPL_PP1]);
-            fprintf(stdout, "Average GT Power_%d(Watt)=%.4lf\n\n", i, cum_energy_J[i][RAPL_PP1]/total_elapsed_time);
-        }
-        if(is_supported_domain(RAPL_DRAM)){
-            fprintf(stdout, "Total DRAM Energy_%d(Joules)=%.4lf\n", i, cum_energy_J[i][RAPL_DRAM]);
-            fprintf(stdout, "Total DRAM Energy_%d(mWh)=%.4lf\n", i, cum_energy_mWh[i][RAPL_DRAM]);
-            fprintf(stdout, "Average DRAM Power_%d(Watt)=%.4lf\n\n", i, cum_energy_J[i][RAPL_DRAM]/total_elapsed_time);
-        }
-    }
-    read_tsc(&tsc);
-    fprintf(stdout,"TSC=%llu\n", tsc);
 }
 
 void
@@ -281,6 +211,28 @@ cmdline(int argc, char **argv)
 
 void sigint_handler(int signum)
 {
+    int i, domain;
+    uint64_t freq;
+
+    fprintf(stdout, "end_time=%f\n", measurement_end_time);
+    fprintf(stdout, "duration=%f\n", measurement_end_time - measurement_start_time);
+
+    if (cum_energy_J != NULL && cum_energy_mWh != NULL) {
+        for (i = 0; i < num_node; i++) {
+            if (cum_energy_J[i] == NULL || cum_energy_mWh == NULL) {
+                continue;
+            }
+
+            for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
+                if (is_supported_domain(domain)) {
+                    char *domain_string = domain_strings[domain];
+                    fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
+                    fprintf(stdout, "cpu%d_%s_mWh=%f\n", i, domain_string, cum_energy_mWh[i][domain]);
+                }
+            }
+        }
+    }
+
     terminate_rapl();
     exit(0);
 }
