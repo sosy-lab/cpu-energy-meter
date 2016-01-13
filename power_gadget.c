@@ -33,31 +33,30 @@ double        delay_unit = 1000000.0;
 double **cum_energy_J = NULL;
 double measurement_start_time, measurement_end_time;
 
-double
-get_rapl_energy_info(uint64_t power_domain, uint64_t node)
+int
+get_rapl_energy_info(uint64_t power_domain, uint64_t node, double *total_energy_consumed)
 {
     int          err;
-    double       total_energy_consumed;
 
     switch (power_domain) {
     case PKG:
-        err = get_pkg_total_energy_consumed(node, &total_energy_consumed);
+        err = get_pkg_total_energy_consumed(node, total_energy_consumed);
         break;
     case PP0:
-        err = get_pp0_total_energy_consumed(node, &total_energy_consumed);
+        err = get_pp0_total_energy_consumed(node, total_energy_consumed);
         break;
     case PP1:
-        err = get_pp1_total_energy_consumed(node, &total_energy_consumed);
+        err = get_pp1_total_energy_consumed(node, total_energy_consumed);
         break;
     case DRAM:
-        err = get_dram_total_energy_consumed(node, &total_energy_consumed);
+        err = get_dram_total_energy_consumed(node, total_energy_consumed);
         break;
     default:
         err = MY_ERROR;
         break;
     }
 
-    return total_energy_consumed;
+    return err;
 }
 
 void
@@ -89,6 +88,7 @@ do_print_energy_info()
 {
     int i = 0;
     int domain = 0;
+    int err = 0;
     uint64_t node = 0;
     double new_sample;
     double delta;
@@ -116,7 +116,7 @@ do_print_energy_info()
     for (i = node; i < num_node; i++) {
         for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
             if(is_supported_domain(domain)) {
-                prev_sample[i][domain] = get_rapl_energy_info(domain, i);
+                err = get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
             }
         }
     }
@@ -135,7 +135,7 @@ do_print_energy_info()
         for (i = node; i < num_node; i++) {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
                 if(is_supported_domain(domain)) {
-                    new_sample = get_rapl_energy_info(domain, i);
+                    err = get_rapl_energy_info(domain, i, &new_sample);
                     delta = new_sample - prev_sample[i][domain];
 
                     /* Handle wraparound */
