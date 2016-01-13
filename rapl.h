@@ -141,6 +141,8 @@ int set_pp1_balance_policy(uint64_t node, uint64_t priority_level);
 
 /* Utilities */
 
+int read_rapl_units();
+
 /*! \brief Use the RDTSC instruction to read the time-stamp counter */
 int read_tsc(uint64_t *tsc);
 
