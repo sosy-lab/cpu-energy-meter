@@ -98,9 +98,9 @@ do_print_energy_info()
 
     double prev_sample[num_node][RAPL_NR_DOMAIN];
     double power_watt[num_node][RAPL_NR_DOMAIN];
-    cum_energy_J = malloc(num_node * sizeof(double*));
+    cum_energy_J = calloc(num_node, sizeof(double*));
     for (i = 0; i < num_node; i++) {
-        cum_energy_J[i] = malloc(RAPL_NR_DOMAIN * sizeof(double));
+        cum_energy_J[i] = calloc(RAPL_NR_DOMAIN, sizeof(double));
     }
 
     char time_buffer[32];
@@ -115,9 +115,9 @@ do_print_energy_info()
     fprintf(stdout, "cpu_count=%lu\n", num_node);
 
     /* Read initial values */
-    rapl_domain_actually_supported = malloc(num_node * sizeof(double*));
+    rapl_domain_actually_supported = calloc(num_node, sizeof(double*));
     for (i = node; i < num_node; i++) {
-        rapl_domain_actually_supported[node] = malloc(RAPL_NR_DOMAIN * sizeof(double));
+        rapl_domain_actually_supported[node] = calloc(RAPL_NR_DOMAIN, sizeof(double));
         for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
             rapl_domain_actually_supported[node][domain] = 0;
 
