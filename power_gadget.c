@@ -84,10 +84,56 @@ convert_time_to_sec(struct timeval tv)
     return elapsed_time;
 }
 
+sigset_t get_sigset() {
+  sigset_t set;
+  sigemptyset(&set);
+  sigaddset(&set, SIGINT);
+  sigaddset(&set, SIGQUIT);
+  return set;
+}
+
+void handle_sigint()
+{
+    int i, domain;
+    uint64_t freq;
+
+    fprintf(stdout, "end_time=%f\n", measurement_end_time);
+    fprintf(stdout, "duration=%f\n", measurement_end_time - measurement_start_time);
+
+    if (cum_energy_J != NULL) {
+        for (i = 0; i < num_node; i++) {
+            if (cum_energy_J[i] == NULL) {
+                continue;
+            }
+
+            for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
+                if (is_supported_domain(domain)) {
+                    char *domain_string = RAPL_DOMAIN_STRINGS[domain];
+                    fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
+                }
+            }
+        }
+    }
+
+    terminate_rapl();
+    exit(0);
+}
+
+void handle_signal(int sig, siginfo_t * info) {
+  if (sig < 0) {
+    return;
+  } else if (sig == SIGINT || sig == SIGQUIT) {
+    handle_sigint();  
+  } else {
+    printf("Didn't handle signal number %d", sig);
+  }
+}
 
 void
 do_print_energy_info()
 {
+    struct timespec signal_timelimit = { .tv_sec = 0, .tv_nsec = 10 };
+    sigset_t signal_set = get_sigset();
     int i = 0;
     int domain = 0;
     int err = 0;
@@ -137,10 +183,14 @@ do_print_energy_info()
 
     fprintf(stdout, "start_time=%f\n", measurement_start_time);
 
+    int rcvd_signal;
+    siginfo_t signal_info;
     /* Begin sampling */
     while (1) {
-
-        usleep(delay_us);
+        do {
+          rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
+          handle_signal(rcvd_signal, &signal_info);
+        } while (rcvd_signal > -1);
 
         for (i = node; i < num_node; i++) {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
@@ -207,41 +257,14 @@ cmdline(int argc, char **argv)
     return 0;
 }
 
-void sigint_handler(int signum)
-{
-    int i, domain;
-    uint64_t freq;
-
-    fprintf(stdout, "end_time=%f\n", measurement_end_time);
-    fprintf(stdout, "duration=%f\n", measurement_end_time - measurement_start_time);
-
-    if (cum_energy_J != NULL) {
-        for (i = 0; i < num_node; i++) {
-            if (cum_energy_J[i] == NULL) {
-                continue;
-            }
-
-            for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-                if (is_supported_domain(domain)) {
-                    char *domain_string = RAPL_DOMAIN_STRINGS[domain];
-                    fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
-                }
-            }
-        }
-    }
-
-    terminate_rapl();
-    exit(0);
-}
-
 int
 main(int argc, char **argv)
 {
     int i = 0;
     int ret = 0;
 
-    /* Clean up if we're told to exit */
-    signal(SIGINT, sigint_handler);
+    sigset_t sigs_to_listen_to = get_sigset();
+    sigprocmask(SIG_BLOCK, &sigs_to_listen_to, NULL);
 
     // First init the RAPL library
     if (0 != init_rapl()) {
