@@ -49,6 +49,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define MSR_RAPL_PP1_ENERGY_STATUS 0x641 /* PP1 Energy Status (R/O) */
 #define MSR_RAPL_PP1_POLICY        0x642 /* PP1 Balance Policy (R/W) */
 
+#define MSR_RAPL_PLATFORM_ENERGY_STATUS 0x64d /* PSYS Energy Status */
+
 /* Common MSR Structures */
 typedef struct rapl_power_limit_control_msr_t {
     uint64_t power_limit         : 15;
