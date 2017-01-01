@@ -183,6 +183,8 @@ do_print_energy_info()
 
     fprintf(stdout, "start_time=%f\n", measurement_start_time);
 
+    sigprocmask(SIG_BLOCK, &signal_set, NULL);
+
     int rcvd_signal;
     siginfo_t signal_info;
     /* Begin sampling */
@@ -213,6 +215,7 @@ do_print_energy_info()
         gettimeofday(&tv, NULL);
         measurement_end_time = convert_time_to_sec(tv);
     }
+    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }
 
 void
@@ -262,9 +265,6 @@ main(int argc, char **argv)
 {
     int i = 0;
     int ret = 0;
-
-    sigset_t sigs_to_listen_to = get_sigset();
-    sigprocmask(SIG_BLOCK, &sigs_to_listen_to, NULL);
 
     // First init the RAPL library
     if (0 != init_rapl()) {
