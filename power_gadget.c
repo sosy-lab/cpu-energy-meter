@@ -89,6 +89,7 @@ sigset_t get_sigset() {
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
   sigaddset(&set, SIGQUIT);
+  sigaddset(&set, SIGUSR1);
   return set;
 }
 
@@ -100,8 +101,8 @@ void print_intermediate_results() {
     double end_seconds = convert_time_to_sec(measurement_end_time);
     char end_time_string[12];
     convert_time_to_string(measurement_end_time, end_time_string);
-    fprintf(stdout, "end_time=%f (%s o'clock)\n", end_seconds, end_time_string);
-    fprintf(stdout, "duration=%f\n", end_seconds - start_seconds);
+    fprintf(stdout, "curr_time=%f (%s o'clock)\n", end_seconds, end_time_string);
+    fprintf(stdout, "tot_duration=%f\n", end_seconds - start_seconds);
 
     if (cum_energy_J != NULL) {
         for (i = 0; i < num_node; i++) {
@@ -129,8 +130,13 @@ void handle_sigint()
 void handle_signal(int sig, siginfo_t * info) {
   if (sig < 0) {
     return;
+
   } else if (sig == SIGINT || sig == SIGQUIT) {
-    handle_sigint();  
+    handle_sigint();
+
+  } else if (sig == SIGUSR1) {
+    print_intermediate_results();
+
   } else {
     printf("Didn't handle signal number %d", sig);
   }
