@@ -101,8 +101,8 @@ void print_intermediate_results() {
     double end_seconds = convert_time_to_sec(measurement_end_time);
     char end_time_string[12];
     convert_time_to_string(measurement_end_time, end_time_string);
-    fprintf(stdout, "curr_time=%f (%s o'clock)\n", end_seconds, end_time_string);
-    fprintf(stdout, "tot_duration=%f\n", end_seconds - start_seconds);
+    //fprintf(stdout, "curr_time=%f (%s o'clock)\n", end_seconds, end_time_string);
+    fprintf(stdout, "duration=%fs\n", end_seconds - start_seconds);
 
     if (cum_energy_J != NULL) {
         for (i = 0; i < num_node; i++) {
@@ -113,7 +113,7 @@ void print_intermediate_results() {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
                 if (is_supported_domain(domain)) {
                     char *domain_string = RAPL_DOMAIN_STRINGS[domain];
-                    fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
+                    fprintf(stdout, "cpu%d_%s=%fJ\n", i, domain_string, cum_energy_J[i][domain]);
                 }
             }
         }
@@ -196,7 +196,7 @@ do_print_energy_info()
 
     char time_string[12];
     convert_time_to_string(tv, time_string);
-    fprintf(stdout, "start_time=%f (%s o'clock)\n", convert_time_to_sec(tv), time_string);
+    //fprintf(stdout, "start_time=%f (%s o'clock)\n", convert_time_to_sec(tv), time_string);
 
     sigprocmask(SIG_BLOCK, &signal_set, NULL);
 
