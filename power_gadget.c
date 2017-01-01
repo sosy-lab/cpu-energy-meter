@@ -31,7 +31,7 @@ uint64_t      delay_us = 1000000;
 double        delay_unit = 1000000.0;
 
 double **cum_energy_J = NULL;
-double measurement_start_time, measurement_end_time;
+struct timeval measurement_start_time, measurement_end_time;
 // Not to be confused with is_supported_domain()!
 double **rapl_domain_actually_supported = NULL;
 
@@ -92,13 +92,16 @@ sigset_t get_sigset() {
   return set;
 }
 
-void handle_sigint()
-{
+void print_intermediate_results() {
     int i, domain;
     uint64_t freq;
 
-    fprintf(stdout, "end_time=%f\n", measurement_end_time);
-    fprintf(stdout, "duration=%f\n", measurement_end_time - measurement_start_time);
+    double start_seconds = convert_time_to_sec(measurement_start_time);
+    double end_seconds = convert_time_to_sec(measurement_end_time);
+    char end_time_string[12];
+    convert_time_to_string(measurement_end_time, end_time_string);
+    fprintf(stdout, "end_time=%f (%s o'clock)\n", end_seconds, end_time_string);
+    fprintf(stdout, "duration=%f\n", end_seconds - start_seconds);
 
     if (cum_energy_J != NULL) {
         for (i = 0; i < num_node; i++) {
@@ -114,7 +117,11 @@ void handle_sigint()
             }
         }
     }
+}
 
+void handle_sigint()
+{
+    print_intermediate_results();
     terminate_rapl();
     exit(0);
 }
@@ -178,10 +185,12 @@ do_print_energy_info()
     }
 
     gettimeofday(&tv, NULL);
-    measurement_start_time = convert_time_to_sec(tv);
+    measurement_start_time = tv;
     measurement_end_time = measurement_start_time;
 
-    fprintf(stdout, "start_time=%f\n", measurement_start_time);
+    char time_string[12];
+    convert_time_to_string(tv, time_string);
+    fprintf(stdout, "start_time=%f (%s o'clock)\n", convert_time_to_sec(tv), time_string);
 
     sigprocmask(SIG_BLOCK, &signal_set, NULL);
 
@@ -213,7 +222,7 @@ do_print_energy_info()
         }
 
         gettimeofday(&tv, NULL);
-        measurement_end_time = convert_time_to_sec(tv);
+        measurement_end_time = tv;
     }
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }
