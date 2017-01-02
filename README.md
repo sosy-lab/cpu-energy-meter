@@ -36,7 +36,7 @@ To build:
 > make
 
 To run:
-> ./cpue-energy-meter [-e [sampling_delay_ms] optional]
+> ./cpu-energy-meter [-e [sampling_delay_ms] optional]
 
 The tool will continue counting the cumulative energy use of all supported CPUs
 in the background and will report a key-value list of its measurements when it
