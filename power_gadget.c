@@ -27,8 +27,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 char         *progname;
 const char   *version = "2.2";
 uint64_t      num_node = 0;
-uint64_t      delay_us = 1000000;
-double        delay_unit = 1000000.0;
+uint64_t      delay_ns = 1000000000;
+uint64_t      delay_unit = 1000000000;
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
@@ -145,7 +145,9 @@ void handle_signal(int sig, siginfo_t * info) {
 void
 do_print_energy_info()
 {
-    struct timespec signal_timelimit = { .tv_sec = 0, .tv_nsec = 10 };
+    long seconds = delay_ns / delay_unit;
+    long nano_seconds = delay_ns % delay_unit;
+    struct timespec signal_timelimit = { .tv_sec = seconds, .tv_nsec = nano_seconds };
     sigset_t signal_set = get_sigset();
     int i = 0;
     int domain = 0;
@@ -204,10 +206,8 @@ do_print_energy_info()
     siginfo_t signal_info;
     /* Begin sampling */
     while (1) {
-        do {
-          rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
-          handle_signal(rcvd_signal, &signal_info);
-        } while (rcvd_signal > -1);
+        // If a signal is received, perform one probe before handling it.
+        rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
 
         for (i = node; i < num_node; i++) {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
@@ -229,6 +229,7 @@ do_print_energy_info()
 
         gettimeofday(&tv, NULL);
         measurement_end_time = tv;
+        handle_signal(rcvd_signal, &signal_info);
     }
     sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }
@@ -257,7 +258,7 @@ cmdline(int argc, char **argv)
         case 'e':
             delay_ms_temp = atoi(optarg);
             if(delay_ms_temp > 50) {
-                delay_us = delay_ms_temp * 1000;
+                delay_ns = delay_ms_temp * 1000000;
             } else {
                 fprintf(stdout, "Sampling delay must be greater than 50 ms.\n");
                 return -1;
