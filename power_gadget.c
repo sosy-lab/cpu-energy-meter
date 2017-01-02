@@ -113,7 +113,7 @@ void print_intermediate_results() {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
                 if (is_supported_domain(domain)) {
                     char *domain_string = RAPL_DOMAIN_STRINGS[domain];
-                    fprintf(stdout, "cpu%d_%s_Joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
+                    fprintf(stdout, "cpu%d_%s_joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
                 }
             }
         }
