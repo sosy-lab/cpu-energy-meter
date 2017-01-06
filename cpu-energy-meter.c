@@ -120,25 +120,22 @@ void print_intermediate_results() {
     }
 }
 
-void handle_sigint()
-{
-    print_intermediate_results();
-    terminate_rapl();
-    exit(0);
-}
-
-void handle_signal(int sig, siginfo_t * info) {
+// Returns 1 if the process is supposed to continue, 0 if the process is supposed to stop
+int handle_signal(int sig, siginfo_t * info) {
   if (sig < 0) {
-    return;
+    return 1;
 
   } else if (sig == SIGINT || sig == SIGQUIT) {
-    handle_sigint();
+    print_intermediate_results();
+    return 0;
 
   } else if (sig == SIGUSR1) {
     print_intermediate_results();
+    return 1;
 
   } else {
     printf("Didn't handle signal number %d", sig);
+    return 1;
   }
 }
 
@@ -200,12 +197,11 @@ do_print_energy_info()
     convert_time_to_string(tv, time_string);
     //fprintf(stdout, "start_time=%f (%s o'clock)\n", convert_time_to_sec(tv), time_string);
 
-    sigprocmask(SIG_BLOCK, &signal_set, NULL);
-
     int rcvd_signal;
+    int do_continue = 1;
     siginfo_t signal_info;
     /* Begin sampling */
-    while (1) {
+    while (do_continue) {
         // If a signal is received, perform one probe before handling it.
         rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
 
@@ -229,9 +225,10 @@ do_print_energy_info()
 
         gettimeofday(&tv, NULL);
         measurement_end_time = tv;
-        handle_signal(rcvd_signal, &signal_info);
+        if (rcvd_signal != -1) {
+          do_continue = handle_signal(rcvd_signal, &signal_info);
+        }
     }
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
 }
 
 void
@@ -282,6 +279,8 @@ main(int argc, char **argv)
     int i = 0;
     int ret = 0;
 
+    sigset_t signal_set = get_sigset();
+    sigprocmask(SIG_BLOCK, &signal_set, NULL);
     // First init the RAPL library
     if (0 != init_rapl()) {
         fprintf(stdout, "Init failed!\n");
@@ -291,12 +290,14 @@ main(int argc, char **argv)
     num_node = get_num_rapl_nodes_pkg();
 
     ret = cmdline(argc, argv);
-    if (ret) {
-        terminate_rapl();
+    if (ret) { // Error occured while reading command line
         return ret;
+
+    } else {
+      do_print_energy_info();
+
+      terminate_rapl();
+      sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+      return 0;
     }
-
-    do_print_energy_info();
-
-    terminate_rapl();
 }
