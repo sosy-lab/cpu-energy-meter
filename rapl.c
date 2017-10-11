@@ -324,7 +324,10 @@ init_rapl()
         msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0; //
         msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0; //
         break;
+    case 0x406e0: // Skylake
     case 0x506e0: // Skylake
+    case 0x806e0: // Kaby Lake
+    case 0x906e0: // Kaby Lake
         msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1;
         msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1;
         msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1;
