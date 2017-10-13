@@ -2,14 +2,17 @@
 #define _ASM_X86_INTEL_FAMILY_H
 
 /*
- * Intel Core Processors (Branded as Core, Xeon, etc...)
- *
- * The "_X" parts are generally the EP and EX Xeons, or the "Extreme" ones, like Broadwell-E.
- *
+ * Mapping from Intel's CPU generation names to their respective family- and model number.
+ * 
  * For reference, see Intel Architectures Software Developer's Manual Volume 4, Model-Specific Registers, Chapter 2, Table 2-1
  * (https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf)
+ * 
  */
 
+ /* 
+ * "Big Core" Processors (Branded as Core, Xeon, etc...).
+ * The "_X" parts are generally the EP and EX Xeons.
+ */
 
 #define CPU_INTEL_SANDYBRIDGE		    0x206A0     // Family 6 Model 42 (0x2a)
 #define CPU_INTEL_SANDYBRIDGE_X         0x206D0     // Family 6 Model 45 (0x2d)
@@ -35,5 +38,20 @@
 #define CPU_INTEL_KABYLAKE_DESKTOP	    0x906E0     // Family 6 Model 158 (0x9e)
 
 #define CPU_INTEL_CANNONLAKE            0x60660     // Family 6 Model 102 (0x66)
+
+/* "Small Core" Processors (Atom) */
+#define CPU_INTEL_ATOM_SILVERMONT1	    0x30670     // Family 6 Model 55 (0x37) /* E3000 series, Z3600 series, Z3700 series */
+#define CPU_INTEL_ATOM_MERRIFIELD	    0x406A0     // Family 6 Model 74 (0x4a)
+#define CPU_INTEL_ATOM_AIRMONT		    0x406C0     // Family 6 Model 76 (0x4c)
+#define CPU_INTEL_ATOM_SILVERMONT2	    0x406D0     // Family 6 Model 77 (0x4d) /* C2000 series */
+#define CPU_INTEL_ATOM_MOOREFIELD	    0x506A0     // Family 6 Model 90 (0x5a)
+#define CPU_INTEL_ATOM_SILVERMONT3      0x506D0     // Family 6 Model 93 (0x5d) /* X3-C3000 series */
+#define CPU_INTEL_ATOM_GOLDMONT         0x506C0     // Family 6 Model 92 (0x5c)
+#define CPU_INTEL_ATOM_DENVERTON        0x506F0     // Family 6 Model 95 (0x5f)
+#define CPU_INTEL_ATOM_GEMINI_LAKE      0x706A0     // Family 6 Model 122 (0x7a)
+
+/* Xeon Phi */
+#define CPU_INTEL_KNIGHTS_LANDING       0x50670     // Family 6 Model 87 (0x57)
+#define CPU_INTEL_KNIGHTS_MILL          0x80650     // Family 6 Model 133 (0x85)
 
 #endif /* _ASM_X86_INTEL_FAMILY_H */
