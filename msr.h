@@ -23,32 +23,33 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
  * less than 31 (will get invalid numbers if 31 or greater) */
 #define B2POW(e) (((e) == 0) ? 1 : (2 << ((e) - 1)))
 
-/* General (Sandy Bridge Client/Server) */
+/* General */
 #define MSR_RAPL_POWER_UNIT 0x606 /* Unit Multiplier used in RAPL Interfaces (R/O) */
 
-/* PKG (Sandy Bridge Client/Server) */
+/* Package RAPL Domain */
 #define MSR_RAPL_PKG_POWER_LIMIT   0x610 /* PKG RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PKG_ENERGY_STATUS 0x611 /* PKG Energy Status (R/O) */
 #define MSR_RAPL_PKG_PERF_STATUS   0x613 /* PKG Performance Throttling Status (R/O) */
 #define MSR_RAPL_PKG_POWER_INFO    0x614 /* PKG RAPL Parameters (R/O) */
 
-/* DRAM (Sandy Bridge Server) */
+/* DRAM RAPL Domain */
 #define MSR_RAPL_DRAM_POWER_LIMIT   0x618 /* DRAM RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_DRAM_ENERGY_STATUS 0x619 /* DRAM Energy Status (R/O) */
 #define MSR_RAPL_DRAM_PERF_STATUS   0x61b /* DRAM Performance Throttling Status (R/O) */
 #define MSR_RAPL_DRAM_POWER_INFO    0x61c /* DRAM RAPL Parameters (R/O) */
 
-/* PP0 (Sandy Bridge Client/Server) */
+/* PP0 RAPL Domain */
 #define MSR_RAPL_PP0_POWER_LIMIT   0x638 /* PP0 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP0_ENERGY_STATUS 0x639 /* PP0 Energy Status (R/O) */
 #define MSR_RAPL_PP0_POLICY        0x63a /* PP0 Performance Throttling Status (R/O) */
 #define MSR_RAPL_PP0_PERF_STATUS   0x63b /* PP0 Balance Policy (R/W) */
 
-/* PP1 (Sandy Bridge Gen2 Client) */
+/* PP1 RAPL Domain */
 #define MSR_RAPL_PP1_POWER_LIMIT   0x640 /* PP1 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP1_ENERGY_STATUS 0x641 /* PP1 Energy Status (R/O) */
 #define MSR_RAPL_PP1_POLICY        0x642 /* PP1 Balance Policy (R/W) */
 
+/* PSYS RAPL Domain */
 #define MSR_RAPL_PLATFORM_ENERGY_STATUS 0x64d /* PSYS Energy Status */
 
 /* Common MSR Structures */

@@ -34,4 +34,6 @@
 #define CPU_INTEL_KABYLAKE_MOBILE	    0x806E0     // Family 6 Model 142 (0x8e)
 #define CPU_INTEL_KABYLAKE_DESKTOP	    0x906E0     // Family 6 Model 158 (0x9e)
 
+#define CPU_INTEL_CANNONLAKE            0x60660     // Family 6 Model 102 (0x66)
+
 #endif /* _ASM_X86_INTEL_FAMILY_H */
