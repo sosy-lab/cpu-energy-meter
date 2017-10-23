@@ -58,7 +58,7 @@ uint64_t  num_nodes = 0;
 uint64_t num_core_threads = 0; // number of physical threads per core
 uint64_t num_pkg_threads = 0;  // number of physical threads per package
 uint64_t num_pkg_cores = 0;    // number of cores per package
-uint64_t os_cpu_count = 0;     // numbeer of OS cpus
+uint64_t os_cpu_count = 0;     // number of OS cpus
 
 APIC_ID_t *os_map;
 APIC_ID_t **pkg_map;
@@ -233,6 +233,7 @@ init_rapl()
     uint32_t processor_signature;
 
     processor_signature = get_processor_signature();
+    // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
     // The source for the following settings can be found under

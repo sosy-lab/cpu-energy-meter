@@ -83,8 +83,9 @@ typedef struct rapl_unit_multiplier_msr_t {
 } rapl_unit_multiplier_msr_t;
 
 /*
- *  For documentaion see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 3B, Appendix B  Model-Specific registers.
- * http://www.intel.com/Assets/PDF/manual/253669.pdf  In a nutshell, search the manual and find the MSR number that you wish to read/write.
+ *  For documentaion see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4:  Model-Specific registers.
+ * https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf In a nutshell, search the manual and 
+ * find the MSR number that you wish to read/write.
  * Then use the read_msr_t/write_msr_t functions and extract_bit functions to get the info you need.
  */
 
