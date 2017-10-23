@@ -29,25 +29,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* Package RAPL Domain */
 #define MSR_RAPL_PKG_POWER_LIMIT   0x610 /* PKG RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PKG_ENERGY_STATUS 0x611 /* PKG Energy Status (R/O) */
-#define MSR_RAPL_PKG_PERF_STATUS   0x613 /* PKG Performance Throttling Status (R/O) */
-#define MSR_RAPL_PKG_POWER_INFO    0x614 /* PKG RAPL Parameters (R/O) */
+//#define MSR_RAPL_PKG_PERF_STATUS   0x613 /* PKG Performance Throttling Status (R/O) */
+//#define MSR_RAPL_PKG_POWER_INFO    0x614 /* PKG RAPL Parameters (R/O) */
 
 /* DRAM RAPL Domain */
 #define MSR_RAPL_DRAM_POWER_LIMIT   0x618 /* DRAM RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_DRAM_ENERGY_STATUS 0x619 /* DRAM Energy Status (R/O) */
-#define MSR_RAPL_DRAM_PERF_STATUS   0x61b /* DRAM Performance Throttling Status (R/O) */
-#define MSR_RAPL_DRAM_POWER_INFO    0x61c /* DRAM RAPL Parameters (R/O) */
+//#define MSR_RAPL_DRAM_PERF_STATUS   0x61b /* DRAM Performance Throttling Status (R/O) */
+//#define MSR_RAPL_DRAM_POWER_INFO    0x61c /* DRAM RAPL Parameters (R/O) */
 
 /* PP0 RAPL Domain */
 #define MSR_RAPL_PP0_POWER_LIMIT   0x638 /* PP0 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP0_ENERGY_STATUS 0x639 /* PP0 Energy Status (R/O) */
-#define MSR_RAPL_PP0_POLICY        0x63a /* PP0 Performance Throttling Status (R/O) */
-#define MSR_RAPL_PP0_PERF_STATUS   0x63b /* PP0 Balance Policy (R/W) */
+//#define MSR_RAPL_PP0_POLICY        0x63a /* PP0 Performance Throttling Status (R/O) */
+//#define MSR_RAPL_PP0_PERF_STATUS   0x63b /* PP0 Balance Policy (R/W) */
 
 /* PP1 RAPL Domain */
 #define MSR_RAPL_PP1_POWER_LIMIT   0x640 /* PP1 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP1_ENERGY_STATUS 0x641 /* PP1 Energy Status (R/O) */
-#define MSR_RAPL_PP1_POLICY        0x642 /* PP1 Balance Policy (R/W) */
+//#define MSR_RAPL_PP1_POLICY        0x642 /* PP1 Balance Policy (R/W) */
 
 /* PSYS RAPL Domain */
 #define MSR_RAPL_PLATFORM_ENERGY_STATUS 0x64d /* PSYS Energy Status */
@@ -64,34 +64,11 @@ typedef struct rapl_power_limit_control_msr_t {
     uint64_t                     : 32;
 } rapl_power_limit_control_msr_t;
 
-/* Wrap-around time of many hours. */
-typedef struct rapl_parameters_msr_t {
-    uint64_t thermal_spec_power        : 15;
-    uint64_t                           : 1;
-    uint64_t minimum_power             : 15;
-    uint64_t                           : 1;
-    uint64_t maximum_power             : 15;
-    uint64_t                           : 1;
-    uint64_t maximum_limit_time_window : 6;
-    uint64_t                           : 10;
-} rapl_parameters_msr_t;
-
 /* Updated every ~1ms. Wraparound time of 60s under load. */
 typedef struct energy_status_msr_t {
     uint64_t total_energy_consumed : 32;
     uint64_t                       : 32;
 } energy_status_msr_t;
-
-typedef struct performance_throttling_status_msr_t {
-    uint64_t accumulated_throttled_time : 32;
-    uint64_t                            : 32;
-} performance_throttling_status_msr_t;
-
-typedef struct balance_policy_msr_t {
-    uint64_t priority_level : 5;
-    uint64_t                : 32;
-    uint64_t                : 27;
-} balance_policy_msr_t;
 
 
 /* General */
@@ -104,45 +81,6 @@ typedef struct rapl_unit_multiplier_msr_t {
     uint64_t        : 32;
     uint64_t        : 12;
 } rapl_unit_multiplier_msr_t;
-
-/* PKG */
-typedef struct pkg_rapl_power_limit_control_msr_t {
-    uint64_t power_limit_1         : 15;
-    uint64_t limit_enabled_1       : 1;
-    uint64_t clamp_enabled_1       : 1;
-    uint64_t limit_time_window_y_1 : 5;
-    uint64_t limit_time_window_f_1 : 2;
-    uint64_t                       : 8;
-    uint64_t power_limit_2         : 15;
-    uint64_t limit_enabled_2       : 1;
-    uint64_t clamp_enabled_2       : 1;
-    uint64_t limit_time_window_y_2 : 5;
-    uint64_t limit_time_window_f_2 : 2;
-    uint64_t                       : 7;
-    uint64_t lock_enabled          : 1;
-} pkg_rapl_power_limit_control_msr_t;
-
-typedef energy_status_msr_t pkg_energy_status_msr_t;
-typedef rapl_parameters_msr_t pkg_rapl_parameters_msr_t;
-typedef performance_throttling_status_msr_t pkg_performance_throttling_status_msr_t;
-
-/* PP0 */
-typedef rapl_power_limit_control_msr_t pp0_rapl_power_limit_control_msr_t;
-typedef energy_status_msr_t pp0_energy_status_msr_t;
-typedef balance_policy_msr_t pp0_balance_policy_msr_t;
-typedef performance_throttling_status_msr_t pp0_performance_throttling_status_msr_t;
-
-/* PP1 */
-typedef rapl_power_limit_control_msr_t pp1_rapl_power_limit_control_msr_t;
-typedef energy_status_msr_t pp1_energy_status_msr_t;
-typedef balance_policy_msr_t pp1_balance_policy_msr_t;
-typedef performance_throttling_status_msr_t pp1_performance_throttling_status_msr_t;
-
-/* DRAM */
-typedef rapl_power_limit_control_msr_t dram_rapl_power_limit_control_msr_t;
-typedef energy_status_msr_t dram_energy_status_msr_t;
-typedef rapl_parameters_msr_t dram_rapl_parameters_msr_t;
-typedef performance_throttling_status_msr_t dram_performance_throttling_status_msr_t;
 
 /*
  *  For documentaion see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 3B, Appendix B  Model-Specific registers.

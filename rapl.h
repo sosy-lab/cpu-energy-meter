@@ -59,94 +59,12 @@ uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
 
 /* General */
-
-/*! \brief RAPL power limit control structure, PKG domain */
-typedef struct pkg_rapl_power_limit_control_t {
-    double   power_limit_watts_1;
-    double   limit_time_window_seconds_1;
-    uint64_t limit_enabled_1;
-    uint64_t clamp_enabled_1;
-    double   power_limit_watts_2;
-    double   limit_time_window_seconds_2;
-    uint64_t limit_enabled_2;
-    uint64_t clamp_enabled_2;
-    uint64_t lock_enabled;
-} pkg_rapl_power_limit_control_t;
-
-/*! \brief RAPL parameters info structure, PKG domain */
-typedef struct pkg_rapl_parameters_t {
-    double thermal_spec_power_watts;
-    double minimum_power_watts;
-    double maximum_power_watts;
-    double maximum_limit_time_window_seconds;
-} pkg_rapl_parameters_t;
-int get_pkg_rapl_power_limit_control_t(uint64_t node, pkg_rapl_power_limit_control_t *rapl_power_limit_control);
 int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_pkg_rapl_parameters_t(uint64_t node, pkg_rapl_parameters_t *rapl_parameters);
-int get_pkg_accumulated_throttled_time(uint64_t node, double *accumulated_throttled_time_seconds);
-int set_pkg_rapl_power_limit_control_t(uint64_t node, pkg_rapl_power_limit_control_t *rapl_power_limit_control);
-
-/*! \brief RAPL power limit control structure, DRAM domain */
-typedef struct dram_rapl_power_limit_control_t {
-    double   power_limit_watts;
-    double   limit_time_window_seconds;
-    uint64_t limit_enabled;
-    uint64_t clamp_enabled;
-    uint64_t lock_enabled;
-} dram_rapl_power_limit_control_t;
-
-/*! \brief RAPL parameters info structure, DRAM domain */
-typedef struct dram_rapl_parameters_t {
-    double thermal_spec_power_watts;
-    double minimum_power_watts;
-    double maximum_power_watts;
-    double maximum_limit_time_window_seconds;
-} dram_rapl_parameters_t;
-int get_dram_rapl_power_limit_control_t(uint64_t node, dram_rapl_power_limit_control_t *rapl_power_limit_control);
 int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_dram_rapl_parameters_t(uint64_t node, dram_rapl_parameters_t *rapl_parameters);
-int get_dram_accumulated_throttled_time(uint64_t node, double *accumulated_throttled_time_seconds);
-int set_dram_rapl_power_limit_control_t(uint64_t node, dram_rapl_power_limit_control_t *rapl_power_limit_control);
-
-
-/*! \brief RAPL power limit control structure, PP0 domain */
-typedef struct pp0_rapl_power_limit_control_t {
-    double   power_limit_watts;
-    double   limit_time_window_seconds;
-    uint64_t limit_enabled;
-    uint64_t clamp_enabled;
-    uint64_t lock_enabled;
-} pp0_rapl_power_limit_control_t;
-int get_pp0_rapl_power_limit_control_t(uint64_t node, pp0_rapl_power_limit_control_t *rapl_power_limit_control);
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_pp0_balance_policy(uint64_t node, uint64_t *priority_level);
-int get_pp0_accumulated_throttled_time(uint64_t node, double *accumulated_throttled_time_seconds);
-int set_pp0_rapl_power_limit_control_t(uint64_t node, pp0_rapl_power_limit_control_t *rapl_power_limit_control);
-int set_pp0_balance_policy(uint64_t node, uint64_t priority_level);
-
-
-/*! \brief RAPL power limit control structure, PP1 domain */
-typedef struct pp1_rapl_power_limit_control_t {
-    double   power_limit_watts;
-    double   limit_time_window_seconds;
-    uint64_t limit_enabled;
-    uint64_t clamp_enabled;
-    uint64_t lock_enabled;
-} pp1_rapl_power_limit_control_t;
-int get_pp1_rapl_power_limit_control_t(uint64_t node, pp1_rapl_power_limit_control_t *rapl_power_limit_control);
 int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_pp1_balance_policy(uint64_t node, uint64_t *priority_level);
-int set_pp1_rapl_power_limit_control_t(uint64_t node, pp1_rapl_power_limit_control_t *rapl_power_limit_control);
-int set_pp1_balance_policy(uint64_t node, uint64_t priority_level);
 
 /* Utilities */
-
 int read_rapl_units();
-
-/*! \brief Use the RDTSC instruction to read the time-stamp counter */
-int read_tsc(uint64_t *tsc);
-
-/* Required by Power Gadget */
-int get_pp0_freq_mhz(uint64_t node, uint64_t *freq);
 
 #endif
