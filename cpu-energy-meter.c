@@ -32,8 +32,6 @@ uint64_t      delay_unit = 1000000000;
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
-// Not to be confused with is_supported_domain()!
-double **rapl_domain_actually_supported = NULL;
 
 int
 get_rapl_energy_info(uint64_t power_domain, uint64_t node, double *total_energy_consumed)
@@ -173,18 +171,10 @@ do_print_energy_info()
     fprintf(stdout, "cpu_count=%lu\n", num_node);
 
     /* Read initial values */
-    rapl_domain_actually_supported = calloc(num_node, sizeof(double*));
     for (i = node; i < num_node; i++) {
-        rapl_domain_actually_supported[node] = calloc(RAPL_NR_DOMAIN, sizeof(double));
         for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-            rapl_domain_actually_supported[node][domain] = 0;
-
             if(is_supported_domain(domain)) {
-                rapl_domain_actually_supported[node][domain] = 1;
-
-                if (0 != get_rapl_energy_info(domain, i, &(prev_sample[i][domain]))) {
-                    rapl_domain_actually_supported[node][domain] = 0;
-                }
+                err = get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
             }
         }
     }
@@ -207,7 +197,7 @@ do_print_energy_info()
 
         for (i = node; i < num_node; i++) {
             for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-                if (rapl_domain_actually_supported[node][domain]) {
+                if (is_supported_domain(domain)) {
                     err = get_rapl_energy_info(domain, i, &new_sample);
                     delta = new_sample - prev_sample[i][domain];
 
