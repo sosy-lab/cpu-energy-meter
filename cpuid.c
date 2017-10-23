@@ -11,8 +11,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 */
 
 /* Written by Martin Dimitrov, Carl Strickland */
-#include "cpuid.h"
+#include <stdio.h>
 
+#include "cpuid.h"
 
 
 void
@@ -34,6 +35,14 @@ cpuid(uint32_t eax_in, uint32_t ecx_in,
     );
 }
 
+cpuid_info_t
+get_vendor_signature()
+{
+    cpuid_info_t info;
+    cpuid(0, 0, &info);
+    return info;
+}
+
 uint32_t
 get_processor_signature()
 {
@@ -50,8 +59,6 @@ get_processor_topology(uint32_t level)
     return info;
 }
 
-#if 0
-#include <stdio.h>
 void cast_uint_to_str(char* out, uint32_t in)
 {
     int i;
@@ -62,7 +69,7 @@ void cast_uint_to_str(char* out, uint32_t in)
     out[4] = '\0';
 }
 
-void get_vendor(char* vendor)
+void get_vendor_name(char* vendor)
 {
     cpuid_info_t c;
     char vendor1[5];
@@ -75,6 +82,7 @@ void get_vendor(char* vendor)
     sprintf(vendor, "%s%s%s", vendor1, vendor2, vendor3);
 }
 
+#if 0
 void cpuid_test()
 {
     char vendor[12];

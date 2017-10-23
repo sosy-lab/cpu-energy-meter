@@ -31,6 +31,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdint.h>
 #include <sched.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include "cpuid.h"
 #include "intel-family.h"
@@ -231,6 +232,15 @@ init_rapl()
 {
     int      err = 0;
     uint32_t processor_signature;
+
+    cpuid_info_t sig;
+    sig = get_vendor_signature();
+	if (sig.ebx != 0x756e6547 || sig.ecx != 0x6c65746e || sig.edx != 0x49656e69) {
+        char vendor[12];
+        get_vendor_name(vendor);
+        fprintf(stderr, "The processor on the working machine is not from Intel. Found %s-processor instead.\n", vendor);
+        return MY_ERROR;
+    }
 
     processor_signature = get_processor_signature();
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
