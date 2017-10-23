@@ -348,15 +348,19 @@ is_supported_domain(uint64_t power_domain)
     switch (power_domain) {
     case RAPL_PKG:
         supported = is_supported_msr(MSR_RAPL_PKG_POWER_LIMIT);
+        supported &= is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS);
         break;
     case RAPL_PP0:
         supported = is_supported_msr(MSR_RAPL_PP0_POWER_LIMIT);
+        supported &= is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS);
         break;
     case RAPL_PP1:
         supported = is_supported_msr(MSR_RAPL_PP1_POWER_LIMIT);
+        supported &= is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS);
         break;
     case RAPL_DRAM:
         supported = is_supported_msr(MSR_RAPL_DRAM_POWER_LIMIT);
+        supported &= is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS);
         break;
     }
 
