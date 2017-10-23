@@ -246,281 +246,36 @@ init_rapl()
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
-    // The source for the following settings can be found under
-    // https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf
-    // The according chapters and tables are given next to the respective cpu generation names.
-    switch (processor_signature & 0xfffffff0) {
-    case CPU_INTEL_ATOM_SILVERMONT1:   // see Chap. 2.4, Table 2-8
-    case CPU_INTEL_ATOM_MERRIFIELD:    // see above
-    case CPU_INTEL_ATOM_MOOREFIELD:    // see above
-    case CPU_INTEL_ATOM_SILVERMONT3:   // see above
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-8
-    
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-8
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-8
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 0;
-    
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 0;
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-8
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_ATOM_SILVERMONT2:   // see Chap. 2.4, Tables 2-10
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-10
-    
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-10
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-10
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 0;
-    
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 0;
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_ATOM_AIRMONT:   // see Chap. 2.4.2, Tables 2-8, 2-11
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-8
-        
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-8
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-8
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 0;
-        
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 0;
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
-        
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-11
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-8
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-        
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_ATOM_GOLDMONT:       // see Chap. 2.5, Table 2-12
-    case CPU_INTEL_ATOM_GEMINI_LAKE:    // see above
-    case CPU_INTEL_ATOM_DENVERTON:      // experimental; Processor is based on Goldmont Microarchitecture
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-12
-            
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-12
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-12
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-12
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-12
-            
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 1; // 2-12
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-12
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-12
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 1; // 2-12
-            
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-12
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-            
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-12
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_SANDYBRIDGE:         // see Chap. 2.10, Tables 2-19, 2-20
-    case CPU_INTEL_IVYBRIDGE:           // see Chap. 2.11, Tables 2-19, 2-20, 2-24
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19
-    
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
-    
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 0;
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20 (2-24)
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-    break;
-    case CPU_INTEL_SANDYBRIDGE_X:       // see Chap. 2.10, Tables 2-19, 2-22
-    case CPU_INTEL_IVYBRIDGE_X:         // see Chap. 2.11, Tables 2-19, 2-22, 2-25
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19
-    
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-22 (2-25)
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
-    
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 1; // 2-22 (2-25)
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-22 (2-25)
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-22 (2-25)
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 1; // 2-22 (2-25)
-    
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-22 (2-25)
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_HASWELL_CORE:        // see Chap. 2.12, Tables 2-19, 2-20, 2-28, 2-29
-    case CPU_INTEL_HASWELL_ULT:         // see above
-    case CPU_INTEL_HASWELL_GT3E:        // see above
-    case CPU_INTEL_BROADWELL_CORE:      // see Chap. 2.14, Tables 2-19, 2-20, 2-24, 2-28, 2-29, 2-33, 2-34
-    case CPU_INTEL_BROADWELL_GT3E:      // see above
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19, 2-29, (2.33)
+    uint64_t msr;
+    int cpu = 1;
 
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-28
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
+    int err_read_msr = 0;
 
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-28
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-28
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
+    err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
+    msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = !err_read_msr;
 
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20, (2-24), 2-29, (2-33), (2-34)
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
+    err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
+    msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = !err_read_msr;
+    err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
+    msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = !err_read_msr;
 
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-20, 2-29
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20, 2-29
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20, 2-29
-        break;
-    case CPU_INTEL_HASWELL_X:           // see Chap. 2.13, Tables 2-19, 2-28, 2-31
-    case CPU_INTEL_BROADWELL_X:         // see Chap. 2.15, Tables 2-19, 2-28, 2-31, 2-35
-    case CPU_INTEL_BROADWELL_XEON_D:    // see above
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19, 2-31, (2-35)
+    err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
+    msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = !err_read_msr;
+    err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
+    msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = !err_read_msr;
 
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-28
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
+    err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
+    msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = !err_read_msr;
+    err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
+    msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = !err_read_msr;
 
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 1; // 2-31, (2-35)
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-28, 2-31, (2-35)
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-28, 2-31, (2-35)
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 1; // 2-31, (2-35)
+    err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
+    msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = !err_read_msr;
+    err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
+    msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = !err_read_msr;
 
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-31, (2-35)
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-    case CPU_INTEL_SKYLAKE_MOBILE:        // see Chap. 2.16, Tables 2-19, 2-20, 2-24, 2-28, 2-34, 2-38
-    case CPU_INTEL_SKYLAKE_DESKTOP:       // see above
-    case CPU_INTEL_KABYLAKE_MOBILE:       // see above
-    case CPU_INTEL_KABYLAKE_DESKTOP:      // see above
-    case CPU_INTEL_CANNONLAKE:            // see above
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19
-
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-28
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
-
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 0;
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-28
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-28
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 0;
-
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20, 2-24, 2-34, 2-38
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-
-        msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = 1; // 2-38
-        break;
-    case CPU_INTEL_SKYLAKE_X:            // see Chap. 2.16, 2.16.2, Tables 2-19, 2-20, 2-24, 2-28, 2-34, 2-38, 2-41
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-19, 2-41
-
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-19
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-28
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-19
-
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 1; // 2-41
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-28, 2-41
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-28, 2-41
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 1; // 2-41
-
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-19
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20, 2-24, 2-34, 2-38, 2-41
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-20
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 1; // 2-20
-
-        msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = 0; // TODO: Enabling this value should be perfectly fine 
-                                                                                   // according to 2-38, however, various (unofficial) sources 
-                                                                                   // on the web state otherwise.
-        break;
-    case CPU_INTEL_KNIGHTS_LANDING:     // see Chap. 2.17, Table 2-42
-    case CPU_INTEL_KNIGHTS_MILL:        // see above
-        msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK]          = 1; // 2-42
-    
-        msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-42
-        msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-42
-        msr_support_table[MSR_RAPL_PKG_PERF_STATUS & MSR_SUPPORT_MASK]     = 1; // 2-42
-        msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = 1; // 2-42
-    
-        msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = 1; // 2-42
-        msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK]  = 1; // 2-42
-        msr_support_table[MSR_RAPL_DRAM_PERF_STATUS & MSR_SUPPORT_MASK]    = 1; // 2-42
-        msr_support_table[MSR_RAPL_DRAM_POWER_INFO & MSR_SUPPORT_MASK]     = 1; // 2-42
-    
-        msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK]     = 1; // 2-42
-        msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 1; // 2-42
-        msr_support_table[MSR_RAPL_PP0_POLICY & MSR_SUPPORT_MASK]          = 0;
-        msr_support_table[MSR_RAPL_PP0_PERF_STATUS & MSR_SUPPORT_MASK]     = 0;
-    
-        msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK]     = 0;
-        msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK]   = 0;
-        msr_support_table[MSR_RAPL_PP1_POLICY & MSR_SUPPORT_MASK]          = 0;
-        break;
-
-    default:
-        fprintf(stderr, "RAPL not supported, or machine model %x not recognized.\n", processor_signature);
-        return MY_ERROR;
-    }
+    err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
+    msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
     err = read_rapl_units();
     err += build_topology();
