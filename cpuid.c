@@ -86,7 +86,7 @@ void get_vendor_name(char* vendor)
 void cpuid_test()
 {
     char vendor[12];
-    get_vendor(vendor);
+    get_vendor_name(vendor);
     printf("%s\n", vendor);
 }
 
