@@ -242,7 +242,15 @@ init_rapl()
         return MY_ERROR;
     }
 
+    unsigned int family;
     processor_signature = get_processor_signature();
+    family = (processor_signature >> 8) & 0xf;
+    if (family != 6) {
+        // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017) except "Netburst" 
+        fprintf(stderr, "The Intel processor must be from family 6, but instead a cpu from family %d was found.\n", family);
+        return MY_ERROR;
+    }
+
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
