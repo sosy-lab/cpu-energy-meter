@@ -31,7 +31,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdint.h>
 #include <sched.h>
 #include <unistd.h>
-#include <inttypes.h>
 
 #include "cpuid.h"
 #include "intel-family.h"
@@ -64,45 +63,11 @@ uint64_t os_cpu_count = 0;     // number of OS cpus
 APIC_ID_t *os_map;
 APIC_ID_t **pkg_map;
 
-/* Pre-computed variables used for time-window calculation */
-const double LN2 = 0.69314718055994530941723212145817656807550013436025;
-const double A_F[4] = { 1.0, 1.1, 1.2, 1.3 };
-const double A_LNF[4] = {
-    0.0000000000000000000000000000000000000000000000000000000,
-    0.0953101798043249348602046211453853175044059753417968750,
-    0.1823215567939545922460098381634452380239963531494140625,
-    0.2623642644674910595625760834082029759883880615234375000
-};
-
 typedef struct rapl_unit_multiplier_t {
     double power;
     double energy;
     double time;
 } rapl_unit_multiplier_t;
-
-typedef struct rapl_power_limit_control_t {
-    double       power_limit_watts;
-    double       limit_time_window_seconds;
-    uint64_t limit_enabled;
-    uint64_t clamp_enabled;
-    uint64_t lock_enabled;
-} rapl_power_limit_control_t;
-
-typedef struct rapl_parameters_t {
-    double thermal_spec_power_watts;
-    double minimum_power_watts;
-    double maximum_power_watts;
-    double maximum_limit_time_window_seconds;
-} rapl_parameters_t;
-
-// Use numactl in order to find out how many nodes are in the system
-// and assign a cpu per node. The reason is that we
-//
-// Ideally we could include <numa.h> and use the library calls.
-// However, I found that numactl-devel is not included by default
-// in SLES11.1, which would make it harder to setup the tool.
-// This is uglier, but hopefully everyone has numacta
-uint64_t get_num_rapl_nodes_pkg();
 
 // OS specific
 int
@@ -211,12 +176,6 @@ build_topology() {
         t = os_map[i].smt_id * num_pkg_cores + os_map[i].core_id;
         pkg_map[p][t] = os_map[i];
     }
-
-    //for(i=0; i< num_nodes; i++)
-    //    for(j=0; j<num_pkg_threads; j++)
-    //        printf("smt_id: %u core_id: %u pkg_id: %u os_id: %u\n",
-    //            pkg_map[i][j].smt_id, pkg_map[i][j].core_id,
-    //            pkg_map[i][j].pkg_id, pkg_map[i][j].os_id);
 
     return err;
 }
@@ -450,22 +409,9 @@ dram_node_to_cpu(uint64_t node)
 }
 
 double
-convert_to_watts(uint64_t raw)
-{
-    return RAPL_POWER_UNIT * raw;
-}
-
-double
 convert_to_joules(uint64_t raw)
 {
     return RAPL_ENERGY_UNIT * raw;
-}
-
-double
-convert_from_limit_time_window(uint64_t Y,
-                               uint64_t F)
-{
-    return B2POW(Y) * A_F[F] * RAPL_TIME_UNIT;
 }
 
 int
@@ -492,37 +438,6 @@ get_rapl_unit_multiplier(uint64_t                cpu,
 }
 
 /* Common methods (should not be interfaced directly) */
-
-int
-get_rapl_power_limit_control(uint64_t                    cpu,
-                             uint64_t                    msr_address,
-                             rapl_power_limit_control_t *domain_obj)
-{
-    int                            err = 0;
-    uint64_t                       msr;
-    rapl_power_limit_control_msr_t domain_msr;
-    cpu_set_t old_context;
-
-    err = !is_supported_msr(msr_address);
-    if (!err) {
-        bind_cpu(cpu, &old_context); // improve performance on Linux
-        err = read_msr(cpu, msr_address, &msr);
-        bind_context(&old_context, NULL);
-    }
-
-    if (!err) {
-        domain_msr = *(rapl_power_limit_control_msr_t *)&msr;
-
-        domain_obj->power_limit_watts = convert_to_watts(domain_msr.power_limit);
-        domain_obj->limit_time_window_seconds = convert_from_limit_time_window(domain_msr.limit_time_window_y,
-                                                domain_msr.limit_time_window_f);
-        domain_obj->limit_enabled = domain_msr.limit_enabled;
-        domain_obj->clamp_enabled = domain_msr.clamp_enabled;
-        domain_obj->lock_enabled = domain_msr.lock_enabled;
-    }
-
-    return err;
-}
 
 int
 get_total_energy_consumed(uint64_t  cpu,
