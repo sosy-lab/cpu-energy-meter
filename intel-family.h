@@ -51,7 +51,7 @@
 #define CPU_INTEL_ATOM_GEMINI_LAKE      0x706A0     // Family 6 Model 122 (0x7a)
 
 /* Xeon Phi */
-#define CPU_INTEL_KNIGHTS_LANDING       0x50670     // Family 6 Model 87 (0x57)
-#define CPU_INTEL_KNIGHTS_MILL          0x80650     // Family 6 Model 133 (0x85)
+#define CPU_INTEL_XEON_PHI_KNL          0x50670     // Family 6 Model 87 (0x57) /* Knights Landing */
+#define CPU_INTEL_XEON_PHI_KNM          0x80650     // Family 6 Model 133 (0x85) /* Knights Mill */
 
 #endif /* _ASM_X86_INTEL_FAMILY_H */
