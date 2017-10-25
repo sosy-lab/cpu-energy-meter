@@ -51,7 +51,6 @@ read_msr(int       cpu,
  *
  * Will return 0 on success and MY_ERROR on failure.
  */
-
 int
 write_msr(int      cpu,
           uint64_t address,

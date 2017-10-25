@@ -52,9 +52,12 @@ unsigned char *msr_support_table;
 /* Global Variables */
 double RAPL_TIME_UNIT;
 double RAPL_ENERGY_UNIT;
+double RAPL_DRAM_ENERGY_UNIT;
 double RAPL_POWER_UNIT;
 
-uint64_t  num_nodes = 0;
+uint32_t processor_signature;
+
+uint64_t num_nodes = 0;
 uint64_t num_core_threads = 0; // number of physical threads per core
 uint64_t num_pkg_threads = 0;  // number of physical threads per package
 uint64_t num_pkg_cores = 0;    // number of cores per package
@@ -190,7 +193,6 @@ int
 init_rapl()
 {
     int      err = 0;
-    uint32_t processor_signature;
 
     cpuid_info_t sig;
     sig = get_vendor_signature();
@@ -408,12 +410,6 @@ dram_node_to_cpu(uint64_t node)
     return pkg_map[node][0].os_id;
 }
 
-double
-convert_to_joules(uint64_t raw)
-{
-    return RAPL_ENERGY_UNIT * raw;
-}
-
 int
 get_rapl_unit_multiplier(uint64_t                cpu,
                          rapl_unit_multiplier_t *unit_obj)
@@ -459,7 +455,14 @@ get_total_energy_consumed(uint64_t  cpu,
     if(!err) {
         domain_msr = *(energy_status_msr_t *)&msr;
 
-        *total_energy_consumed_joules = convert_to_joules(domain_msr.total_energy_consumed);
+        switch (msr_address) {
+        case  MSR_RAPL_DRAM_ENERGY_STATUS:
+            *total_energy_consumed_joules = RAPL_DRAM_ENERGY_UNIT * domain_msr.total_energy_consumed;
+            break;
+        default:
+            *total_energy_consumed_joules = RAPL_ENERGY_UNIT * domain_msr.total_energy_consumed;
+            break;
+        }
     }
 
     return err;
@@ -479,6 +482,25 @@ get_pkg_total_energy_consumed(uint64_t  node,
 {
     uint64_t cpu = pkg_node_to_cpu(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
+}
+
+/*
+ * Energy units are either hard-coded, or come from RAPL Energy Unit MSR.
+ */
+double
+rapl_dram_energy_units_probe(double rapl_energy_units)
+{
+    switch (processor_signature & 0xfffffff0) {
+    case CPU_INTEL_HASWELL_X:
+    case CPU_INTEL_BROADWELL_X:
+    case CPU_INTEL_BROADWELL_XEON_D:
+    case CPU_INTEL_SKYLAKE_X:
+    case CPU_INTEL_XEON_PHI_KNL:
+    case CPU_INTEL_XEON_PHI_KNM:
+        return 15.3E-6;
+    default:
+        return rapl_energy_units;
+    }
 }
 
 /*!
@@ -546,6 +568,8 @@ read_rapl_units()
         RAPL_TIME_UNIT = unit_multiplier.time;
         RAPL_ENERGY_UNIT = unit_multiplier.energy;
         RAPL_POWER_UNIT = unit_multiplier.power;
+
+        RAPL_DRAM_ENERGY_UNIT = rapl_dram_energy_units_probe(unit_multiplier.energy);
     }
 
     return err;
