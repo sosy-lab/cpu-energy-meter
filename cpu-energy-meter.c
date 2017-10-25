@@ -150,10 +150,8 @@ do_print_energy_info()
     uint64_t node = 0;
     double new_sample;
     double delta;
-    double power;
 
     double prev_sample[num_node][RAPL_NR_DOMAIN];
-    double power_watt[num_node][RAPL_NR_DOMAIN];
     cum_energy_J = calloc(num_node, sizeof(double*));
     for (i = 0; i < num_node; i++) {
         cum_energy_J[i] = calloc(RAPL_NR_DOMAIN, sizeof(double));
