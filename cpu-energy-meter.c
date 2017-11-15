@@ -21,14 +21,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <sys/time.h>
 #include <time.h>
 #include <signal.h>
+#include <math.h>
 
 #include "rapl.h"
+
+#define DEFAULT_THERMAL_SPEC_POWER 200.0
 
 char         *progname;
 const char   *version = "2.2";
 uint64_t      num_node = 0;
-uint64_t      delay_ns = 1000000000;
-uint64_t      delay_unit = 1000000000;
+uint64_t      delay = 0;
+uint64_t      delay_unit = 1000000000; // unit in nanoseconds
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
@@ -138,11 +141,43 @@ int handle_signal(int sig, siginfo_t * info) {
 }
 
 void
+compute_msr_probe_interval_time(struct timespec *signal_timelimit)
+{
+    if (delay) {
+        // delay set by user; i.e. use the according values and return
+        long seconds = delay / delay_unit;
+        long nano_seconds = delay % delay_unit;
+
+        signal_timelimit->tv_sec = seconds;
+        signal_timelimit->tv_nsec = nano_seconds;
+        return;
+    }
+
+    double thermal_spec_power = DEFAULT_THERMAL_SPEC_POWER;
+
+    int                   err = 0;
+    pkg_rapl_parameters_t pkg_parameters;
+
+    err = get_pkg_rapl_parameters(0, &pkg_parameters);
+    if (!err) {
+        double epsilon = 1.0e-03;
+        if ((abs(pkg_parameters.thermal_spec_power_watts - 0) > epsilon) \
+                || (abs(pkg_parameters.maximum_power_watts - 0) > epsilon)) {
+            // if either of the values is not equal to zero, we take the
+            // higher value as the new value for thermal_spec_power.
+            thermal_spec_power = fmax(pkg_parameters.thermal_spec_power_watts, pkg_parameters.maximum_power_watts);
+        }
+    }
+
+    calculate_probe_interval_time(signal_timelimit, thermal_spec_power);
+}
+
+void
 do_print_energy_info()
 {
-    long seconds = delay_ns / delay_unit;
-    long nano_seconds = delay_ns % delay_unit;
-    struct timespec signal_timelimit = { .tv_sec = seconds, .tv_nsec = nano_seconds };
+    struct timespec signal_timelimit;
+    compute_msr_probe_interval_time(&signal_timelimit);
+
     sigset_t signal_set = get_sigset();
     int i = 0;
     int domain = 0;
@@ -243,7 +278,7 @@ cmdline(int argc, char **argv)
         case 'e':
             delay_ms_temp = atoi(optarg);
             if(delay_ms_temp > 50) {
-                delay_ns = delay_ms_temp * 1000000;
+                delay = delay_ms_temp * 1000000; // delay in ns
             } else {
                 fprintf(stdout, "Sampling delay must be greater than 50 ms.\n");
                 return -1;

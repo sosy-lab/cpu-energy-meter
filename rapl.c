@@ -227,6 +227,8 @@ init_rapl()
     msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK]     = !err_read_msr;
     err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
     msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK]   = !err_read_msr;
+    err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
+    msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK]      = !err_read_msr;
 
     err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
     msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK]    = !err_read_msr;
@@ -555,6 +557,66 @@ get_pp1_total_energy_consumed(uint64_t  node,
     return get_total_energy_consumed(cpu, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
+double
+convert_to_watts(unsigned int raw)
+{
+    return RAPL_POWER_UNIT * raw;
+}
+
+double
+convert_to_seconds(unsigned int raw)
+{
+    return RAPL_TIME_UNIT * raw;
+}
+
+/*!
+ * \brief Get a pointer to the RAPL PKG power info register
+ *
+ * This read-only register provides information about
+ * the max/min power limiting settings available on the machine.
+ * This register is defined in the pkg_rapl_parameters_t data structure.
+ *
+ * \return 0 on success, -1 otherwise
+ */
+int
+get_pkg_rapl_parameters(unsigned int           node,
+                        pkg_rapl_parameters_t *pkg_obj)
+{
+    int                   err = 0;
+    uint64_t              msr;
+    rapl_parameters_msr_t domain_msr;
+
+    err = !is_supported_msr(MSR_RAPL_PKG_POWER_INFO);
+    if (!err) {
+        unsigned int cpu = pkg_node_to_cpu(node);
+        err = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
+    }
+
+    if (!err) {
+        domain_msr = *(rapl_parameters_msr_t *)&msr;
+
+        pkg_obj->thermal_spec_power_watts = convert_to_watts(domain_msr.thermal_spec_power);
+        pkg_obj->minimum_power_watts = convert_to_watts(domain_msr.minimum_power);
+        pkg_obj->maximum_power_watts = convert_to_watts(domain_msr.maximum_power);
+        pkg_obj->maximum_limit_time_window_seconds = convert_to_seconds(domain_msr.maximum_limit_time_window);
+    }
+
+    return err;
+}
+
+void
+calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power)
+{
+    double result = ((pow(2,32) - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power;
+    result = result / 2 - 1;
+
+    long seconds = floor(result);
+    long nano_seconds = result * pow(10,9) - seconds * pow(10,9);
+    
+    signal_timelimit->tv_sec = seconds;
+    signal_timelimit->tv_nsec = nano_seconds;
+}
+
 /* Utilities */
 
 int
@@ -567,9 +629,8 @@ read_rapl_units()
     if (!err) {
         RAPL_TIME_UNIT = unit_multiplier.time;
         RAPL_ENERGY_UNIT = unit_multiplier.energy;
-        RAPL_POWER_UNIT = unit_multiplier.power;
-
         RAPL_DRAM_ENERGY_UNIT = rapl_dram_energy_units_probe(unit_multiplier.energy);
+        RAPL_POWER_UNIT = unit_multiplier.power;
     }
 
     return err;

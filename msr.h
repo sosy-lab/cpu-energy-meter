@@ -29,6 +29,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* Package RAPL Domain */
 #define MSR_RAPL_PKG_POWER_LIMIT   0x610 /* PKG RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PKG_ENERGY_STATUS 0x611 /* PKG Energy Status (R/O) */
+#define MSR_RAPL_PKG_POWER_INFO    0x614 /* PKG RAPL Parameters (R/O) */
 
 /* DRAM RAPL Domain */
 #define MSR_RAPL_DRAM_POWER_LIMIT   0x618 /* DRAM RAPL Power Limit Control (R/W) */
@@ -45,12 +46,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 /* PSYS RAPL Domain */
 #define MSR_RAPL_PLATFORM_ENERGY_STATUS 0x64d /* PSYS Energy Status */
 
-/* Updated every ~1ms. Wraparound time of 60s under load. */
-typedef struct energy_status_msr_t {
-    uint64_t total_energy_consumed : 32;
-    uint64_t                       : 32;
-} energy_status_msr_t;
 
+/* Common MSR Structures */
 
 /* General */
 typedef struct rapl_unit_multiplier_msr_t {
@@ -62,6 +59,24 @@ typedef struct rapl_unit_multiplier_msr_t {
     uint64_t        : 32;
     uint64_t        : 12;
 } rapl_unit_multiplier_msr_t;
+
+/* Updated every ~1ms. Wraparound time of 60s under load. */
+typedef struct energy_status_msr_t {
+    uint64_t total_energy_consumed : 32;
+    uint64_t                       : 32;
+} energy_status_msr_t;
+
+/* PKG domain */
+typedef struct rapl_parameters_msr_t {
+    unsigned int thermal_spec_power        : 15;
+    unsigned int                           : 1;
+    unsigned int minimum_power             : 15;
+    unsigned int                           : 1;
+    unsigned int maximum_power             : 15;
+    unsigned int                           : 1;
+    unsigned int maximum_limit_time_window : 6;
+    unsigned int                           : 10;
+} rapl_parameters_msr_t;
 
 /*
  *  For documentaion see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4:  Model-Specific registers.

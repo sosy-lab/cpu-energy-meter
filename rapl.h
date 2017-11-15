@@ -58,11 +58,21 @@ uint64_t get_num_rapl_nodes_dram();
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
 
-/* General */
 int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed);
+int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed);
+
+/*! \brief RAPL parameters info structure, PKG domain */
+typedef struct pkg_rapl_parameters_t {
+    double thermal_spec_power_watts;
+    double minimum_power_watts;
+    double maximum_power_watts;
+    double maximum_limit_time_window_seconds;
+} pkg_rapl_parameters_t;
+int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
+
+void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power);
 
 /* Utilities */
 int read_rapl_units();
