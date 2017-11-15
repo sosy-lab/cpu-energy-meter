@@ -41,9 +41,9 @@ char* RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {
     "package",
     "core",
     "uncore",
-    "dram"
+    "dram",
+    "psys"
 };
-
 
 /* rapl msr availablility */
 #define MSR_SUPPORT_MASK 0xff
@@ -325,6 +325,9 @@ is_supported_domain(uint64_t power_domain)
         supported = is_supported_msr(MSR_RAPL_DRAM_POWER_LIMIT);
         supported &= is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS);
         break;
+    case RAPL_PSYS:
+        supported = is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS);
+        break;
     }
 
     return supported;
@@ -408,6 +411,12 @@ pp1_node_to_cpu(uint64_t node)
 
 uint64_t
 dram_node_to_cpu(uint64_t node)
+{
+    return pkg_map[node][0].os_id;
+}
+
+uint64_t
+psys_node_to_cpu(uint64_t node)
 {
     return pkg_map[node][0].os_id;
 }
@@ -555,6 +564,28 @@ get_pp1_total_energy_consumed(uint64_t  node,
 {
     uint64_t cpu = pp1_node_to_cpu(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
+}
+
+/*!
+ * \brief Get a pointer to the RAPL plattform energy (psys) consumed register.
+ *
+ * This read-only register provides energy consumed in joules
+ * for the PSYS domain since the last machine reboot (or energy register wraparound)
+ * 
+ * According to Intel Software Devlopers Manual Volume 4, Table 2-38, the consumed 
+ * energy is the total energy consumed by all devices in the plattform that receive
+ * power from integrated power delivery mechanism. Included plattform devices are
+ * processor cores, SOC, memory, add-on or peripheral devies that get powered directly
+ * from the platform power delivery means.
+ * 
+ * \return 0 on success, -1 otherwise
+ */
+int
+get_psys_total_energy_consumed(uint64_t  node,
+                              double   *total_energy_consumed_joules)
+{
+    uint64_t cpu = psys_node_to_cpu(node);
+    return get_total_energy_consumed(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 double

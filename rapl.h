@@ -25,13 +25,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define MY_ERROR -1
 
 /* Power Domains */
-#define RAPL_PKG  0      /*!< \brief Package power domain */
-#define RAPL_PP0  1      /*!< \brief Core power domain */
-#define RAPL_PP1  2      /*!< \brief Uncore power domain */
-#define RAPL_DRAM 3      /*!< \brief DRAM power domain */
-#define RAPL_NR_DOMAIN 4 /*!< \brief Number of power domains */
+#define RAPL_PKG  0 /*!< \brief Package power domain */
+#define RAPL_PP0  1 /*!< \brief Core power domain */
+#define RAPL_PP1  2 /*!< \brief Uncore power domain */
+#define RAPL_DRAM 3 /*!< \brief DRAM power domain */
+#define RAPL_PSYS 4 /*!< \brief PLATFORM power domain */
+#define RAPL_NR_DOMAIN 5 /*!< \brief Number of power domains */
 
-enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM };
+enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char* RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 
@@ -54,6 +55,7 @@ uint64_t get_num_rapl_nodes_pkg();
 uint64_t get_num_rapl_nodes_pp0();
 uint64_t get_num_rapl_nodes_pp1();
 uint64_t get_num_rapl_nodes_dram();
+uint64_t get_num_rapl_nodes_psys();
 
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
@@ -62,6 +64,7 @@ int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed);
+int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {

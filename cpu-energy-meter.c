@@ -54,6 +54,9 @@ get_rapl_energy_info(uint64_t power_domain, uint64_t node, double *total_energy_
     case DRAM:
         err = get_dram_total_energy_consumed(node, total_energy_consumed);
         break;
+    case PSYS:
+        err = get_psys_total_energy_consumed(node, total_energy_consumed);
+        break;
     default:
         err = MY_ERROR;
         break;
