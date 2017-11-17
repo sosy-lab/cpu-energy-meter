@@ -16,8 +16,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
-#include <string.h>
-#include <stdint.h>
 #include <sys/time.h>
 #include <time.h>
 #include <signal.h>
@@ -106,7 +104,7 @@ void print_intermediate_results() {
     char end_time_string[12];
     convert_time_to_string(measurement_end_time, end_time_string);
     //fprintf(stdout, "curr_time=%f (%s o'clock)\n", end_seconds, end_time_string);
-    fprintf(stdout, "duration_seconds=%f\n", end_seconds - start_seconds);
+    fprintf(stdout, "\nduration_seconds=%f\n", end_seconds - start_seconds);
 
     if (cum_energy_J != NULL) {
         for (i = 0; i < num_node; i++) {
@@ -267,7 +265,6 @@ usage()
     fprintf(stdout, "\n");
 }
 
-
 int
 cmdline(int argc, char **argv)
 {
@@ -313,7 +310,7 @@ main(int argc, char **argv)
         terminate_rapl();
         return MY_ERROR;
     }
-    num_node = get_num_rapl_nodes_pkg();
+    num_node = get_num_rapl_nodes();
 
     ret = cmdline(argc, argv);
     if (ret) { // Error occured while reading command line

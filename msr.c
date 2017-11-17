@@ -12,9 +12,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* Written by Martin Dimitrov, Carl Strickland */
 
-#include <fcntl.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "msr.h"
 
@@ -43,31 +41,3 @@ read_msr(int       cpu,
         fclose(fp);
     return err;
 }
-
-
-
-/*
- * write_msr
- *
- * Will return 0 on success and MY_ERROR on failure.
- */
-int
-write_msr(int      cpu,
-          uint64_t address,
-          uint64_t value)
-{
-    int   err = 0;
-    char  msr_path[32];
-    FILE *fp;
-
-    sprintf(msr_path, "/dev/cpu/%d/msr", cpu);
-    err = ((fp = fopen(msr_path, "w")) == NULL);
-    if (!err)
-        err = (fseek(fp, address, SEEK_CUR) != 0);
-    if (!err)
-        err = (fwrite(&value, sizeof(uint64_t), 1, fp) != 1);
-    if (fp != NULL)
-        fclose(fp);
-    return err;
-}
-

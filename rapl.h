@@ -46,16 +46,12 @@ typedef struct APIC_ID_t {
 int init_rapl();
 int terminate_rapl();
 
-/* Wraparound values for total energy consumed and accumulated throttled time.
- * These values are computed within init_rapl(). */
+/* Wraparound value for the total energy consumed. It is computed within
+ * init_rapl().
+ */
 double MAX_ENERGY_STATUS_JOULES;   /* default: 65536 */
-double MAX_THROTTLED_TIME_SECONDS; /* default: 4194304 */
 
-uint64_t get_num_rapl_nodes_pkg();
-uint64_t get_num_rapl_nodes_pp0();
-uint64_t get_num_rapl_nodes_pp1();
-uint64_t get_num_rapl_nodes_dram();
-uint64_t get_num_rapl_nodes_psys();
+uint64_t get_num_rapl_nodes();
 
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);

@@ -26,9 +26,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
 #include <math.h>
-#include <stdint.h>
 #include <sched.h>
 #include <unistd.h>
 
@@ -253,7 +251,6 @@ init_rapl()
 
     /* 32 is the width of these fields when they are stored */
     MAX_ENERGY_STATUS_JOULES = (double)(RAPL_ENERGY_UNIT * (pow(2, 32) - 1));
-    MAX_THROTTLED_TIME_SECONDS = (double)(RAPL_TIME_UNIT * (pow(2, 32) - 1));
 
     return err;
 }
@@ -334,7 +331,7 @@ is_supported_domain(uint64_t power_domain)
 }
 
 /*!
- * \brief Get the number of RAPL nodes (package domain) on this machine.
+ * \brief Get the number of RAPL nodes on this machine.
  *
  * Get the number of package power domains, that you can control using RAPL.
  * This is equal to the number of CPU packages in the system.
@@ -342,81 +339,13 @@ is_supported_domain(uint64_t power_domain)
  * \return number of RAPL nodes.
  */
 uint64_t
-get_num_rapl_nodes_pkg()
-{
-    return num_nodes;
-}
-
-/*!
- * \brief Get the number of RAPL nodes (pp0 domain) on this machine.
- *
- * Get the number of pp0 (core) power domains, that you can control
- * using RAPL. Currently all the cores on a package belong to the same
- * power domain, so currently this is equal to the number of CPU packages in
- * the system.
- *
- * \return number of RAPL nodes.
- */
-uint64_t
-get_num_rapl_nodes_pp0()
-{
-    return num_nodes;
-}
-
-/*!
- * \brief Get the number of RAPL nodes (pp1 domain) on this machine.
- *
- * Get the number of pp1(uncore) power domains, that you can control using RAPL.
- * This is equal to the number of CPU packages in the system.
- *
- * \return number of RAPL nodes.
- */
-uint64_t
-get_num_rapl_nodes_pp1()
-{
-    return num_nodes;
-}
-
-/*!
- * \brief Get the number of RAPL nodes (DRAM domain) on this machine.
- *
- * Get the number of DRAM power domains, that you can control using RAPL.
- * This is equal to the number of CPU packages in the system.
- *
- * \return number of RAPL nodes.
- */
-uint64_t
-get_num_rapl_nodes_dram()
+get_num_rapl_nodes()
 {
     return num_nodes;
 }
 
 uint64_t
-pkg_node_to_cpu(uint64_t node)
-{
-    return pkg_map[node][0].os_id;
-}
-
-uint64_t
-pp0_node_to_cpu(uint64_t node)
-{
-    return pkg_map[node][0].os_id;
-}
-
-uint64_t
-pp1_node_to_cpu(uint64_t node)
-{
-    return pkg_map[node][0].os_id;
-}
-
-uint64_t
-dram_node_to_cpu(uint64_t node)
-{
-    return pkg_map[node][0].os_id;
-}
-
-uint64_t
-psys_node_to_cpu(uint64_t node)
+get_cpu_from_node(uint64_t node)
 {
     return pkg_map[node][0].os_id;
 }
@@ -491,7 +420,7 @@ int
 get_pkg_total_energy_consumed(uint64_t  node,
                               double   *total_energy_consumed_joules)
 {
-    uint64_t cpu = pkg_node_to_cpu(node);
+    uint64_t cpu = get_cpu_from_node(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -517,8 +446,6 @@ rapl_dram_energy_units_probe(double rapl_energy_units)
 /*!
  * \brief Get a pointer to the RAPL DRAM energy consumed register.
  *
- * (Server parts only)
- *
  * This read-only register provides energy consumed in joules
  * for the DRAM power domain since the last machine reboot (or energy register wraparound)
  *
@@ -528,7 +455,7 @@ int
 get_dram_total_energy_consumed(uint64_t  node,
                                double   *total_energy_consumed_joules)
 {
-    uint64_t cpu = dram_node_to_cpu(node);
+    uint64_t cpu = get_cpu_from_node(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -544,14 +471,12 @@ int
 get_pp0_total_energy_consumed(uint64_t  node,
                               double   *total_energy_consumed_joules)
 {
-    uint64_t cpu = pp0_node_to_cpu(node);
+    uint64_t cpu = get_cpu_from_node(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PP0_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 /*!
  * \brief Get a pointer to the RAPL PP1 energy consumed register.
- *
- * (Client parts only)
  *
  * This read-only register provides energy consumed in joules
  * for the PP1 (uncore) power domain since the last machine reboot (or energy register wraparound)
@@ -562,7 +487,7 @@ int
 get_pp1_total_energy_consumed(uint64_t  node,
                               double   *total_energy_consumed_joules)
 {
-    uint64_t cpu = pp1_node_to_cpu(node);
+    uint64_t cpu = get_cpu_from_node(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -584,7 +509,7 @@ int
 get_psys_total_energy_consumed(uint64_t  node,
                               double   *total_energy_consumed_joules)
 {
-    uint64_t cpu = psys_node_to_cpu(node);
+    uint64_t cpu = get_cpu_from_node(node);
     return get_total_energy_consumed(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -619,7 +544,7 @@ get_pkg_rapl_parameters(unsigned int           node,
 
     err = !is_supported_msr(MSR_RAPL_PKG_POWER_INFO);
     if (!err) {
-        unsigned int cpu = pkg_node_to_cpu(node);
+        unsigned int cpu = get_cpu_from_node(node);
         err = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
     }
 
