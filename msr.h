@@ -86,9 +86,21 @@ typedef struct rapl_parameters_msr_t {
  */
 
 /**
+ * Open and store file descriptors in an array for as often as specified in the num_nodes param.
+ *
+ * @return            0 on success and MY_ERROR, if at least one node fails to open
+ */
+int open_msr_fd(int num_nodes);
+
+/**
  * Read the given MSR on the given CPU.
  *
  * @return            0 on success and MY_ERROR on failure
  */
 int read_msr(int cpu, uint64_t address, uint64_t *val);
+
+/**
+ * Close each file descriptor and free the allocated array memory.
+ */
+void close_msr_fd();
 #endif

@@ -210,12 +210,23 @@ init_rapl()
         return MY_ERROR;
     }
 
+    err = build_topology();
+    if (err) {
+        fprintf(stderr, "An error occured while binding the cpu and/or the context.\n");
+        return MY_ERROR;
+    }
+
+    err = open_msr_fd(num_nodes);
+    if (err) {
+        fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
+        return MY_ERROR;
+    }
+
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
     uint64_t msr;
-    int cpu = 1;
-
+    int cpu = 0;
     int err_read_msr = 0;
 
     err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
@@ -247,7 +258,6 @@ init_rapl()
     msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
     err = read_rapl_units();
-    err += build_topology();
 
     /* 32 is the width of these fields when they are stored */
     MAX_ENERGY_STATUS_JOULES = (double)(RAPL_ENERGY_UNIT * (pow(2, 32) - 1));
@@ -266,6 +276,8 @@ int
 terminate_rapl()
 {
     uint64_t i;
+
+    close_msr_fd();
 
     if(NULL != os_map)
         free(os_map);
