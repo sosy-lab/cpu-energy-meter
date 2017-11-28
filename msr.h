@@ -79,7 +79,7 @@ typedef struct rapl_parameters_msr_t {
 } rapl_parameters_msr_t;
 
 /*
- *  For documentaion see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4:  Model-Specific registers.
+ *  For documentation see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4:  Model-Specific registers.
  * https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf In a nutshell, search the manual and 
  * find the MSR number that you wish to read.
  * Then use the read_msr_t function to get the info you need.

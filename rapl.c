@@ -34,6 +34,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "intel-family.h"
 #include "msr.h"
 #include "rapl.h"
+#include "util.h"
 
 char* RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {
     "package",
@@ -221,6 +222,8 @@ init_rapl()
         fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
         return MY_ERROR;
     }
+
+    drop_root_privileges(PERMANENT);
 
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
