@@ -12,24 +12,23 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* Written by Martin Dimitrov, Carl Strickland */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include "msr.h"
 
 int *fds;
 size_t fds_size;
 
-
 /*
  * open_msr_fd
  *
  * Returns 0 on success and MY_ERROR, if at least one msr-file fails to open.
  */
-int
-open_msr_fd(int num_nodes) {
+int open_msr_fd(int num_nodes)
+{
     int err = 0;
     int fd = 0;
     char msr_path[32];
@@ -37,13 +36,13 @@ open_msr_fd(int num_nodes) {
     fds_size = num_nodes;
     fds = malloc(fds_size * sizeof(int));
 
-    for(int i = 0; i < fds_size; i++) {
-        sprintf(msr_path, "/dev/cpu/%d/msr", i);
-        fd = open(msr_path, O_RDONLY);
-        fds[i] = fd;
+    for (int i = 0; i < fds_size; i++) {
+	sprintf(msr_path, "/dev/cpu/%d/msr", i);
+	fd = open(msr_path, O_RDONLY);
+	fds[i] = fd;
 
-        if (fd == -1)
-            err = MY_ERROR;
+	if (fd == -1)
+	    err = MY_ERROR;
     }
 
     return err;
@@ -54,24 +53,21 @@ open_msr_fd(int num_nodes) {
  *
  * Will return 0 on success and MY_ERROR on failure.
  */
-int
-read_msr(int       cpu,
-         uint64_t  address,
-         uint64_t *value)
+int read_msr(int cpu, uint64_t address, uint64_t *value)
 {
     int err = 0;
     FILE *fp;
 
-    // dup is used here to clone the fd. This way, we can close the
-    // stream afterwards, while we still retain the open file descriptor.
+    // dup is used here to clone the fd. This way, we can close the stream afterwards, while we still retain the open
+    // file descriptor.
     fp = fdopen(dup(fds[cpu]), "r");
     err = fp == NULL;
     if (!err)
-        err = (fseek(fp, address, SEEK_SET) != 0);
+	err = (fseek(fp, address, SEEK_SET) != 0);
     if (!err)
-        err = (fread(value, sizeof(uint64_t), 1, fp) != 1);
+	err = (fread(value, sizeof(uint64_t), 1, fp) != 1);
     if (fp != NULL)
-        fclose(fp);
+	fclose(fp);
     return err;
 }
 
@@ -80,12 +76,12 @@ read_msr(int       cpu,
  *
  * Close each file descriptor and free the allocated memory for the fds-array.
  */
-void
-close_msr_fd() {
+void close_msr_fd()
+{
     for (int i = 0; i < fds_size; i++) {
-        if (fds[i] >= 0) {
-            close(fds[i]);
-        }
+	if (fds[i] >= 0) {
+	    close(fds[i]);
+	}
     }
     free(fds);
 }
