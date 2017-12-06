@@ -223,7 +223,7 @@ init_rapl()
         return MY_ERROR;
     }
 
-    drop_root_privileges(PERMANENT);
+    drop_root_privileges_by_id(PERMANENT, UID_NOBODY, GID_NOGROUP);
 
     // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
     msr_support_table = (unsigned char*) calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));

@@ -19,24 +19,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #include "util.h"
 
+
 static int   orig_ngroups = -1;
 static gid_t orig_gid = -1;
 static uid_t orig_uid = -1;
 static gid_t orig_groups[NGROUPS_MAX];
 
+
 /**
  * Drop privileges permanently in case a nonzero value is passed; otherwise, the 
- * privilege drop is temporary.
- * 
+ * privilege drop is temporary. If either a positive uid or gid is passed as parameter,
+ * the value is taken as the new uid or gid, respectively.
+ *
  * Warning: 
  * If any problems are encountered in attempting to perform the task, abort()
  * is called, terminating the process immediately. If any manipulation of privileges
  * cannot complete successfully, it's safest to assume that the process is in an
  * unknown state, and you should not allow it to continue.
  */
-void drop_root_privileges(int permanent) {
-    gid_t newgid = getgid(), oldgid = getegid();
-    uid_t newuid = getuid(), olduid = geteuid();
+void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
+    gid_t newgid = gid > 0 ? gid : getgid(), oldgid = getegid();
+    uid_t newuid = uid > 0 ? uid : getuid(), olduid = geteuid();
    
     if (!permanent) {
         /* Save information about the privileges that are being dropped so that they
@@ -92,7 +95,17 @@ void drop_root_privileges(int permanent) {
 }
 
 /**
- * Restore privileges to what they were at the last call to spc_drop_privileges().
+ * Drop privileges permanently in case a nonzero value is passed; otherwise, the
+ * privilege drop is temporary.
+ *
+ * See #drop_root_privileges_by_id(int, uid_t, gid_t) for further information.
+ */
+void drop_root_privileges(int permanent) {
+    drop_root_privileges_by_id(permanent, -1, -1);
+}
+
+/**
+ * Restore privileges to what they were at the last call to drop_root_privileges().
  * 
  * Warning: 
  * If any problems are encountered in attempting to perform the task, abort()
