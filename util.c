@@ -25,96 +25,105 @@ static uid_t orig_uid = -1;
 static gid_t orig_groups[NGROUPS_MAX];
 
 /**
- * Drop privileges permanently in case a nonzero value is passed; otherwise, the privilege drop is temporary. If either
- * a positive uid or gid is passed as parameter, the value is taken as the new uid or gid, respectively.
+ * Drop privileges permanently in case a nonzero value is passed; otherwise, the privilege drop is
+ * temporary.
  *
  * Warning:
- * If any problems are encountered in attempting to perform the task, abort() is called, terminating the process
- * immediately. If any manipulation of privileges cannot complete successfully, it's safest to assume that the process
- * is in an unknown state, and you should not allow it to continue.
+ * If any problems are encountered in attempting to perform the task, abort() is called, terminating
+ * the process immediately. If any manipulation of privileges cannot complete successfully, it's
+ * safest to assume that the process is in an unknown state, and you should not allow it to
+ * continue.
  */
-void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid)
-{
-    gid_t newgid = gid > 0 ? gid : getgid(), oldgid = getegid();
-    uid_t newuid = uid > 0 ? uid : getuid(), olduid = geteuid();
+void drop_root_privileges(int permanent) {
+  gid_t newgid = getgid(), oldgid = getegid();
+  uid_t newuid = getuid(), olduid = geteuid();
 
-    if (!permanent) {
-	// Save information about the privileges that are being dropped so that they can be restored later.
-	orig_gid = oldgid;
-	orig_uid = olduid;
-	orig_ngroups = getgroups(NGROUPS_MAX, orig_groups);
-    }
+  // newgid = 1000;
+  // newuid = 1000;
 
-    // If root privileges are to be dropped, be sure to pare down the ancillary groups for the process before doing
-    // anything else because the setgroups() system call requires root privileges. Drop ancillary groups regardless of
-    // whether privileges are being dropped temporarily or permanently.
-    if (!olduid)
-	setgroups(1, &newgid);
+  printf("-----BEFORE-------\n");
+  printf("newgid: %d\n", newgid);
+  printf("oldgid: %d\n", oldgid);
+  printf("newuid: %d\n", newuid);
+  printf("olduid: %d\n", olduid);
 
-    if (newgid != oldgid) {
+  if (!permanent) {
+    /* Save information about the privileges that are being dropped so that they can be restored
+     * later.
+     */
+    orig_gid = oldgid;
+    orig_uid = olduid;
+    orig_ngroups = getgroups(NGROUPS_MAX, orig_groups);
+  }
+
+  /* If root privileges are to be dropped, be sure to pare down the ancillary groups for the process
+   * before doing anything else because the setgroups() system call requires root privileges.  Drop
+   * ancillary groups regardless of whether privileges are being dropped temporarily or permanently.
+   */
+  if (!olduid)
+    setgroups(1, &newgid);
+
+  if (newgid != oldgid) {
 #if !defined(linux)
-	setegid(newgid);
-	if (permanent && setgid(newgid) == -1)
-	    abort();
+    setegid(newgid);
+    if (permanent && setgid(newgid) == -1)
+      abort();
 #else
-	if (setregid((permanent ? newgid : -1), newgid) == -1)
-	    abort();
+    if (setregid((permanent ? newgid : -1), newgid) == -1)
+      abort();
 #endif
-    }
+  }
 
-    if (newuid != olduid) {
+  if (newuid != olduid) {
 #if !defined(linux)
-	seteuid(newuid);
-	if (permanent && setuid(newuid) == -1)
-	    abort();
+    seteuid(newuid);
+    if (permanent && setuid(newuid) == -1)
+      abort();
 #else
-	if (setreuid((permanent ? newuid : -1), newuid) == -1)
-	    abort();
+    if (setreuid((permanent ? newuid : -1), newuid) == -1)
+      abort();
 #endif
-    }
+  }
 
-    // verify that the changes were successful
-    if (permanent) {
-	if (newgid != oldgid && (setegid(oldgid) != -1 || getegid() != newgid))
-	    abort();
-	if (newuid != olduid && (seteuid(olduid) != -1 || geteuid() != newuid))
-	    abort();
-    } else {
-	if (newgid != oldgid && getegid() != newgid)
-	    abort();
-	if (newuid != olduid && geteuid() != newuid)
-	    abort();
-    }
+  /* verify that the changes were successful */
+  if (permanent) {
+    if (newgid != oldgid && (setegid(oldgid) != -1 || getegid() != newgid))
+      abort();
+    if (newuid != olduid && (seteuid(olduid) != -1 || geteuid() != newuid))
+      abort();
+  } else {
+    if (newgid != oldgid && getegid() != newgid)
+      abort();
+    if (newuid != olduid && geteuid() != newuid)
+      abort();
+  }
+
+  printf("-----AFTER-------\n");
+  printf("newgid: %d\n", newgid);
+  printf("oldgid: %d\n", oldgid);
+  printf("newuid: %d\n", newuid);
+  printf("olduid: %d\n", olduid);
+  printf("-----------------\n\n");
 }
 
 /**
- * Drop privileges permanently in case a nonzero value is passed; otherwise, the privilege drop is temporary.
- *
- * See #drop_root_privileges_by_id(int, uid_t, gid_t) for further information.
- */
-void drop_root_privileges(int permanent)
-{
-    drop_root_privileges_by_id(permanent, -1, -1);
-}
-
-/**
- * Restore privileges to what they were at the last call to drop_root_privileges().
+ * Restore privileges to what they were at the last call to drop_root_privileges(TEMPORARY).
  *
  * Warning:
- * If any problems are encountered in attempting to perform the task, abort() is called, terminating the process
- * immediately. If any manipulation of privileges cannot complete successfully, it's safest to assume that the process
- * is in an unknown state, and you should not allow it to continue.
+ * If any problems are encountered in attempting to perform the task, abort() is called, terminating
+ * the process immediately. If any manipulation of privileges cannot complete successfully, it's
+ * safest to assume that the process is in an unknown state, and you should not allow it to
+ * continue.
  */
-void restore_root_privileges(void)
-{
-    if (geteuid() != orig_uid)
-	if (seteuid(orig_uid) == -1 || geteuid() != orig_uid)
-	    abort();
+void restore_root_privileges(void) {
+  if (geteuid() != orig_uid)
+    if (seteuid(orig_uid) == -1 || geteuid() != orig_uid)
+      abort();
 
-    if (getegid() != orig_gid)
-	if (setegid(orig_gid) == -1 || getegid() != orig_gid)
-	    abort();
+  if (getegid() != orig_gid)
+    if (setegid(orig_gid) == -1 || getegid() != orig_gid)
+      abort();
 
-    if (!orig_uid)
-	setgroups(orig_ngroups, orig_groups);
+  if (!orig_uid)
+    setgroups(orig_ngroups, orig_groups);
 }

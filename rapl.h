@@ -36,10 +36,10 @@ enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 
 typedef struct APIC_ID_t {
-    uint64_t smt_id;
-    uint64_t core_id;
-    uint64_t pkg_id;
-    uint64_t os_id;
+  uint64_t smt_id;
+  uint64_t core_id;
+  uint64_t pkg_id;
+  uint64_t os_id;
 } APIC_ID_t;
 
 int init_rapl();
@@ -61,10 +61,10 @@ int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed)
 
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {
-    double thermal_spec_power_watts;
-    double minimum_power_watts;
-    double maximum_power_watts;
-    double maximum_limit_time_window_seconds;
+  double thermal_spec_power_watts;
+  double minimum_power_watts;
+  double maximum_power_watts;
+  double maximum_limit_time_window_seconds;
 } pkg_rapl_parameters_t;
 int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
 

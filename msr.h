@@ -19,8 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #define MY_ERROR -1
 
-/* Replacement for pow() where the base is 2 and the power is unsigned and less than 31 (will get invalid numbers if 31
- * or greater) */
+/* Replacement for pow() where the base is 2 and the power is unsigned and less than 31 (will get
+ * invalid numbers if 31 or greater) */
 #define B2POW(e) (((e) == 0) ? 1 : (2 << ((e)-1)))
 
 /* General */
@@ -50,39 +50,39 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* General */
 typedef struct rapl_unit_multiplier_msr_t {
-    uint64_t power : 4;
-    uint64_t : 4;
-    uint64_t energy : 5;
-    uint64_t : 3;
-    uint64_t time : 4;
-    uint64_t : 32;
-    uint64_t : 12;
+  uint64_t power : 4;
+  uint64_t : 4;
+  uint64_t energy : 5;
+  uint64_t : 3;
+  uint64_t time : 4;
+  uint64_t : 32;
+  uint64_t : 12;
 } rapl_unit_multiplier_msr_t;
 
 /* Updated every ~1ms. Wraparound time of 60s under load. */
 typedef struct energy_status_msr_t {
-    uint64_t total_energy_consumed : 32;
-    uint64_t : 32;
+  uint64_t total_energy_consumed : 32;
+  uint64_t : 32;
 } energy_status_msr_t;
 
 /* PKG domain */
 typedef struct rapl_parameters_msr_t {
-    unsigned int thermal_spec_power : 15;
-    unsigned int : 1;
-    unsigned int minimum_power : 15;
-    unsigned int : 1;
-    unsigned int maximum_power : 15;
-    unsigned int : 1;
-    unsigned int maximum_limit_time_window : 6;
-    unsigned int : 10;
+  unsigned int thermal_spec_power : 15;
+  unsigned int : 1;
+  unsigned int minimum_power : 15;
+  unsigned int : 1;
+  unsigned int maximum_power : 15;
+  unsigned int : 1;
+  unsigned int maximum_limit_time_window : 6;
+  unsigned int : 10;
 } rapl_parameters_msr_t;
 
 /*
- * For documentation see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4: Model-Specific
- * registers.
+ * For documentation see: "Intel64 and IA-32 Architectures Software Developer's Manual" Volume 4:
+ * Model-Specific registers.
  * (Link: https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf)
- * In a nutshell, search the manual and find the MSR number that you wish to read. Then use the read_msr_t function to
- * get the info you need.
+ * In a nutshell, search the manual and find the MSR number that you wish to read. Then use the
+ * read_msr_t function to get the info you need.
  */
 
 /**

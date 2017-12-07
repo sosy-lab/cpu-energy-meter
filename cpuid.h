@@ -18,10 +18,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdint.h>
 
 typedef struct cpuid_info_t {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
 } cpuid_info_t;
 
 void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *info);

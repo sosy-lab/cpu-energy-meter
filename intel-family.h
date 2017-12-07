@@ -4,15 +4,14 @@
 /*
  * Mapping from Intel's CPU generation names to their respective family- and model number.
  *
- * For reference, see Intel Architectures Software Developer's Manual Volume 4, Model-Specific Registers, Chapter 2,
- * Table 2-1
+ * For reference, see Intel Architectures Software Developer's Manual Volume 4, Model-Specific
+ * Registers, Chapter 2, Table 2-1
  * (https://software.intel.com/sites/default/files/managed/22/0d/335592-sdm-vol-4.pdf)
- *
  */
 
 /*
-* "Big Core" Processors (Branded as Core, Xeon, etc...).
-* The "_X" parts are generally the EP and EX Xeons.
+* "Big Core" Processors (Branded as Core, Xeon, etc...). The "_X" parts are generally the EP and EX
+* Xeons.
 */
 
 #define CPU_INTEL_SANDYBRIDGE		    0x206A0     // Family 6 Model 42 (0x2a)
