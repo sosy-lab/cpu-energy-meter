@@ -19,24 +19,23 @@ static const gid_t GID_NOGROUP = 65534;
 enum { TEMPORARY = 0, PERMANENT = 1 };
 
 /*
- * Documentation and source code can be found at (link from Nov. 28, 2017):
+ * Documentation and source code can be found at
  * https://www.safaribooksonline.com/library/view/secure-programming-cookbook/0596003943/ch01s03.html
+ * [link opened at Nov. 28, 2017]
  */
 
 /**
- * Drop any extra group or user privileges either permanently or temporarily,
- * depending on the value of the argument. If a nonzero value is passed,
- * privileges will be dropped permanently; otherwise, the privilege drop is
- * temporary. Custom values can be specified for uid and gid to be taken as
+ * Drop any extra group or user privileges either permanently or temporarily, depending on the value
+ * of the argument. If a nonzero value is passed, privileges will be dropped permanently; otherwise,
+ * the privilege drop is temporary. Custom values can be specified for uid and gid to be taken as
  * new id in the process.
  */
 void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid);
 
 /**
- * Drop any extra group or user privileges either permanently or temporarily, 
- * depending on the value of the argument. If a nonzero value is passed, 
- * privileges will be dropped permanently; otherwise, the privilege drop is 
- * temporary.
+ * Drop any extra group or user privileges either permanently or temporarily, depending on the value
+ * of the argument. If a nonzero value is passed, privileges will be dropped permanently; otherwise,
+ * the privilege drop is temporary.
  */
 void drop_root_privileges(int permanent);
 

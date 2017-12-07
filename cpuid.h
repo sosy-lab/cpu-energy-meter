@@ -18,16 +18,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <stdint.h>
 
 typedef struct cpuid_info_t {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
 } cpuid_info_t;
 
 void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *info);
+
 cpuid_info_t get_vendor_signature();
+
 uint32_t get_processor_signature();
+
 cpuid_info_t get_processor_topology(uint32_t level);
-void get_vendor_name(char* vendor);
+
+void get_vendor_name(char *vendor);
 
 #endif

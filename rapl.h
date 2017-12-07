@@ -12,7 +12,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 /* Written by Martin Dimitrov, Carl Strickland */
 
-
 /*! \file rapl.h
  *  Library header file.
  */
@@ -25,31 +24,29 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #define MY_ERROR -1
 
 /* Power Domains */
-#define RAPL_PKG  0 /*!< \brief Package power domain */
-#define RAPL_PP0  1 /*!< \brief Core power domain */
-#define RAPL_PP1  2 /*!< \brief Uncore power domain */
-#define RAPL_DRAM 3 /*!< \brief DRAM power domain */
-#define RAPL_PSYS 4 /*!< \brief PLATFORM power domain */
+#define RAPL_PKG 0       /*!< \brief Package power domain */
+#define RAPL_PP0 1       /*!< \brief Core power domain */
+#define RAPL_PP1 2       /*!< \brief Uncore power domain */
+#define RAPL_DRAM 3      /*!< \brief DRAM power domain */
+#define RAPL_PSYS 4      /*!< \brief PLATFORM power domain */
 #define RAPL_NR_DOMAIN 5 /*!< \brief Number of power domains */
 
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
-char* RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
+char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 
 typedef struct APIC_ID_t {
-    uint64_t smt_id;
-    uint64_t core_id;
-    uint64_t pkg_id;
-    uint64_t os_id;
+  uint64_t smt_id;
+  uint64_t core_id;
+  uint64_t pkg_id;
+  uint64_t os_id;
 } APIC_ID_t;
 
 int init_rapl();
 int terminate_rapl();
 
-/* Wraparound value for the total energy consumed. It is computed within
- * init_rapl().
- */
-double MAX_ENERGY_STATUS_JOULES;   /* default: 65536 */
+// Wraparound value for the total energy consumed. It is computed within init_rapl().
+double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
 
 uint64_t get_num_rapl_nodes();
 
@@ -64,10 +61,10 @@ int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed)
 
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {
-    double thermal_spec_power_watts;
-    double minimum_power_watts;
-    double maximum_power_watts;
-    double maximum_limit_time_window_seconds;
+  double thermal_spec_power_watts;
+  double minimum_power_watts;
+  double maximum_power_watts;
+  double maximum_limit_time_window_seconds;
 } pkg_rapl_parameters_t;
 int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
 
