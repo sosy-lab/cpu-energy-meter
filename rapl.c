@@ -71,13 +71,15 @@ int bind_context(cpu_set_t *new_context, cpu_set_t *old_context) {
 
   if (old_context != NULL) {
     err = sched_getaffinity(0, sizeof(cpu_set_t), old_context);
-    if (0 != err)
+    if (0 != err) {
       ret = MY_ERROR;
+    }
   }
 
   err += sched_setaffinity(0, sizeof(cpu_set_t), new_context);
-  if (0 != err)
+  if (0 != err) {
     ret = MY_ERROR;
+  }
 
   return ret;
 }
@@ -140,8 +142,9 @@ int build_topology() {
     num_core_threads = info_l0.ebx & 0xffff;
     num_pkg_threads = info_l1.ebx & 0xffff;
 
-    if (os_map[i].pkg_id > max_pkg)
+    if (os_map[i].pkg_id > max_pkg) {
       max_pkg = os_map[i].pkg_id;
+    }
 
     err = bind_context(&prev_context, NULL);
 
@@ -154,8 +157,9 @@ int build_topology() {
 
   // Construct a pkg map: pkg_map[pkg id][APIC_ID ... APIC_ID]
   pkg_map = (APIC_ID_t **)malloc(num_nodes * sizeof(APIC_ID_t *));
-  for (i = 0; i < num_nodes; i++)
+  for (i = 0; i < num_nodes; i++) {
     pkg_map[i] = (APIC_ID_t *)malloc(num_pkg_threads * sizeof(APIC_ID_t));
+  }
 
   uint64_t p, t;
   for (i = 0; i < os_cpu_count; i++) {
@@ -269,17 +273,20 @@ int terminate_rapl() {
 
   close_msr_fd();
 
-  if (NULL != os_map)
+  if (NULL != os_map) {
     free(os_map);
+  }
 
   if (NULL != pkg_map) {
-    for (i = 0; i < num_nodes; i++)
+    for (i = 0; i < num_nodes; i++) {
       free(pkg_map[i]);
+    }
     free(pkg_map);
   }
 
-  if (NULL != msr_support_table)
+  if (NULL != msr_support_table) {
     free(msr_support_table);
+  }
 
   return 0;
 }

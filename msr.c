@@ -40,8 +40,9 @@ int open_msr_fd(int num_nodes) {
     fd = open(msr_path, O_RDONLY);
     fds[i] = fd;
 
-    if (fd == -1)
+    if (fd == -1) {
       err = MY_ERROR;
+    }
   }
 
   return err;
@@ -57,15 +58,18 @@ int read_msr(int cpu, uint64_t address, uint64_t *value) {
   FILE *fp;
 
   // dup is used here to clone the fd. This way, we can close the stream afterwards, while we still
-  // retain the open file descriptor.
+  // retain an open file descriptor.
   fp = fdopen(dup(fds[cpu]), "r");
   err = fp == NULL;
-  if (!err)
+  if (!err) {
     err = (fseek(fp, address, SEEK_SET) != 0);
-  if (!err)
+  }
+  if (!err) {
     err = (fread(value, sizeof(uint64_t), 1, fp) != 1);
-  if (fp != NULL)
+  }
+  if (fp != NULL) {
     fclose(fp);
+  }
   return err;
 }
 
