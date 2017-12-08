@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2012, Intel Corporation
+Copyright (c) 2003, O'Reilly: Taken from "Secure Programming Cookbook for C and C++" (https://resources.oreilly.com/examples/9780596003944/)
+Copyright (c) 2015-2017, Dirk Beyer
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
