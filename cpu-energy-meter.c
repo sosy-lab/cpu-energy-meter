@@ -29,6 +29,7 @@ const char *version = "2.2";
 uint64_t num_node = 0;
 uint64_t delay = 0;
 uint64_t delay_unit = 1000000000; // unit in nanoseconds
+uint64_t print_rawtext = 0;
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
@@ -88,16 +89,34 @@ sigset_t get_sigset() {
   return set;
 }
 
-void print_intermediate_results() {
-  int i, domain;
-  uint64_t freq;
-
+void print_header(int socket) {
   double start_seconds = convert_time_to_sec(measurement_start_time);
   double end_seconds = convert_time_to_sec(measurement_end_time);
-  char end_time_string[12];
-  convert_time_to_string(measurement_end_time, end_time_string);
-  // fprintf(stdout, "curr_time=%f (%s o'clock)\n", end_seconds, end_time_string);
-  fprintf(stdout, "\nduration_seconds=%f\n", end_seconds - start_seconds);
+
+  if (print_rawtext) {
+    fprintf(stdout, "\ncpu_count=%lu\n", num_node);
+    fprintf(stdout, "duration_seconds=%f\n", end_seconds - start_seconds);
+  } else {
+    fprintf(stdout, "\b\b+--------------------------------------+\n");
+    fprintf(stdout, "| %-21s %12s %u |\n", "CPU-Energy-Meter", "Socket", socket);
+    fprintf(stdout, "+--------------------------------------+\n");
+    fprintf(stdout, "%-19s %14.6lf %s\n", "Duration", end_seconds - start_seconds, "sec");
+  }
+}
+
+void print_domain(int socket, int domain) {
+  char *domain_string = RAPL_DOMAIN_STRINGS[domain];
+
+  if (print_rawtext) {
+    fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, cum_energy_J[socket][domain]);
+  } else {
+    fprintf(stdout, "%-19s %14.6f %s\n", domain_string, cum_energy_J[socket][domain], "Joule");
+  }
+}
+
+void print_intermediate_results() {
+  int i = 0;
+  int domain;
 
   if (cum_energy_J != NULL) {
     for (i = 0; i < num_node; i++) {
@@ -105,10 +124,11 @@ void print_intermediate_results() {
         continue;
       }
 
+      print_header(i);
+
       for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
         if (is_supported_domain(domain)) {
-          char *domain_string = RAPL_DOMAIN_STRINGS[domain];
-          fprintf(stdout, "cpu%d_%s_joules=%f\n", i, domain_string, cum_energy_J[i][domain]);
+          print_domain(i, domain);
         }
       }
     }
@@ -192,8 +212,6 @@ void do_print_energy_info() {
   /* don't buffer if piped */
   setbuf(stdout, NULL);
 
-  fprintf(stdout, "cpu_count=%lu\n", num_node);
-
   /* Read initial values */
   for (i = node; i < num_node; i++) {
     for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
@@ -259,7 +277,7 @@ int cmdline(int argc, char **argv) {
 
   progname = argv[0];
 
-  while ((opt = getopt(argc, argv, "e:")) != -1) {
+  while ((opt = getopt(argc, argv, "e:r")) != -1) {
     switch (opt) {
     case 'e':
       delay_ms_temp = atoi(optarg);
@@ -273,6 +291,9 @@ int cmdline(int argc, char **argv) {
     case 'h':
       usage();
       exit(0);
+      break;
+    case 'r':
+      print_rawtext = 1;
       break;
     default:
       usage();
