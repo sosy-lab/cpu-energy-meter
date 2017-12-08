@@ -11,9 +11,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* 
+/*
  * For reference, see
- * http://software.intel.com/en-us/articles/power-gov 
+ * http://software.intel.com/en-us/articles/power-gov
  */
 
 #ifndef _GNU_SOURCE
@@ -195,8 +195,7 @@ int init_rapl() {
   family = (processor_signature >> 8) & 0xf;
   if (family != 6) {
     // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
-    // except
-    // "Netburst"
+    // except "Netburst"
     fprintf(
         stderr,
         "The Intel processor must be from family 6, but instead a cpu from family %d was found.\n",

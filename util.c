@@ -50,7 +50,7 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
   }
 
   /* If root privileges are to be dropped, be sure to pare down the ancillary groups for the process
-   * before doing anything else because the setgroups() system call requires root privileges.  Drop
+   * before doing anything else because the setgroups() system call requires root privileges. Drop
    * ancillary groups regardless of whether privileges are being dropped temporarily or permanently.
    */
   if (!olduid) {
