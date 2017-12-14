@@ -33,9 +33,25 @@ static const gid_t GID_NOGROUP = 65534;
 enum { TEMPORARY = 0, PERMANENT = 1 };
 
 /*
- * Documentation and source code can be found at
+ * The documentation regarding the capabilities was taken from the linux manual pages (i.e.,
+ * http://man7.org/linux/man-pages/man3/cap_get_proc.3.html and
+ * http://man7.org/linux/man-pages/man3/cap_clear.3.html) [links from Dec. 14, 2017].
+ *
+ * Note that in order to execute the code on linux, the 'libcap-dev'-package needs to be available
+ * on the working machine.
+ */
+
+/*
+ * Drop all capabilities that the process is currently in possession of.
+ *
+ * Return 0 on success, or -1 otherwise.
+ */
+int drop_capabilities();
+
+/*
+ * Documentation and source code for dropping and restoring the root privileges can be found at
  * https://www.safaribooksonline.com/library/view/secure-programming-cookbook/0596003943/ch01s03.html
- * [link opened at Nov. 28, 2017]
+ * [link from Nov. 28, 2017]
  */
 
 /**

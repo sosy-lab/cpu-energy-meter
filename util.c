@@ -27,6 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/capability.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -37,6 +38,42 @@ static int orig_ngroups = -1;
 static gid_t orig_gid = -1;
 static uid_t orig_uid = -1;
 static gid_t orig_groups[NGROUPS_MAX];
+
+/*
+ * Drop all capabilities that the process is currently in possession of.
+ *
+ * Return 0 on success, or -1 otherwise.
+ */
+int drop_capabilities() {
+  int err = 0;
+  cap_t capabilities;
+
+  /*
+   * Allocate a capability state in working storage, set the state to that of the calling process,
+   * and return a pointer to the newly created capability state.
+   */
+  capabilities = cap_get_proc();
+
+  if (capabilities == NULL) {
+    err = -1;
+  }
+
+  /*
+   * Clear all capability flags.
+   */
+  if (!err) {
+    err = cap_clear(capabilities);
+  }
+
+  /*
+   * Free the releasable memory, as the capability state in working storage is no longer required.
+   */
+  if (!err) {
+    err = cap_free(capabilities);
+  }
+
+  return err;
+}
 
 /**
  * Drop privileges permanently in case a nonzero value is passed; otherwise, the privilege drop is
@@ -58,7 +95,8 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
   }
 
   if (!permanent) {
-    /* Save information about the privileges that are being dropped so that they can be restored
+    /*
+     * Save information about the privileges that are being dropped so that they can be restored
      * later.
      */
     orig_gid = oldgid;
@@ -66,7 +104,8 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
     orig_ngroups = getgroups(NGROUPS_MAX, orig_groups);
   }
 
-  /* If root privileges are to be dropped, be sure to pare down the ancillary groups for the process
+  /*
+   * If root privileges are to be dropped, be sure to pare down the ancillary groups for the process
    * before doing anything else because the setgroups() system call requires root privileges. Drop
    * ancillary groups regardless of whether privileges are being dropped temporarily or permanently.
    */

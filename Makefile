@@ -11,10 +11,10 @@ rapl_lib_static:
 	ar rcs librapl.a msr.o cpuid.o rapl.o util.o
 
 cpu-energy-meter_static: 
-	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -o cpu-energy-meter ./librapl.a -lm
+	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -o cpu-energy-meter ./librapl.a -lm -lcap
 
 cpu-energy-meter:
-	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -lrapl -o cpu-energy-meter -lm
+	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -lrapl -o cpu-energy-meter -lm -lcap
 
 gprof: CFLAGS = -pg
 gprof: all
