@@ -36,8 +36,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEFAULT_THERMAL_SPEC_POWER 200.0
 
-char *progname;
-const char *version = "2.2";
+const char *progname = "CPU Energy Meter";
+const char *version = "0.9";
+
 uint64_t num_node = 0;
 uint64_t delay = 0;
 uint64_t delay_unit = 1000000000; // unit in nanoseconds
@@ -286,8 +287,6 @@ void usage() {
 int cmdline(int argc, char **argv) {
   int opt;
   uint64_t delay_ms_temp = 1000;
-
-  progname = argv[0];
 
   while ((opt = getopt(argc, argv, "e:r")) != -1) {
     switch (opt) {
