@@ -53,6 +53,10 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
   gid_t newgid = gid > 0 ? gid : getgid(), oldgid = getegid();
   uid_t newuid = uid > 0 ? uid : getuid(), olduid = geteuid();
 
+  if (olduid != 0) {
+    return;
+  }
+
   if (!permanent) {
     /* Save information about the privileges that are being dropped so that they can be restored
      * later.
