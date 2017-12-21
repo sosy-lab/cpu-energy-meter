@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEFAULT_THERMAL_SPEC_POWER 200.0
 
-const char *progname = "CPU Energy Meter";
+const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
 const char *version = "0.9";
 
 uint64_t num_node = 0;
@@ -287,6 +287,8 @@ void usage() {
 int cmdline(int argc, char **argv) {
   int opt;
   uint64_t delay_ms_temp = 1000;
+
+  progname = argv[0];
 
   while ((opt = getopt(argc, argv, "e:r")) != -1) {
     switch (opt) {
