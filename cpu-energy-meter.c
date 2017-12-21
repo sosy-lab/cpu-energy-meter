@@ -118,11 +118,13 @@ void print_header(int socket) {
 }
 
 void print_domain(int socket, int domain) {
-  char *domain_string = RAPL_DOMAIN_STRINGS[domain];
+  char *domain_string;
 
   if (print_rawtext) {
+    domain_string = RAPL_DOMAIN_STRINGS[domain];
     fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, cum_energy_J[socket][domain]);
   } else {
+    domain_string = RAPL_DOMAIN_FORMATTED_STRINGS[domain];
     fprintf(stdout, "%-19s %14.6f %s\n", domain_string, cum_energy_J[socket][domain], "Joule");
   }
 }
