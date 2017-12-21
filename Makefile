@@ -1,20 +1,16 @@
-CFLAGS=-g
+CC=gcc
+CFLAGS=-I.
 
-all: rapl_lib_shared rapl_lib_static cpu-energy-meter_static
+DEPS = cpuid.h intel-family.h msr.h rapl.h util.h
+OBJ = cpu-energy-meter.o cpuid.o msr.o rapl.o util.o
 
-rapl_lib_shared: 
-	gcc $(CFLAGS) -fpic -c msr.c cpuid.c rapl.c util.c
-	gcc $(CFLAGS) -shared -o librapl.so msr.o cpuid.o rapl.o util.o
+LIBS=-lm -lcap
 
-rapl_lib_static: 
-	gcc $(CFLAGS) -c msr.c cpuid.c rapl.c util.c
-	ar rcs librapl.a msr.o cpuid.o rapl.o util.o
+%.o: %.c $(DEPS)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-cpu-energy-meter_static: 
-	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -o cpu-energy-meter ./librapl.a -lm -lcap
-
-cpu-energy-meter:
-	gcc $(CFLAGS) cpu-energy-meter.c -I. -L. -lrapl -o cpu-energy-meter -lm -lcap
+cpu-energy-meter: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 gprof: CFLAGS = -pg
 gprof: all
@@ -23,5 +19,6 @@ gprof: all
 	rm -f gmon.out
 	make clean
 
+.PHONY: clean
 clean: 
-	rm -f cpu-energy-meter librapl.so librapl.a msr.o cpuid.o rapl.o 
+	rm -f cpu-energy-meter $(OBJ)
