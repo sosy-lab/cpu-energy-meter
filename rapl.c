@@ -184,9 +184,7 @@ int build_topology() {
 }
 
 /*!
- * \brief Intialize the power_gov library for use.
- *
- * This function must be called before calling any other function from the power_gov library.
+ * This function must be called before calling any other function from this class.
  * \return 0 on success, -1 otherwise
  */
 int init_rapl() {
@@ -275,9 +273,7 @@ int init_rapl() {
 }
 
 /*!
- * \brief Terminate the power_gov library.
- *
- * Call this function function to cleanup resources and terminate the power_gov library.
+ * Call this function function to cleanup resources.
  * \return 0 on success
  */
 int terminate_rapl() {

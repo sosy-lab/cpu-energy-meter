@@ -27,7 +27,7 @@
 *.i*86
 *.x86_64
 *.hex
-power_gadget
+cpu-energy-meter
 
 # Debug files
 *.dSYM/

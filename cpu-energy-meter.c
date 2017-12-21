@@ -279,7 +279,7 @@ void do_print_energy_info() {
 }
 
 void usage() {
-  fprintf(stdout, "\nIntel(r) Power Gadget %s\n", version);
+  fprintf(stdout, "\nCPU Energy Meter %s\n", version);
   fprintf(stdout, "\nUsage: \n");
   fprintf(stdout, "%s [-e [sampling delay (ms) ] optional]\n", progname);
   fprintf(stdout, "\nExample: %s -e 1000 -d 10\n", progname);
