@@ -42,7 +42,7 @@ const char *version = "0.9";
 uint64_t num_node = 0;
 uint64_t delay = 0;
 uint64_t delay_unit = 1000000000; // unit in nanoseconds
-uint64_t print_rawtext = 1;
+uint64_t print_rawtext = 0;
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
@@ -292,7 +292,7 @@ int cmdline(int argc, char **argv) {
 
   progname = argv[0];
 
-  while ((opt = getopt(argc, argv, "e:f")) != -1) {
+  while ((opt = getopt(argc, argv, "e:r")) != -1) {
     switch (opt) {
     case 'e':
       delay_ms_temp = atoi(optarg);
@@ -307,8 +307,8 @@ int cmdline(int argc, char **argv) {
       usage();
       exit(0);
       break;
-    case 'f':
-      print_rawtext = 0;
+    case 'r':
+      print_rawtext = 1;
       break;
     default:
       usage();

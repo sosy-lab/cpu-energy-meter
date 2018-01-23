@@ -30,24 +30,11 @@ To build:
 > make
 
 To run:
-> ./cpu-energy-meter [-e [sampling_delay_ms] optional] [-f optional]
+> ./cpu-energy-meter [-e [sampling_delay_ms] optional] [-r optional]
 
 The tool will continue counting the cumulative energy use of all supported CPUs
 in the background and will report a key-value list of its measurements when it
 receives SIGINT:
-
-```
-cpu_count=1
-duration_seconds=3.241504
-cpu0_package_joules=4.971924
-cpu0_core_joules=0.461182
-cpu0_uncore_joules=0.053406
-cpu0_dram_joules=0.953979
-cpu0_psys_joules=38.904785
-```
-
-Optionally, the tool can be executed together with the ' -f' tag to print the
-output in a more formatted way:
 
 ```
 +--------------------------------------+
@@ -59,6 +46,19 @@ Core                      0.317749 Joule
 Uncore                    0.010132 Joule
 DRAM                      0.727783 Joule
 PSYS                     29.792603 Joule
+```
+
+Optionally, the tool can be executed together with a '-r'-tag to print the
+output as a raw list:
+
+```
+cpu_count=1
+duration_seconds=3.241504
+cpu0_package_joules=4.971924
+cpu0_core_joules=0.461182
+cpu0_uncore_joules=0.053406
+cpu0_dram_joules=0.953979
+cpu0_psys_joules=38.904785
 ```
 
 
