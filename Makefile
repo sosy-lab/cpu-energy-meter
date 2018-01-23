@@ -1,7 +1,5 @@
-VERSION := 0.1
-
 CC = gcc
-CFLAGS = -I. -DVERSION=\"$(VERSION)\"
+CFLAGS = -I.
 LIBS=-lm -lcap
 
 TARGET = cpu-energy-meter
@@ -10,6 +8,7 @@ HEADERS = cpuid.h intel-family.h msr.h rapl.h util.h
 OBJECTS = $(SOURCES:.c=.o)
 AUX = README.md LICENSE
 
+DESTDIR :=
 PREFIX := /usr/local
 BINDIR = $(PREFIX)/bin
 MODULEDIR = /etc/modules-load.d
@@ -25,26 +24,26 @@ $(TARGET): $(OBJECTS)
 
 .PHONY: clean
 clean:
-	-rm -f $(OBJECTS)
+	-rm -f $(TARGET) $(OBJECTS)
 
 .PHONY: install
 install: all
-	install -d $(BINDIR)
-	install -g msr -m 2611 $(TARGET) $(BINDIR)
-	setcap cap_sys_rawio=ep $(BINDIR)/$(TARGET)
-	test -d $(MODULEDIR) || mkdir -p $(MODULEDIR)
-	rm -f $(MODULEDIR)/$(TARGET).conf
-	@echo "# This file was created by $(TARGET)." >> $(MODULEDIR)/$(TARGET).conf
+	install -d $(DESTDIR)$(BINDIR)
+	install -g msr -m 2611 $(TARGET) $(DESTDIR)$(BINDIR)
+	setcap cap_sys_rawio=ep $(DESTDIR)$(BINDIR)/$(TARGET)
+	test -d $(DESTDIR)$(MODULEDIR) || mkdir -p $(DESTDIR)$(MODULEDIR)
+	rm -f $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
+	@echo "# This file was created by $(TARGET)." >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
 	@echo "# The kernel module is required in order for $(TARGET) to be executed \
-	successfully." >> $(MODULEDIR)/$(TARGET).conf
-	echo "msr" >> $(MODULEDIR)/$(TARGET).conf
-	systemctl restart systemd-modules-load.service
+	successfully." >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
+	echo "msr" >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
+	#systemctl restart systemd-modules-load.service
 
 .PHONY: uninstall
 uninstall:
-	-rm -f $(BINDIR)/$(TARGET)
-	-rm -f $(MODULEDIR)/$(TARGET).conf
-	-systemctl restart systemd-modules-load.service
+	-rm -f $(DESTDIR)$(BINDIR)/$(TARGET)
+	-rm -f $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
+	#-systemctl restart systemd-modules-load.service
 
 .PHONY: gprof 	# outdated functionality that is currently broken;
 		# will be fixed in a future update
@@ -57,17 +56,17 @@ gprof: all
 
 .PHONY: dist
 dist:
-	-rm -rf $(TARGET)-$(VERSION)
-	mkdir $(TARGET)-$(VERSION)
-	cp $(SOURCES) $(HEADERS) Makefile $(AUX) $(TARGET)-$(VERSION)
-	tar cf - $(TARGET)-$(VERSION) | gzip -9c > $(TARGET)-$(VERSION).tar.gz
-	-rm -rf $(TARGET)-$(VERSION)
+	-rm -rf $(DESTDIR)$(TARGET)-$(VERSION)
+	mkdir $(DESTDIR)$(TARGET)-$(VERSION)
+	cp $(SOURCES) $(HEADERS) Makefile $(AUX) $(DESTDIR)$(TARGET)-$(VERSION)
+	tar cf - $(DESTDIR)$(TARGET)-$(VERSION) | gzip -9c > $(DESTDIR)$(TARGET)-$(VERSION).tar.gz
+	-rm -rf $(DESTDIR)$(TARGET)-$(VERSION)
 
 .PHONY: distclean
 distclean: clean
-	-rm -f $(TARGET)
-	-rm -rf $(TARGET)-[0-9]*.[0-9]*
-	-rm -f $(TARGET)-[0-9]*.[0-9]*.tar.gz
+	-rm -f $(DESTDIR)$(TARGET)
+	-rm -rf $(DESTDIR)$(TARGET)-[0-9]*.[0-9]*
+	-rm -f $(DESTDIR)$(TARGET)-[0-9]*.[0-9]*.tar.gz
 
 #.PHONY: test
 #test: $(TARGET)
