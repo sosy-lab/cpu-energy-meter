@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DEFAULT_THERMAL_SPEC_POWER 200.0
 
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
-const char *version = "0.9";
+const char *version = "1.0";
 
 uint64_t num_node = 0;
 uint64_t delay = 0;
@@ -203,6 +203,10 @@ void compute_msr_probe_interval_time(struct timespec *signal_timelimit) {
 void do_print_energy_info() {
   struct timespec signal_timelimit;
   compute_msr_probe_interval_time(&signal_timelimit);
+  if (debug_enabled) {
+    fprintf(stdout, "[DEBUG] Interval time of msr probes set to %lds, %ldns:\n",
+            signal_timelimit.tv_sec, signal_timelimit.tv_nsec);
+  }
 
   sigset_t signal_set = get_sigset();
   int i = 0;
@@ -279,11 +283,19 @@ void do_print_energy_info() {
 }
 
 void usage() {
-  fprintf(stdout, "\nCPU Energy Meter %s\n", version);
-  fprintf(stdout, "\nUsage: \n");
-  fprintf(stdout, "%s [-e [sampling delay (ms) ] optional]\n", progname);
-  fprintf(stdout, "\nExample: %s -e 1000 -d 10\n", progname);
   fprintf(stdout, "\n");
+  fprintf(stdout, "CPU Energy Meter v%s\n", version);
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Usage: %s [OPTION]...\n", progname);
+  fprintf(stdout, "  %-20s %s\n", "-d", "print additional debug information to the output");
+  fprintf(stdout, "  %-20s %s\n", "-e=MILLISEC", "set the sampling delay in ms");
+  fprintf(stdout, "  %-20s %s\n", "-h", "show this help text");
+  fprintf(stdout, "  %-20s %s\n", "-r", "print the output as raw-text");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Example: %s -r\n", progname);
+  fprintf(stdout, "\n");
+
+  //  fprintf(stdout, "%-19s %14.6lf %s\n", "Duration", end_seconds - start_seconds, "sec");
 }
 
 int read_cmdline(int argc, char **argv) {
@@ -292,7 +304,7 @@ int read_cmdline(int argc, char **argv) {
 
   progname = argv[0];
 
-  while ((opt = getopt(argc, argv, "de:r")) != -1) {
+  while ((opt = getopt(argc, argv, "de:hr")) != -1) {
     switch (opt) {
     case 'd':
       debug_enabled = 1;

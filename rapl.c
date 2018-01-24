@@ -567,12 +567,6 @@ void calculate_probe_interval_time(struct timespec *signal_timelimit, double the
 
   signal_timelimit->tv_sec = seconds;
   signal_timelimit->tv_nsec = nano_seconds;
-
-  if (debug_enabled) {
-    fprintf(stdout,
-            "[DEBUG] Interval time of msr probes set to %lds, %ldns:\n",
-            seconds, nano_seconds);
-  }
 }
 
 /* Utilities */
