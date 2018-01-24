@@ -45,6 +45,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rapl.h"
 #include "util.h"
 
+uint64_t debug_enabled = 0;
+
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
 char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {"Package", "Core", "Uncore", "DRAM", "PSYS"};
 
@@ -192,18 +194,25 @@ int init_rapl() {
 
   cpuid_info_t sig;
   sig = get_vendor_signature();
+  char vendor[12];
+  get_vendor_name(vendor);
   if (sig.ebx != 0x756e6547 || sig.ecx != 0x6c65746e || sig.edx != 0x49656e69) {
-    char vendor[12];
-    get_vendor_name(vendor);
     fprintf(stderr,
             "The processor on the working machine is not from Intel. Found %s-processor instead.\n",
             vendor);
     return MY_ERROR;
   }
+  if (debug_enabled) {
+    fprintf(stdout, "[DEBUG] %s processor found.\n", vendor);
+  }
 
   unsigned int family;
   processor_signature = get_processor_signature();
   family = (processor_signature >> 8) & 0xf;
+  if (debug_enabled) {
+    fprintf(stdout, "[DEBUG] Processor is from family %d and uses model 0x%05X.\n", family,
+            (processor_signature & 0xfffffff0));
+  }
   if (family != 6) {
     // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
     // except "Netburst"
@@ -239,6 +248,7 @@ int init_rapl() {
   err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
   msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
 
+  // values for package-msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
@@ -246,21 +256,25 @@ int init_rapl() {
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
   msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
 
+  // values for dram msr
   err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
+  // values for core msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
+  // values for uncore msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
+  // value for psys msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
@@ -434,8 +448,14 @@ double rapl_dram_energy_units_probe(double rapl_energy_units) {
   case CPU_INTEL_SKYLAKE_X:
   case CPU_INTEL_XEON_PHI_KNL:
   case CPU_INTEL_XEON_PHI_KNM:
+    if (debug_enabled) {
+      fprintf(stdout, "[DEBUG] Using a predefined unit for measuring the rapl DRAM values: %.6e\n", 15.3E-6);
+    }
     return 15.3E-6;
   default:
+    if (debug_enabled) {
+      fprintf(stdout, "[DEBUG] Using the default unit for measuring the rapl DRAM values: %.6e\n", rapl_energy_units);
+    }
     return rapl_energy_units;
   }
 }
@@ -547,6 +567,12 @@ void calculate_probe_interval_time(struct timespec *signal_timelimit, double the
 
   signal_timelimit->tv_sec = seconds;
   signal_timelimit->tv_nsec = nano_seconds;
+
+  if (debug_enabled) {
+    fprintf(stdout,
+            "[DEBUG] Interval time of msr probes set to %lds, %ldns:\n",
+            seconds, nano_seconds);
+  }
 }
 
 /* Utilities */
@@ -561,6 +587,13 @@ int read_rapl_units() {
     RAPL_ENERGY_UNIT = unit_multiplier.energy;
     RAPL_DRAM_ENERGY_UNIT = rapl_dram_energy_units_probe(unit_multiplier.energy);
     RAPL_POWER_UNIT = unit_multiplier.power;
+  }
+  if (debug_enabled) {
+    fprintf(stdout,
+            "[DEBUG] Measured the following unit multipliers:\n"
+            "[DEBUG] RAPL_ENERGY_UNIT: %0.6e J\n"
+            "[DEBUG] RAPL_DRAM_ENERGY_UNIT: %0.6e J\n",
+            RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
   }
 
   return err;

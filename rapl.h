@@ -42,6 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RAPL_PSYS 4      /*!< \brief PLATFORM power domain */
 #define RAPL_NR_DOMAIN 5 /*!< \brief Number of power domains */
 
+extern uint64_t debug_enabled;
+
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];

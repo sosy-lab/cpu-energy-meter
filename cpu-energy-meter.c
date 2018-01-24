@@ -286,14 +286,17 @@ void usage() {
   fprintf(stdout, "\n");
 }
 
-int cmdline(int argc, char **argv) {
+int read_cmdline(int argc, char **argv) {
   int opt;
   uint64_t delay_ms_temp = 1000;
 
   progname = argv[0];
 
-  while ((opt = getopt(argc, argv, "e:r")) != -1) {
+  while ((opt = getopt(argc, argv, "de:r")) != -1) {
     switch (opt) {
+    case 'd':
+      debug_enabled = 1;
+      break;
     case 'e':
       delay_ms_temp = atoi(optarg);
       if (delay_ms_temp > 50) {
@@ -319,8 +322,11 @@ int cmdline(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-  int i = 0;
-  int ret = 0;
+
+  if (0 != read_cmdline(argc, argv)) {
+    // Error occured while reading command line
+    return MY_ERROR;
+  }
 
   sigset_t signal_set = get_sigset();
   sigprocmask(SIG_BLOCK, &signal_set, NULL);
@@ -332,15 +338,9 @@ int main(int argc, char **argv) {
   }
   num_node = get_num_rapl_nodes();
 
-  ret = cmdline(argc, argv);
-  if (ret) { // Error occured while reading command line
-    return ret;
+  do_print_energy_info();
 
-  } else {
-    do_print_energy_info();
-
-    terminate_rapl();
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
-    return 0;
-  }
+  terminate_rapl();
+  sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+  return 0;
 }
