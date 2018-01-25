@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I.
+CFLAGS = -I. -g -pthread
 LIBS=-lm -lcap
 
 TARGET = cpu-energy-meter
