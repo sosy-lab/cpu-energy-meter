@@ -118,8 +118,13 @@ void print_header(int socket) {
 }
 
 void print_domain(int socket, int domain) {
-  char *domain_string;
+  if (cum_energy_J[socket][domain] == 0.0) {
+    // The values in the double-array were explicitly initialized with 0.0, that's why we can safely
+    // check with '=='-equality here
+    return;
+  }
 
+  char *domain_string;
   if (print_rawtext) {
     domain_string = RAPL_DOMAIN_STRINGS[domain];
     fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, cum_energy_J[socket][domain]);
