@@ -245,6 +245,7 @@ int init_rapl() {
   int cpu = 0;
   int err_read_msr = 0;
 
+  // values for unit-multiplier
   err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
   msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
 
@@ -449,12 +450,14 @@ double rapl_dram_energy_units_probe(double rapl_energy_units) {
   case CPU_INTEL_XEON_PHI_KNL:
   case CPU_INTEL_XEON_PHI_KNM:
     if (debug_enabled) {
-      fprintf(stdout, "[DEBUG] Using a predefined unit for measuring the rapl DRAM values: %.6e\n", 15.3E-6);
+      fprintf(stdout, "[DEBUG] Using a predefined unit for measuring the rapl DRAM values: %.6e\n",
+              15.3E-6);
     }
     return 15.3E-6;
   default:
     if (debug_enabled) {
-      fprintf(stdout, "[DEBUG] Using the default unit for measuring the rapl DRAM values: %.6e\n", rapl_energy_units);
+      fprintf(stdout, "[DEBUG] Using the default unit for measuring the rapl DRAM values: %.6e\n",
+              rapl_energy_units);
     }
     return rapl_energy_units;
   }

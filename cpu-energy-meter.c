@@ -294,8 +294,6 @@ void usage() {
   fprintf(stdout, "\n");
   fprintf(stdout, "Example: %s -r\n", progname);
   fprintf(stdout, "\n");
-
-  //  fprintf(stdout, "%-19s %14.6lf %s\n", "Duration", end_seconds - start_seconds, "sec");
 }
 
 int read_cmdline(int argc, char **argv) {
@@ -334,7 +332,6 @@ int read_cmdline(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-
   if (0 != read_cmdline(argc, argv)) {
     // Error occured while reading command line
     return MY_ERROR;
@@ -348,7 +345,11 @@ int main(int argc, char **argv) {
     terminate_rapl();
     return MY_ERROR;
   }
+
   num_node = get_num_rapl_nodes();
+  if (debug_enabled) {
+    fprintf(stdout, "[DEBUG] Number of nodes detected: %ld\n", num_node);
+  }
 
   do_print_energy_info();
 
