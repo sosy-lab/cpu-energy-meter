@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include <math.h>
-#include <pthread.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -186,31 +185,6 @@ int build_topology() {
   return err;
 }
 
-void *init_msr_value(void *argv) {
-  int err = 0;
-  int cpu = 0;
-  unsigned int msr_address = (uintptr_t)argv;
-
-  uint64_t msr_prev;
-  uint64_t msr_new;
-
-  err = read_msr(cpu, msr_address, &msr_prev);
-  if (!err) {
-    usleep(100000); // in microseconds; currently set to 0.1sec
-    err = read_msr(cpu, msr_address, &msr_new);
-  }
-  if (!err) {
-    err = abs(msr_new - msr_prev) == 0;
-  }
-  msr_support_table[msr_address & MSR_SUPPORT_MASK] = !err;
-  // if (debug_enabled) {
-    // fprintf(stdout,
-    //         "[DEBUG] msr_address 0x%X set to %d in msr_support_table "
-    //         "(0 = disabled, 1 = enabled).\n",
-    //         msr_address, !err);
-  // }
-}
-
 /*!
  * This function must be called before calling any other function from this class.
  * \return 0 on success, -1 otherwise
@@ -268,7 +242,6 @@ int init_rapl() {
   msr_support_table = (unsigned char *)calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
   uint64_t msr;
-  pthread_t tid;
   int cpu = 0;
   int err_read_msr = 0;
 
@@ -279,29 +252,32 @@ int init_rapl() {
   // values for package-msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
   msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
-  pthread_create(&tid, NULL, init_msr_value, (void *)MSR_RAPL_PKG_ENERGY_STATUS);
 
   // values for dram msr
   err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  pthread_create(&tid, NULL, init_msr_value, (void *)MSR_RAPL_DRAM_ENERGY_STATUS);
+  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for core msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  pthread_create(&tid, NULL, init_msr_value, (void *)MSR_RAPL_PP0_ENERGY_STATUS);
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for uncore msr
   err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
   msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  pthread_create(&tid, NULL, init_msr_value, (void *)MSR_RAPL_PP1_ENERGY_STATUS);
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // value for psys msr
-  pthread_create(&tid, NULL, init_msr_value, (void *)MSR_RAPL_PLATFORM_ENERGY_STATUS);
-
-  pthread_join(tid, NULL);
+  err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   err = read_rapl_units();
 
