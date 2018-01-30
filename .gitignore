@@ -31,3 +31,7 @@ cpu-energy-meter
 
 # Debug files
 *.dSYM/
+
+# Directory used by quilt to store its internal data
+# (list of applied patches, backup of modified files)
+.pc
