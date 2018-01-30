@@ -1,0 +1,2 @@
+debian/additional_files/cpu-energy-meter.conf /etc/modules-load.d
+debian/additional_files/59-msr.rules /lib/udev/rules.d/

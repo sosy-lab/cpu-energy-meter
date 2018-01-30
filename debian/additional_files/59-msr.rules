@@ -1,0 +1,1 @@
+SUBSYSTEM=="msr", GROUP="msr", MODE="0640"

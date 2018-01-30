@@ -1,0 +1,31 @@
+Source: cpu-energy-meter
+Section: utils
+Priority: optional
+Maintainer: Thomas Bunk <tbunk1989@gmail.com>
+Build-Depends: debhelper (>= 9),
+               libcap-dev
+Standards-Version: 3.9.8
+Homepage: https://github.com/sosy-lab/cpu-energy-meter
+Vcs-Git: https://github.com/sosy-lab/cpu-energy-meter.git
+Vcs-Browser: https://github.com/sosy-lab/cpu-energy-meter
+
+Package: cpu-energy-meter
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Framework to monitor the consumed power in various domains
+ CPU Energy Meter is a software utility and library, which allows one to
+ monitor power at very fine time granularities (few tens of milliseconds).
+ . 
+ Power monitoring is available for the following power domains:
+  per package domain (CPU socket)
+  per core domain (all the cpu cores on a package)
+  per uncore domain (uncore components, e.g. integrated graphics, client
+   parts only)
+  per memory node (memory local to a package, server parts only)
+  per platform (all devices in the platform that receive power from
+   integraded power delivery mechanism, e.g., processor cores, SOC, memory,
+   add-on or peripheral devices)
+ .
+ To do this, the tool uses an architected capability in Intel(r) processors 
+ which is called RAPL (Runtime Average Power Limiting).
+ RAPL is available on Intel(r) codename Sandy Bridge and later processors.
