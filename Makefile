@@ -1,6 +1,8 @@
+VERSION = 0.9
+
 CC = gcc
 CFLAGS = -I.
-LIBS=-lm -lcap
+LIBS =-lm -lcap
 
 TARGET = cpu-energy-meter
 SOURCES = cpu-energy-meter.c cpuid.c msr.c rapl.c util.c
@@ -9,7 +11,7 @@ OBJECTS = $(SOURCES:.c=.o)
 AUX = README.md LICENSE
 
 DESTDIR :=
-PREFIX := /usr/local
+PREFIX := /usr
 BINDIR = $(PREFIX)/bin
 MODULEDIR = /etc/modules-load.d
 
@@ -29,21 +31,11 @@ clean:
 .PHONY: install
 install: all
 	install -d $(DESTDIR)$(BINDIR)
-	install -g msr -m 2611 $(TARGET) $(DESTDIR)$(BINDIR)
-	setcap cap_sys_rawio=ep $(DESTDIR)$(BINDIR)/$(TARGET)
-	test -d $(DESTDIR)$(MODULEDIR) || mkdir -p $(DESTDIR)$(MODULEDIR)
-	rm -f $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
-	@echo "# This file was created by $(TARGET)." >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
-	@echo "# The kernel module is required in order for $(TARGET) to be executed \
-	successfully." >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
-	echo "msr" >> $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
-	#systemctl restart systemd-modules-load.service
+	install $(TARGET) $(DESTDIR)$(BINDIR)
 
 .PHONY: uninstall
 uninstall:
 	-rm -f $(DESTDIR)$(BINDIR)/$(TARGET)
-	-rm -f $(DESTDIR)$(MODULEDIR)/$(TARGET).conf
-	#-systemctl restart systemd-modules-load.service
 
 .PHONY: gprof 	# outdated functionality that is currently broken;
 		# will be fixed in a future update
