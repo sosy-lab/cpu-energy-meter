@@ -20,7 +20,7 @@ remove_group() {
   delgroup msr
   udevadm control --reload-rules
   udevadm trigger
-  systemctl restart systemd-modules-load.service
+  deb-systemd-invoke restart systemd-modules-load.service
 }
 
 
