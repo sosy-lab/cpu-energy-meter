@@ -1,5 +1,5 @@
-cpu-energy-meter (0.9-1) unstable; urgency=medium
+cpu-energy-meter (1.0-1) UNRELEASED; urgency=medium
 
   * Initial release.
 
- -- Thomas Bunk <tbunk1989@gmail.com>  Mon, 29 Jan 2018 17:07:51 +0100
+ -- Philipp Wendler <debian@philippwendler.de>  Wed, 31 Jan 2018 14:00:59 +0100
