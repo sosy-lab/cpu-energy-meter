@@ -11,7 +11,7 @@ OBJECTS = $(SOURCES:.c=.o)
 AUX = README.md LICENSE
 
 DESTDIR :=
-PREFIX := /usr
+PREFIX := /usr/local
 BINDIR = $(PREFIX)/bin
 MODULEDIR = /etc/modules-load.d
 
