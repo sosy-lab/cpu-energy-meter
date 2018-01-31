@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/sosy-lab/cpu-energy-meter
 
 Package: cpu-energy-meter
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, dh-systemd
+Depends: ${shlibs:Depends}, ${misc:Depends}, init-system-helpers (>= 1.3)
 Description: Framework to monitor the consumed power in various domains
  CPU Energy Meter is a software utility and library, which allows one to
  monitor power at very fine time granularities (few tens of milliseconds).
