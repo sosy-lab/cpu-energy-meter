@@ -27,15 +27,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_util
 #define _h_util
 
-#include <stdint.h>
-#include <sys/capability.h>
-
 static const uid_t UID_NOBODY = 65534;
 static const gid_t GID_NOGROUP = 65534;
 
 enum { TEMPORARY = 0, PERMANENT = 1 };
-
-int8_t AverageThreeBytes(int8_t a, int8_t b, int8_t c);
 
 /*
  * The documentation regarding the capabilities was taken from the linux manual pages (i.e.,
