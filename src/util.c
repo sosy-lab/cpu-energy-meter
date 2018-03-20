@@ -40,6 +40,15 @@ static uid_t orig_uid = -1;
 static gid_t orig_groups[NGROUPS_MAX];
 
 /*
+ * Test method for writing unit tests
+ */
+int8_t AverageThreeBytes(int8_t a, int8_t b, int8_t c) {
+  return (int8_t)(((int16_t)a + (int16_t)b + (int16_t)c) / 3);
+}
+
+
+
+/*
  * Drop all capabilities that the process is currently in possession of.
  *
  * Return 0 on success, or -1 otherwise.
