@@ -18,10 +18,14 @@ set -e
 # the debian-policy package
 
 config_group() {
-  addgroup --system msr
-  udevadm control --reload-rules
-  udevadm trigger
-  deb-systemd-invoke restart systemd-modules-load.service
+  if ! [ $(getent group msr) ]; then
+    addgroup --system msr
+    udevadm control --reload-rules
+    udevadm trigger
+    deb-systemd-invoke restart systemd-modules-load.service
+  else
+    echo "Fround group 'msr' on the working machine. Skipping step"
+  fi
 }
 
 config_bin() {
