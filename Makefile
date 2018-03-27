@@ -4,88 +4,59 @@ DESTDIR :=
 PREFIX := /usr/local
 BINDIR = $(PREFIX)/bin
 
-#TODO: move unity into a subdir of cpu-energy-meter? Ask PW
-PATH_UNITY = ../unity/src/
-PATH_SOURCEFILES = src/
-PATH_TESTFILES = test/
-PATH_BUILD = build/
-PATH_OBJECTS = build/objs/
-PATH_RESULTS = build/results/
-BUILD_PATHS = $(PATH_BUILD) $(PATH_OBJECTS) $(PATH_RESULTS)
+SRC_DIR = src/
+TEST_DIR = test/
+BUILD_DIR = build/
+OBJ_DIR = build/obj/
+BUILD_PATHS = $(BUILD_DIR) $(OBJ_DIR)
 
-CC =gcc -c
-LINK =gcc
-CFLAGS =-I. -I$(PATH_UNITY) -I$(PATH_SOURCEFILES)
+# The parameters below are required by CMock
+TEST_BUILD_DIR ?= ${BUILD_DIR}/test
+TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
+OBJ = ${OBJ_DIR}
+
+CC =gcc
+CFLAGS =-I. -I$(SRC_DIR)
 LIBS =-lm -lcap
 
 TARGET_BIN = cpu-energy-meter
 _SOURCES = cpu-energy-meter.c cpuid.c msr.c rapl.c util.c
-SOURCES = $(patsubst %,$(PATH_SOURCEFILES)%,$(_SOURCES)) #convert to $PATH_SOURCEFILES/_SOURCES
+SOURCES = $(patsubst %,$(SRC_DIR)%,$(_SOURCES)) #convert to $SRC_DIR/_SOURCES
 _HEADERS = cpuid.h intel-family.h msr.h rapl.h util.h
-HEADERS = $(patsubst %,$(PATH_SOURCEFILES)%,$(_HEADERS)) #convert to $PATH_SOURCEFILES/_HEADERS
-TESTFILES = $(wildcard $(PATH_TESTFILES)*.c)
+HEADERS = $(patsubst %,$(SRC_DIR)%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
+TESTFILES = $(wildcard $(TEST_DIR)*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
-OBJECTS = $(patsubst %,$(PATH_OBJECTS)%,$(_OBJECTS)) #convert to $PATH_OBJECTS/_OBJECTS
+OBJECTS = $(patsubst %,$(OBJ_DIR)%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
 AUX = README.md LICENSE
 
-.PHONY: all
-all:	$(BUILD_PATHS) $(TARGET_BIN)
+.PHONY: default
+default: all
 
-# Create object files from PATH_SOURCEFILES/*.c in PATH_OBJECTS/*.o
-$(PATH_OBJECTS)%.o:: $(PATH_SOURCEFILES)%.c $(HEADERS)
-	$(CC) $(CFLAGS) $< -o $@
+.PHONY: all
+all: $(BUILD_PATHS) $(TARGET_BIN)
+
+# Create object files from SRC_DIR/*.c in OBJ_DIR/*.o
+$(OBJ_DIR)%.o:: $(SRC_DIR)%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Create the cpu-energy-meter binary.
 $(TARGET_BIN): $(OBJECTS)
-	$(LINK) $(CFLAGS) -o $@ $^ $(LIBS)
-
-
-# Tell the compiler to take all Test*.c files in TESTFILES dir, and invent for each a
-# corresponding Test*.txt file in PATH_RESULTS folder
-# I.e.: test/*.c -> build/results/Test*.txt
-RESULTS = $(patsubst $(PATH_TESTFILES)Test%.c,$(PATH_RESULTS)Test%.txt,$(TESTFILES) )
-
-PASSED = `grep -s PASS $(PATH_RESULTS)*.txt`
-FAIL = `grep -s FAIL $(PATH_RESULTS)*.txt`
-IGNORE = `grep -s IGNORE $(PATH_RESULTS)*.txt`
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 .PHONY: test
-test: $(BUILD_PATHS) $(RESULTS)
-	@echo "-----------------------\nIGNORES:\n-----------------------"
-	@echo "$(IGNORE)"
-	@echo "-----------------------\nFAILURES:\n-----------------------"
-	@echo "$(FAIL)"
-	@echo "-----------------------\nPASSED:\n-----------------------"
-	@echo "$(PASSED)"
-	@echo "\nDONE"
+test: $(BUILD_PATHS)
+	ruby vendor/CMock/scripts/create_makefile.rb
 
-# Run executable ('$<') and pipe the combined output of stdout and stderr \
-# to the specified dir given in $@ (i.e., PATH_BUILD/*.out)
-$(PATH_RESULTS)%.txt: $(PATH_BUILD)%.out
-	-./$< > $@ 2>&1
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-$(PATH_BUILD)Test%.out: $(PATH_OBJECTS)Test%.o $(PATH_OBJECTS)%.o $(PATH_UNITY)unity.o
-	$(LINK) -o $@ $^ $(LIBS)
-
-$(PATH_OBJECTS)%.o:: $(PATH_TESTFILES)%.c
-	$(CC) $(CFLAGS) $< -o $@
-
-$(PATH_OBJECTS)%.o:: $(PATH_UNITY)%.c $(PATH_UNITY)%.h
-	$(CC) $(CFLAGS) $< -o $@
-
-$(PATH_BUILD):
-	mkdir -p $(PATH_BUILD)
-
-$(PATH_OBJECTS):
-	mkdir -p $(PATH_OBJECTS)
-
-$(PATH_RESULTS):
-	mkdir -p $(PATH_RESULTS)
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 
 .PHONY: clean
 clean:
 	rm -f $(TARGET_BIN)
-	rm -rf $(PATH_BUILD)
+	rm -rf $(BUILD_DIR)
 
 .PHONY: install
 install: all
@@ -120,6 +91,7 @@ distclean: clean
 	-rm -f $(DESTDIR)$(TARGET_BIN)-[0-9]*.[0-9]*.tar.gz
 
 # Keep the following intermediate files after make has been executed
-.PRECIOUS: $(PATH_BUILD)Test%.out
-.PRECIOUS: $(PATH_OBJECTS)%.o
-.PRECIOUS: $(PATH_RESULTS)%.txt
+.PRECIOUS: $(OBJ_DIR)%.o
+
+-include ${TEST_MAKEFILE}
+
