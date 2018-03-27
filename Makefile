@@ -45,7 +45,7 @@ $(TARGET_BIN): $(OBJECTS)
 
 .PHONY: test
 test: $(BUILD_PATHS)
-	ruby vendor/CMock/scripts/create_makefile.rb
+	ruby scripts/create_makefile.rb
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

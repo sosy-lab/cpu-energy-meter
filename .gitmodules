@@ -1,3 +1,4 @@
 [submodule "vendor/CMock"]
 	path = vendor/CMock
 	url = https://github.com/ThrowTheSwitch/CMock.git
+	branch = master
