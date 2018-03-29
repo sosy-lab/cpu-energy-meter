@@ -27,7 +27,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/capability.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -90,7 +89,7 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
   gid_t newgid = gid > 0 ? gid : getgid(), oldgid = getegid();
   uid_t newuid = uid > 0 ? uid : getuid(), olduid = geteuid();
 
-  if (olduid != 0) {
+  if (olduid != 0 && oldgid != 0) {
     return;
   }
 

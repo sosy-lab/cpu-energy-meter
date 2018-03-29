@@ -27,6 +27,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_util
 #define _h_util
 
+#include <sys/capability.h>
+
 static const uid_t UID_NOBODY = 65534;
 static const gid_t GID_NOGROUP = 65534;
 
