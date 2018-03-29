@@ -80,20 +80,3 @@ void get_vendor_name(char *vendor) {
   cast_uint_to_str(vendor3, c.ecx);
   sprintf(vendor, "%s%s%s", vendor1, vendor2, vendor3);
 }
-
-#if 0
-void cpuid_test()
-{
-    char vendor[12];
-    get_vendor_name(vendor);
-    printf("%s\n", vendor);
-}
-
-int main()
-{
-    cpuid_test();
-    uint32_t ps;
-    ps = get_processor_signature();
-    printf("processor signature: 0x%08x\n", ps);
-}
-#endif
