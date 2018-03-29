@@ -17,6 +17,7 @@ OBJ = ${OBJ_DIR}
 
 CC =gcc
 CFLAGS =-I. -I$(SRC_DIR)
+LDFLAGS =-Wl,--no-as-needed -lm -lcap
 LIBS =-lm -lcap
 
 TARGET_BIN = cpu-energy-meter
@@ -42,6 +43,13 @@ $(OBJ_DIR)%.o:: $(SRC_DIR)%.c
 # Create the cpu-energy-meter binary.
 $(TARGET_BIN): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+.PHONY: setup
+# Needs to be executed with root-rights ('sudo make run')
+setup: $(TARGET_BIN)
+	chgrp msr $<
+	chmod 2711 $<
+	setcap cap_sys_rawio=ep $<
 
 .PHONY: test
 test: $(BUILD_PATHS)
