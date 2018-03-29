@@ -30,6 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_rapl
 #define _h_rapl
 
+#include <sched.h>
 #include <stdint.h>
 
 #define MY_ERROR -1
@@ -44,6 +45,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern uint64_t debug_enabled;
 
+// Visible for testing
+extern double RAPL_TIME_UNIT;
+extern double RAPL_ENERGY_UNIT;
+extern double RAPL_DRAM_ENERGY_UNIT;
+extern double RAPL_POWER_UNIT;
+
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
@@ -56,6 +63,8 @@ typedef struct APIC_ID_t {
   uint64_t os_id;
 } APIC_ID_t;
 
+void config_msr_table();
+
 int init_rapl();
 int terminate_rapl();
 
@@ -67,6 +76,8 @@ uint64_t get_num_rapl_nodes();
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
 
+int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
+                              double *total_energy_consumed_joules);
 int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed);
@@ -82,6 +93,7 @@ typedef struct pkg_rapl_parameters_t {
 } pkg_rapl_parameters_t;
 int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
 
+double rapl_dram_energy_units_probe(double rapl_energy_units);
 void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power);
 
 /* Utilities */

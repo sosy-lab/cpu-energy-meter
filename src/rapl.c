@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include <math.h>
-#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -185,6 +184,49 @@ int build_topology() {
   return err;
 }
 
+void config_msr_table() {
+  // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
+  msr_support_table = (unsigned char *)calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
+
+  uint64_t msr = 0;
+  int cpu = 0;
+  int err_read_msr = 0;
+
+  // values for unit-multiplier
+  err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
+  msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
+
+  // values for package-msr
+  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
+  msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
+  msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
+
+  // values for dram msr
+  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
+  msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+
+  // values for core msr
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
+  msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+
+  // values for uncore msr
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
+  msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
+  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+
+  // value for psys msr
+  err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
+  msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+}
+
 /*!
  * This function must be called before calling any other function from this class.
  * \return 0 on success, -1 otherwise
@@ -238,46 +280,7 @@ int init_rapl() {
   drop_capabilities();
   drop_root_privileges_by_id(PERMANENT, UID_NOBODY, GID_NOGROUP);
 
-  // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
-  msr_support_table = (unsigned char *)calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
-
-  uint64_t msr;
-  int cpu = 0;
-  int err_read_msr = 0;
-
-  // values for unit-multiplier
-  err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
-  msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for package-msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
-  msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for dram msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for core msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for uncore msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // value for psys msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+  config_msr_table();
 
   err = read_rapl_units();
 
@@ -375,7 +378,7 @@ uint64_t get_cpu_from_node(uint64_t node) {
 
 int get_rapl_unit_multiplier(uint64_t cpu, rapl_unit_multiplier_t *unit_obj) {
   int err = 0;
-  uint64_t msr;
+  uint64_t msr = 0;
   rapl_unit_multiplier_msr_t unit_msr;
 
   err = !is_supported_msr(MSR_RAPL_POWER_UNIT);
@@ -398,7 +401,7 @@ int get_rapl_unit_multiplier(uint64_t cpu, rapl_unit_multiplier_t *unit_obj) {
 int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
                               double *total_energy_consumed_joules) {
   int err = 0;
-  uint64_t msr;
+  uint64_t msr = 0;
   energy_status_msr_t domain_msr;
   cpu_set_t old_context;
 
