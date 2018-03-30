@@ -45,7 +45,7 @@ $(TARGET_BIN): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 .PHONY: setup
-# Needs to be executed with root-rights ('sudo make run')
+# Needs to be executed with root-rights ('sudo make setup')
 setup: $(TARGET_BIN)
 	chgrp msr $<
 	chmod 2711 $<

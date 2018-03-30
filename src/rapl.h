@@ -51,6 +51,9 @@ extern double RAPL_ENERGY_UNIT;
 extern double RAPL_DRAM_ENERGY_UNIT;
 extern double RAPL_POWER_UNIT;
 
+// Visible for testing
+extern uint32_t processor_signature;
+
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
@@ -62,6 +65,9 @@ typedef struct APIC_ID_t {
   uint64_t pkg_id;
   uint64_t os_id;
 } APIC_ID_t;
+
+// Visible for testing
+extern APIC_ID_t **pkg_map;
 
 void config_msr_table();
 

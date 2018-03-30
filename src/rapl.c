@@ -542,7 +542,7 @@ double convert_to_seconds(unsigned int raw) {
  */
 int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *pkg_obj) {
   int err = 0;
-  uint64_t msr;
+  uint64_t msr = 0;
   rapl_parameters_msr_t domain_msr;
 
   err = !is_supported_msr(MSR_RAPL_PKG_POWER_INFO);
@@ -564,6 +564,16 @@ int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *pkg_obj) {
   return err;
 }
 
+/*!
+ * Calculates the measurement interval between the msr probes.
+ * The goal is to rarely measure as possible, but often enough so that no overflow will be left out.
+ *
+ * The calculation is based on the values of 'RAPL_ENERGY_UNIT' in [J] and 'thermal_spec_power' in
+ * [W], and is computed as follows [unit in seconds]:
+ * ((2^32 - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power
+ *
+ * For the final result, the value from the above formula is taken and divided by two afterwards.
+ */
 void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power) {
   double result = ((pow(2, 32) - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power;
   result = result / 2 - 1;
