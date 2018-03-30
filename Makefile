@@ -7,6 +7,8 @@ BINDIR = $(PREFIX)/bin
 SRC_DIR = src/
 TEST_DIR = test/
 BUILD_DIR = build/
+SCRIPT_DIR = scripts/
+VENDOR_DIR = vendor/
 OBJ_DIR = build/obj/
 BUILD_PATHS = $(BUILD_DIR) $(OBJ_DIR)
 
@@ -28,7 +30,7 @@ HEADERS = $(patsubst %,$(SRC_DIR)%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
 TESTFILES = $(wildcard $(TEST_DIR)*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
 OBJECTS = $(patsubst %,$(OBJ_DIR)%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
-AUX = README.md LICENSE
+AUX = README.md LICENSE .clang-format
 
 .PHONY: default
 default: all
@@ -88,7 +90,7 @@ gprof: all
 dist:
 	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
 	mkdir $(DESTDIR)$(TARGET_BIN)-$(VERSION)
-	cp --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(DESTDIR)$(TARGET_BIN)-$(VERSION)
+	cp -r --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(SCRIPT_DIR) $(VENDOR_DIR) $(DESTDIR)$(TARGET_BIN)-$(VERSION)
 	tar cf - $(DESTDIR)$(TARGET_BIN)-$(VERSION) | gzip -9c > $(DESTDIR)$(TARGET_BIN)-$(VERSION).tar.gz
 	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
 
