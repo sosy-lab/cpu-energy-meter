@@ -13,7 +13,7 @@ OBJ_DIR = build/obj/
 BUILD_PATHS = $(BUILD_DIR) $(OBJ_DIR)
 
 # The parameters below are required by CMock
-TEST_BUILD_DIR ?= ${BUILD_DIR}/test
+TEST_BUILD_DIR ?= ${BUILD_DIR}test
 TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
 OBJ = ${OBJ_DIR}
 
@@ -21,6 +21,7 @@ CC =gcc
 CFLAGS =-I. -I$(SRC_DIR)
 LDFLAGS =-Wl,--no-as-needed -lm -lcap
 LIBS =-lm -lcap
+export
 
 TARGET_BIN = cpu-energy-meter
 _SOURCES = cpu-energy-meter.c cpuid.c msr.c rapl.c util.c
@@ -36,7 +37,7 @@ AUX = README.md LICENSE .clang-format
 default: all
 
 .PHONY: all
-all: $(BUILD_PATHS) $(TARGET_BIN)
+all: $(BUILD_PATHS) test $(TARGET_BIN)
 
 # Create object files from SRC_DIR/*.c in OBJ_DIR/*.o
 $(OBJ_DIR)%.o:: $(SRC_DIR)%.c
@@ -56,6 +57,7 @@ setup: $(TARGET_BIN)
 .PHONY: test
 test: $(BUILD_PATHS)
 	ruby scripts/create_makefile.rb
+	$(MAKE) -s -f $(TEST_MAKEFILE) $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -102,6 +104,4 @@ distclean: clean
 
 # Keep the following intermediate files after make has been executed
 .PRECIOUS: $(OBJ_DIR)%.o
-
--include ${TEST_MAKEFILE}
 
