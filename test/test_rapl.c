@@ -269,6 +269,8 @@ void test_RaplDramEnergyUnitsProbe_ReturnsCorrectValues(void) {
 }
 
 void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
+  TEST_IGNORE();
+
   // Setup some additional config for this test
   RAPL_POWER_UNIT = 0.125;
   pkg_map = (APIC_ID_t **)malloc(sizeof(APIC_ID_t *));
