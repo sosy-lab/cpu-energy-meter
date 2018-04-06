@@ -25,10 +25,10 @@ export
 
 TARGET_BIN = cpu-energy-meter
 _SOURCES = cpu-energy-meter.c cpuid.c msr.c rapl.c util.c
-SOURCES = $(patsubst %,$(SRC_DIR)%,$(_SOURCES)) #convert to $SRC_DIR/_SOURCES
+SOURCES = $(patsubst %,$(SRC_DIR)/%,$(_SOURCES)) #convert to $SRC_DIR/_SOURCES
 _HEADERS = cpuid.h intel-family.h msr.h rapl.h util.h
-HEADERS = $(patsubst %,$(SRC_DIR)%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
-TESTFILES = $(wildcard $(TEST_DIR)*.c)
+HEADERS = $(patsubst %,$(SRC_DIR)/%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
+TESTFILES = $(wildcard $(TEST_DIR)/*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
 OBJECTS = $(patsubst %,$(OBJ_DIR)/%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
 AUX = README.md LICENSE .clang-format
@@ -90,17 +90,17 @@ gprof: all
 
 .PHONY: dist
 dist:
-	-rm -rf $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
-	mkdir $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
-	cp -r --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(SCRIPT_DIR) $(VENDOR_DIR) $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
-	tar cf - $(DESTDIR)/$(TARGET_BIN)-$(VERSION) | gzip -9c > $(DESTDIR)/$(TARGET_BIN)-$(VERSION).tar.gz
-	-rm -rf $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
+	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
+	mkdir $(DESTDIR)$(TARGET_BIN)-$(VERSION)
+	cp -r --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(SCRIPT_DIR) $(VENDOR_DIR) $(DESTDIR)$(TARGET_BIN)-$(VERSION)
+	tar cf - $(DESTDIR)$(TARGET_BIN)-$(VERSION) | gzip -9c > $(DESTDIR)$(TARGET_BIN)-$(VERSION).tar.gz
+	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
 
 .PHONY: distclean
 distclean: clean
-	rm -f $(DESTDIR)/$(TARGET_BIN)
-	-rm -rf $(DESTDIR)/$(TARGET_BIN)-[0-9]*.[0-9]*
-	-rm -f $(DESTDIR)/$(TARGET_BIN)-[0-9]*.[0-9]*.tar.gz
+	rm -f $(DESTDIR)$(TARGET_BIN)
+	-rm -rf $(DESTDIR)$(TARGET_BIN)-[0-9]*.[0-9]*
+	-rm -f $(DESTDIR)$(TARGET_BIN)-[0-9]*.[0-9]*.tar.gz
 
 # Keep the following intermediate files after make has been executed
 .PRECIOUS: $(OBJ_DIR)%.o
