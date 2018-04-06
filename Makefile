@@ -57,7 +57,7 @@ setup: $(TARGET_BIN)
 .PHONY: test
 test: $(BUILD_PATHS)
 	ruby scripts/create_makefile.rb
-	$(MAKE) -s -f $(TEST_MAKEFILE) $@
+	$(MAKE) -f $(TEST_MAKEFILE) $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)

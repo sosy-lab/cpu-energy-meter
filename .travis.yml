@@ -3,6 +3,11 @@ compiler: gcc
 
 os: linux
 
+addons:
+  apt:
+    packages:
+      - libcap-dev
+
 script:
   - make clean
   - make test
