@@ -4,16 +4,16 @@ DESTDIR :=
 PREFIX := /usr/local
 BINDIR = $(PREFIX)/bin
 
-SRC_DIR = src/
-TEST_DIR = test/
-BUILD_DIR = build/
-SCRIPT_DIR = scripts/
-VENDOR_DIR = vendor/
-OBJ_DIR = build/obj/
+SRC_DIR = ./src
+TEST_DIR = ./test
+BUILD_DIR = ./build
+SCRIPT_DIR = ./scripts
+VENDOR_DIR = ./vendor
+OBJ_DIR = ./build/obj
 BUILD_PATHS = $(BUILD_DIR) $(OBJ_DIR)
 
 # The parameters below are required by CMock
-TEST_BUILD_DIR ?= ${BUILD_DIR}test
+TEST_BUILD_DIR ?= ${BUILD_DIR}/test
 TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
 OBJ = ${OBJ_DIR}
 
@@ -30,14 +30,14 @@ _HEADERS = cpuid.h intel-family.h msr.h rapl.h util.h
 HEADERS = $(patsubst %,$(SRC_DIR)%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
 TESTFILES = $(wildcard $(TEST_DIR)*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
-OBJECTS = $(patsubst %,$(OBJ_DIR)%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
+OBJECTS = $(patsubst %,$(OBJ_DIR)/%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
 AUX = README.md LICENSE .clang-format
 
 .PHONY: default
 default: all
 
 .PHONY: all
-all: $(BUILD_PATHS) test $(TARGET_BIN)
+all: $(BUILD_PATHS) $(TARGET_BIN)
 
 # Create object files from SRC_DIR/*.c in OBJ_DIR/*.o
 $(OBJ_DIR)%.o:: $(SRC_DIR)%.c
@@ -90,17 +90,17 @@ gprof: all
 
 .PHONY: dist
 dist:
-	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
-	mkdir $(DESTDIR)$(TARGET_BIN)-$(VERSION)
-	cp -r --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(SCRIPT_DIR) $(VENDOR_DIR) $(DESTDIR)$(TARGET_BIN)-$(VERSION)
-	tar cf - $(DESTDIR)$(TARGET_BIN)-$(VERSION) | gzip -9c > $(DESTDIR)$(TARGET_BIN)-$(VERSION).tar.gz
-	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)
+	-rm -rf $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
+	mkdir $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
+	cp -r --parents $(SOURCES) $(HEADERS) $(TESTFILES) Makefile $(AUX) $(SCRIPT_DIR) $(VENDOR_DIR) $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
+	tar cf - $(DESTDIR)/$(TARGET_BIN)-$(VERSION) | gzip -9c > $(DESTDIR)/$(TARGET_BIN)-$(VERSION).tar.gz
+	-rm -rf $(DESTDIR)/$(TARGET_BIN)-$(VERSION)
 
 .PHONY: distclean
 distclean: clean
-	rm -f $(DESTDIR)$(TARGET_BIN)
-	-rm -rf $(DESTDIR)$(TARGET_BIN)-[0-9]*.[0-9]*
-	-rm -f $(DESTDIR)$(TARGET_BIN)-[0-9]*.[0-9]*.tar.gz
+	rm -f $(DESTDIR)/$(TARGET_BIN)
+	-rm -rf $(DESTDIR)/$(TARGET_BIN)-[0-9]*.[0-9]*
+	-rm -f $(DESTDIR)/$(TARGET_BIN)-[0-9]*.[0-9]*.tar.gz
 
 # Keep the following intermediate files after make has been executed
 .PRECIOUS: $(OBJ_DIR)%.o
