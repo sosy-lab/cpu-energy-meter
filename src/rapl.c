@@ -566,10 +566,11 @@ int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *pkg_obj) {
 
 /*!
  * Calculates the measurement interval between the msr probes.
- * The goal is to rarely measure as possible, but often enough so that no overflow will be left out.
+ * The goal is to measure as rarely as possible, but often enough so that no overflow will be
+ * missed out.
  *
  * The calculation is based on the values of 'RAPL_ENERGY_UNIT' in [J] and 'thermal_spec_power' in
- * [W], and is computed as follows [unit in seconds]:
+ * [W], and is computed as follows (unit in [s]econds):
  * ((2^32 - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power
  *
  * For the final result, the value from the above formula is taken and divided by two afterwards.

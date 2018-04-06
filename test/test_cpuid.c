@@ -32,4 +32,3 @@ void test_GetProcessorSignature_should_ReturnFamily6(void) {
 
   TEST_ASSERT_EQUAL_UINT(expected, family);
 }
-
