@@ -1,0 +1,8 @@
+language: C
+compiler: gcc
+
+os: linux
+
+script:
+  - make clean
+  - make test
