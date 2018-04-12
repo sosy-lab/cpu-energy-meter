@@ -17,9 +17,9 @@ TEST_BUILD_DIR ?= ${BUILD_DIR}/test
 TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
 OBJ = ${OBJ_DIR}
 
-CC =gcc
+CC =gcc -g
 CFLAGS =-I. -I$(SRC_DIR)
-LDFLAGS =-Wl,--no-as-needed -lm -lcap
+LDFLAGS =-Wl,--no-as-needed -lm -lcap -DTEST
 LIBS =-lm -lcap
 export
 

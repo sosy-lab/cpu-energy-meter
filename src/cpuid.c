@@ -28,6 +28,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cpuid.h"
 
 void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
+#ifndef TEST
   asm(
 #if defined(__LP64__)       /* 64-bit architecture */
       "cpuid;"              /* execute the cpuid instruction */
@@ -40,6 +41,14 @@ void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
 #endif
       : "=a"(ci->eax), [ebx] "=r"(ci->ebx), "=c"(ci->ecx), "=d"(ci->edx)
       : "a"(eax_in), "c"(ecx_in));
+
+#else // when unit-testing, compile with -DTest for using preset values instead of executing the
+      // above
+  ci->eax = 0x806e9;
+  ci->ebx = 0x756e6547;
+  ci->ecx = 0x6c65746e;
+  ci->edx = 0x49656e69;
+#endif
 }
 
 cpuid_info_t get_vendor_signature() {
