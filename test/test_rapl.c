@@ -269,13 +269,7 @@ void test_RaplDramEnergyUnitsProbe_ReturnsCorrectValues(void) {
 }
 
 void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
-  TEST_IGNORE();
-
-  // Setup some additional config for this test
   RAPL_POWER_UNIT = 0.125;
-  pkg_map = (APIC_ID_t **)malloc(sizeof(APIC_ID_t *));
-  pkg_map[0] = (APIC_ID_t *)malloc(sizeof(APIC_ID_t));
-  pkg_map[0][0].os_id = 0;
 
   // Setup mocks
   uint64_t msr = 0;
@@ -293,15 +287,9 @@ void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
   TEST_ASSERT_EQUAL(15, pkg_parameters.thermal_spec_power_watts); // exp. 15W
   TEST_ASSERT_EQUAL(0, pkg_parameters.minimum_power_watts);       // exp. 0W
   TEST_ASSERT_EQUAL(0, pkg_parameters.maximum_power_watts);       // exp. 0W
-
-  // Free the allocated memory from the additional setup
-  if (pkg_map != NULL) {
-    free(pkg_map[0]);
-    free(pkg_map);
-  }
 }
 
-void test_CalculateProbeIntervalTime(void) {
+void test_CalculateProbeIntervalTime_ReturnsCorrectValues(void) {
   RAPL_ENERGY_UNIT = 6.103515625e-05; // some arbitrary value
   double thermal_spec_power = 15;     // some arbitrary value
 

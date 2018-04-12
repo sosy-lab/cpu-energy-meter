@@ -239,9 +239,11 @@ int init_rapl() {
   char vendor[12];
   get_vendor_name(vendor);
   if (sig.ebx != 0x756e6547 || sig.ecx != 0x6c65746e || sig.edx != 0x49656e69) {
+#ifndef TEST // don't print the error-msg when unit-testing
     fprintf(stderr,
             "The processor on the working machine is not from Intel. Found %s-processor instead.\n",
             vendor);
+#endif
     return MY_ERROR;
   }
   if (debug_enabled) {
@@ -256,12 +258,14 @@ int init_rapl() {
             (processor_signature & 0xfffffff0));
   }
   if (family != 6) {
-    // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
-    // except "Netburst"
+  // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
+  // except "Netburst"
+#ifndef TEST // don't print the error-msg when unit-testing
     fprintf(
         stderr,
         "The Intel processor must be from family 6, but instead a cpu from family %d was found.\n",
         family);
+#endif
     return MY_ERROR;
   }
 
@@ -373,7 +377,11 @@ uint64_t get_num_rapl_nodes() {
 }
 
 uint64_t get_cpu_from_node(uint64_t node) {
+#ifndef TEST
   return pkg_map[node][0].os_id;
+#else // simply return value 0 when unit-testing, as the pkg_map isn't initialized then
+  return 0;
+#endif
 }
 
 int get_rapl_unit_multiplier(uint64_t cpu, rapl_unit_multiplier_t *unit_obj) {
