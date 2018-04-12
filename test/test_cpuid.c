@@ -10,7 +10,7 @@ void test_GetVendorName_should_ReturnGenuineIntel(void) {
   TEST_ASSERT_EQUAL_STRING(expected, actual);
 }
 
-void test_GetVendorSignature_should_asdf(void) {
+void test_GetVendorSignature_should_ReturnCorrectCpuIdValues(void) {
   uint32_t exp_ebx = 0x756e6547; // translates to "Genu"
   uint32_t exp_ecx = 0x6c65746e; // translates to "ineI"
   uint32_t exp_edx = 0x49656e69; // translates to "ntel"
