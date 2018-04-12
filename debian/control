@@ -3,7 +3,7 @@ Section: utils
 Priority: optional
 Maintainer: Thomas Bunk <tbunk1989@gmail.com>
 Build-Depends: debhelper (>= 9),
-               libcap2
+               libcap-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/sosy-lab/cpu-energy-meter
 Vcs-Git: https://github.com/sosy-lab/cpu-energy-meter.git
