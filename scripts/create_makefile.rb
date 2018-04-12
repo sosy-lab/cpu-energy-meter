@@ -190,7 +190,7 @@ File.open(TEST_MAKEFILE, "w") do |mkfile|
 
   # Create test summary task
   mkfile.puts "test_summary:"
-  mkfile.puts "\t@UNITY_DIR=${UNITY_DIR} ruby ${CMOCK_DIR}/scripts/test_summary.rb #{suppress_error ? '--silent' : ''}"
+  mkfile.puts "\t@UNITY_DIR=${UNITY_DIR} ruby ./scripts/test_summary.rb #{suppress_error ? '--silent' : ''}"
   mkfile.puts ""
   mkfile.puts ".PHONY: test_summary"
   mkfile.puts ""
