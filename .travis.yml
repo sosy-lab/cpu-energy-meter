@@ -15,6 +15,6 @@ script:
 notifications:
   email:
     recipients:
-      - TBunk1989@gmail.com
+      - benchexec-dev@googlegroups.com
     on_success: change
     on_failure: always
