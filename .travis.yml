@@ -11,3 +11,10 @@ addons:
 script:
   - make clean
   - make test
+
+notifications:
+  email:
+    recipients:
+      - TBunk1989@gmail.com
+    on_success: change
+    on_failure: always
