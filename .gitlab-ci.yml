@@ -1,7 +1,6 @@
-image: ubuntu:xenial
+image: registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test:latest
 
 before_script:
-  - apt-get update -qq && apt-get install -y -qq build-essential libcap-dev
   - make clean
 
 build:
