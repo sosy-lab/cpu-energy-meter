@@ -1,5 +1,8 @@
 image: registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test:latest
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 before_script:
   - make clean
 
