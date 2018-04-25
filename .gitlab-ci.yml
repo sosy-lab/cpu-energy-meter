@@ -1,3 +1,4 @@
+# This image is created from test/Dockerfile
 image: registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test:latest
 
 variables:
@@ -5,6 +6,11 @@ variables:
 
 before_script:
   - make clean
+
+stages:
+  - build
+  - test
+  - dist
 
 build:
   stage: build
@@ -18,3 +24,11 @@ test:
   stage: test
   script:
     - make test
+
+deb:
+  stage: dist
+  script:
+    - scripts/create_deb.sh
+  artifacts:
+    paths:
+      - "*.deb"

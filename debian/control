@@ -1,7 +1,7 @@
 Source: cpu-energy-meter
 Section: utils
 Priority: optional
-Maintainer: Thomas Bunk <tbunk1989@gmail.com>
+Maintainer: Philipp Wendler <debian@philippwendler.de>
 Build-Depends: debhelper (>= 9),
                libcap-dev
 Standards-Version: 3.9.8

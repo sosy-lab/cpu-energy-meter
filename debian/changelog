@@ -1,4 +1,4 @@
-cpu-energy-meter (1.0-1) UNRELEASED; urgency=medium
+cpu-energy-meter (1.0-1) xenial; urgency=medium
 
   * Initial release.
 
