@@ -32,7 +32,7 @@ HEADERS = $(patsubst %,$(SRC_DIR)/%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
 TESTFILES = $(wildcard $(TEST_DIR)/*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
 OBJECTS = $(patsubst %,$(OBJ_DIR)/%,$(_OBJECTS)) #convert to $OBJ_DIR/_OBJECTS
-AUX = README.md LICENSE .clang-format .travis.yml
+AUX = README.md LICENSE .clang-format
 
 .PHONY: default
 default: all
