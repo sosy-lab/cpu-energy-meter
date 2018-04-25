@@ -314,7 +314,7 @@ void test_ReadRaplUnits_ReturnsCorrectValues(void) {
   read_msr_ExpectAndReturn(0, MSR_RAPL_POWER_UNIT, &msr, read_msr_retval);
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
-  int retval = read_rapl_units();
+  int __attribute__((unused)) retval = read_rapl_units();
   TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_POWER_UNIT));
 
   int delta = 1e-14;

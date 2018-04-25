@@ -19,7 +19,8 @@ OBJ = ${OBJ_DIR}
 
 CC =gcc -g
 CFLAGS =-I. -I$(SRC_DIR) -std=gnu99 -Wall -Wextra -Wpedantic -Werror
-LDFLAGS =-Wl,--no-as-needed -lm -lcap -DTEST
+TEST_CFLAGS =-DTEST $(CFLAGS) -Wno-unused-parameter
+LDFLAGS =-Wl,--no-as-needed -lm -lcap
 LIBS =-lm -lcap
 export
 
