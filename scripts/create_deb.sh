@@ -15,5 +15,5 @@ tar xf "$TAR"
 cd "cpu-energy-meter-$VERSION/"
 cp -a ../debian .
 dch -v "$VERSION-1" "New upstream version"
-dh_make -y -s --createorig -p cpu-energy-meter -c mit -f "../$TAR" || true
+dh_make -y -s --createorig -p cpu-energy-meter -c bsd -f "../$TAR" || true
 dpkg-buildpackage -us -uc
