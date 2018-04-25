@@ -135,7 +135,7 @@ void print_domain(int socket, int domain) {
 }
 
 void print_intermediate_results() {
-  int i = 0;
+  uint64_t i = 0;
   int domain;
 
   if (cum_energy_J != NULL) {
@@ -156,7 +156,7 @@ void print_intermediate_results() {
 }
 
 // Returns 1 if the process is supposed to continue, 0 if the process is supposed to stop
-int handle_signal(int sig, siginfo_t *info) {
+int handle_signal(int sig) {
   if (sig < 0) {
     return 1;
 
@@ -214,30 +214,25 @@ void do_print_energy_info() {
   }
 
   sigset_t signal_set = get_sigset();
-  int i = 0;
   int domain = 0;
-  int err = 0;
+  int __attribute__((__unused__)) err = 0; // TODO: check error values or remove
   uint64_t node = 0;
   double new_sample;
   double delta;
 
   double prev_sample[num_node][RAPL_NR_DOMAIN];
   cum_energy_J = calloc(num_node, sizeof(double *));
-  for (i = 0; i < num_node; i++) {
+  for (uint64_t i = 0; i < num_node; i++) {
     cum_energy_J[i] = calloc(RAPL_NR_DOMAIN, sizeof(double));
   }
 
-  char time_buffer[32];
   struct timeval tv;
-  int msec;
-  uint64_t tsc;
-  uint64_t freq;
 
   /* don't buffer if piped */
   setbuf(stdout, NULL);
 
   /* Read initial values */
-  for (i = node; i < num_node; i++) {
+  for (uint64_t i = node; i < num_node; i++) {
     for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
         err = get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
@@ -261,7 +256,7 @@ void do_print_energy_info() {
     // If a signal is received, perform one probe before handling it.
     rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
 
-    for (i = node; i < num_node; i++) {
+    for (uint64_t i = node; i < num_node; i++) {
       for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
         if (is_supported_domain(domain)) {
           err = get_rapl_energy_info(domain, i, &new_sample);
@@ -282,7 +277,7 @@ void do_print_energy_info() {
     gettimeofday(&tv, NULL);
     measurement_end_time = tv;
     if (rcvd_signal != -1) {
-      do_continue = handle_signal(rcvd_signal, &signal_info);
+      do_continue = handle_signal(rcvd_signal);
     }
   }
 }

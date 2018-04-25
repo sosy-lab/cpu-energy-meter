@@ -133,16 +133,14 @@ void parse_apic_id(cpuid_info_t info_l0, cpuid_info_t info_l1, APIC_ID_t *my_id)
 int build_topology() {
 
   int err;
-  uint64_t i, j;
   uint64_t max_pkg = 0;
   os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
-  cpu_set_t curr_context;
   cpu_set_t prev_context;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
   os_map = (APIC_ID_t *)malloc(os_cpu_count * sizeof(APIC_ID_t));
 
-  for (i = 0; i < os_cpu_count; i++) {
+  for (uint64_t i = 0; i < os_cpu_count; i++) {
 
     err = bind_cpu(i, &prev_context);
 
@@ -170,12 +168,12 @@ int build_topology() {
 
   // Construct a pkg map: pkg_map[pkg id][APIC_ID ... APIC_ID]
   pkg_map = (APIC_ID_t **)malloc(num_nodes * sizeof(APIC_ID_t *));
-  for (i = 0; i < num_nodes; i++) {
+  for (uint64_t i = 0; i < num_nodes; i++) {
     pkg_map[i] = (APIC_ID_t *)malloc(num_pkg_threads * sizeof(APIC_ID_t));
   }
 
   uint64_t p, t;
-  for (i = 0; i < os_cpu_count; i++) {
+  for (uint64_t i = 0; i < os_cpu_count; i++) {
     p = os_map[i].pkg_id;
     t = os_map[i].smt_id * num_pkg_cores + os_map[i].core_id;
     pkg_map[p][t] = os_map[i];

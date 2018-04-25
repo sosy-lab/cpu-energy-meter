@@ -119,7 +119,7 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
       abort();
     }
 #else
-    if (setregid((permanent ? newgid : -1), newgid) == -1) {
+    if (setregid((permanent ? newgid : (gid_t)-1), newgid) == -1) {
       abort();
     }
 #endif
@@ -132,7 +132,7 @@ void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid) {
       abort();
     }
 #else
-    if (setreuid((permanent ? newuid : -1), newuid) == -1) {
+    if (setreuid((permanent ? newuid : (uid_t)-1), newuid) == -1) {
       abort();
     }
 #endif

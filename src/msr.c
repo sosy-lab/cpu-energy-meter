@@ -38,7 +38,7 @@ size_t fds_size;
  *
  * Returns 0 on success and MY_ERROR, if at least one msr-file fails to open.
  */
-int open_msr_fd(int num_nodes) {
+int open_msr_fd(uint64_t num_nodes) {
   int err = 0;
   int fd = 0;
   char msr_path[32];
@@ -46,8 +46,8 @@ int open_msr_fd(int num_nodes) {
   fds_size = num_nodes;
   fds = malloc(fds_size * sizeof(int));
 
-  for (int i = 0; i < fds_size; i++) {
-    sprintf(msr_path, "/dev/cpu/%d/msr", i);
+  for (size_t i = 0; i < fds_size; i++) {
+    sprintf(msr_path, "/dev/cpu/%ld/msr", i);
     fd = open(msr_path, O_RDONLY);
     fds[i] = fd;
 
@@ -90,7 +90,7 @@ int read_msr(int cpu, uint64_t address, uint64_t *value) {
  * Close each file descriptor and free the allocated memory for the fds-array.
  */
 void close_msr_fd() {
-  for (int i = 0; i < fds_size; i++) {
+  for (size_t i = 0; i < fds_size; i++) {
     if (fds[i] >= 0) {
       close(fds[i]);
     }

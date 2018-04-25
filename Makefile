@@ -18,7 +18,7 @@ TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
 OBJ = ${OBJ_DIR}
 
 CC =gcc -g
-CFLAGS =-I. -I$(SRC_DIR)
+CFLAGS =-I. -I$(SRC_DIR) -std=gnu99 -Wall -Wextra -Wpedantic -Werror
 LDFLAGS =-Wl,--no-as-needed -lm -lcap -DTEST
 LIBS =-lm -lcap
 export
