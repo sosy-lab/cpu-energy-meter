@@ -115,16 +115,16 @@ void parse_apic_id(cpuid_info_t info_l0, cpuid_info_t info_l1, APIC_ID_t *my_id)
 
   // Get the SMT ID
   uint64_t smt_mask_width = info_l0.eax & 0x1f;
-  uint64_t smt_mask = ~((-1) << smt_mask_width);
+  uint64_t smt_mask = (1 << smt_mask_width) - 1;
   my_id->smt_id = info_l0.edx & smt_mask;
 
   // Get the core ID
   uint64_t core_mask_width = info_l1.eax & 0x1f;
-  uint64_t core_mask = (~((-1) << core_mask_width)) ^ smt_mask;
+  uint64_t core_mask = (((1 << core_mask_width) -1)) ^ smt_mask;
   my_id->core_id = (info_l1.edx & core_mask) >> smt_mask_width;
 
   // Get the package ID
-  uint64_t pkg_mask = (-1) << core_mask_width;
+  uint64_t pkg_mask = (~(1 << core_mask_width)) + 1;
   my_id->pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
 }
 
