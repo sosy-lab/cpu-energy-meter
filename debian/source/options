@@ -1,3 +1,2 @@
 tar-ignore = ".vendor/"
 tar-ignore = ".scripts/"
-tar-ignore = ".travis.yml"

@@ -50,10 +50,14 @@ $(TARGET_BIN): $(OBJECTS)
 
 .PHONY: setup
 # Needs to be executed with root-rights ('sudo make setup')
-setup: $(TARGET_BIN)
-	chgrp msr $<
-	chmod 2711 $<
-	setcap cap_sys_rawio=ep $<
+setup:
+ifneq ("$(wildcard $(TARGET_BIN))","")
+	chgrp msr $(TARGET_BIN)
+	chmod 2711 $(TARGET_BIN)
+	setcap cap_sys_rawio=ep $(TARGET_BIN)
+else
+	@echo "No '$(TARGET_BIN)'-bin found. Consider using 'make' first."
+endif
 
 .PHONY: test
 test: $(BUILD_PATHS)

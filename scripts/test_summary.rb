@@ -2,7 +2,6 @@
 suppress_error = !ARGV.nil? && !ARGV.empty? && (ARGV[0].upcase == "--SILENT")
 
 begin
-  #puts "asdf"
   require "./scripts/unity_test_summary.rb"
 
   build_dir = ENV.fetch('BUILD_DIR', './build')

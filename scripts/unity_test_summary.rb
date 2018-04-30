@@ -70,7 +70,7 @@ class UnityTestSummary
 
     @report += "\n"
 
-    if passed > 0
+    if @passed > 0
       @report += "--------------------------\n"
       @report += "UNITY PASSED TEST SUMMARY\n"
       @report += "--------------------------\n"
