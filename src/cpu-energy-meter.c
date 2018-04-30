@@ -215,7 +215,6 @@ void do_print_energy_info() {
 
   sigset_t signal_set = get_sigset();
   int domain = 0;
-  int __attribute__((__unused__)) err = 0; // TODO: check error values or remove
   uint64_t node = 0;
   double new_sample;
   double delta;
@@ -235,7 +234,7 @@ void do_print_energy_info() {
   for (uint64_t i = node; i < num_node; i++) {
     for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
-        err = get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
+        get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
       }
     }
   }
@@ -259,7 +258,7 @@ void do_print_energy_info() {
     for (uint64_t i = node; i < num_node; i++) {
       for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
         if (is_supported_domain(domain)) {
-          err = get_rapl_energy_info(domain, i, &new_sample);
+          get_rapl_energy_info(domain, i, &new_sample);
           delta = new_sample - prev_sample[i][domain];
 
           /* Handle wraparound */
