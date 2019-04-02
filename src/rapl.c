@@ -67,7 +67,6 @@ uint64_t num_pkg_threads = 0;  // number of physical threads per package
 uint64_t num_pkg_cores = 0;    // number of cores per package
 uint64_t os_cpu_count = 0;     // number of OS cpus
 
-APIC_ID_t *os_map;
 static uint64_t *pkg_map; // node-to-cpu mapping
 
 typedef struct rapl_unit_multiplier_t {
@@ -138,7 +137,7 @@ int build_topology() {
   cpu_set_t prev_context;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
-  os_map = (APIC_ID_t *)malloc(os_cpu_count * sizeof(APIC_ID_t));
+  APIC_ID_t os_map[os_cpu_count];
 
   for (uint64_t i = 0; i < os_cpu_count; i++) {
 
@@ -298,10 +297,6 @@ int init_rapl() {
  */
 int terminate_rapl() {
   close_msr_fd();
-
-  if (NULL != os_map) {
-    free(os_map);
-  }
 
   if (NULL != pkg_map) {
     free(pkg_map);
