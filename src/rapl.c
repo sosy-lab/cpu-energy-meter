@@ -68,7 +68,7 @@ uint64_t num_pkg_cores = 0;    // number of cores per package
 uint64_t os_cpu_count = 0;     // number of OS cpus
 
 APIC_ID_t *os_map;
-APIC_ID_t **pkg_map;
+static uint64_t *pkg_map; // node-to-cpu mapping
 
 typedef struct rapl_unit_multiplier_t {
   double power;
@@ -166,17 +166,17 @@ int build_topology() {
   num_pkg_cores = num_pkg_threads / num_core_threads;
   num_nodes = max_pkg + 1;
 
-  // Construct a pkg map: pkg_map[pkg id][APIC_ID ... APIC_ID]
-  pkg_map = (APIC_ID_t **)malloc(num_nodes * sizeof(APIC_ID_t *));
-  for (uint64_t i = 0; i < num_nodes; i++) {
-    pkg_map[i] = (APIC_ID_t *)malloc(num_pkg_threads * sizeof(APIC_ID_t));
-  }
+  // Construct a pkg map: pkg_map[pkg id] = (os_id of first thread on pkg)
+  pkg_map = (uint64_t *)malloc(num_nodes * sizeof(uint64_t));
 
   uint64_t p, t;
   for (uint64_t i = 0; i < os_cpu_count; i++) {
     p = os_map[i].pkg_id;
+    assert(p < num_nodes);
     t = os_map[i].smt_id * num_pkg_cores + os_map[i].core_id;
-    pkg_map[p][t] = os_map[i];
+    if (t == 0) {
+      pkg_map[p] = os_map[i].os_id;
+    }
   }
 
   return err;
@@ -297,8 +297,6 @@ int init_rapl() {
  * \return 0 on success
  */
 int terminate_rapl() {
-  uint64_t i;
-
   close_msr_fd();
 
   if (NULL != os_map) {
@@ -306,9 +304,6 @@ int terminate_rapl() {
   }
 
   if (NULL != pkg_map) {
-    for (i = 0; i < num_nodes; i++) {
-      free(pkg_map[i]);
-    }
     free(pkg_map);
   }
 
@@ -376,7 +371,7 @@ uint64_t get_num_rapl_nodes() {
 
 uint64_t get_cpu_from_node(uint64_t node) {
 #ifndef TEST
-  return pkg_map[node][0].os_id;
+  return pkg_map[node];
 #else // simply return value 0 when unit-testing, as the pkg_map isn't initialized then
   return 0;
 #endif

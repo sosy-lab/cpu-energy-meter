@@ -66,9 +66,6 @@ typedef struct APIC_ID_t {
   uint64_t os_id;
 } APIC_ID_t;
 
-// Visible for testing
-extern APIC_ID_t **pkg_map;
-
 void config_msr_table();
 
 int init_rapl();
