@@ -1,14 +1,11 @@
+#include <sys/capability.h>
 #include <unistd.h>
 
 #include "unity.h"
 #include "util.h"
 
-void test_DropCapabilities_ReturnsSuccess(void) {
-  int expected = 0;
-  int actual = drop_capabilities();
-
-  TEST_ASSERT_FALSE(actual == -1);
-  TEST_ASSERT_EQUAL_INT(expected, actual);
+void test_DropCapabilities_DoesNotFail(void) {
+  drop_capabilities(); // terminates process if it fails
 }
 
 void test_DropCapabilities_should_ClearCaps(void) {

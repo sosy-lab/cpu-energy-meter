@@ -24,71 +24,58 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <grp.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #include "util.h"
 
+#include <err.h>
+#include <grp.h>
+#include <sys/capability.h>
+#include <unistd.h>
+
 /*
- * Drop all capabilities that the process is currently in possession of.
+ * The documentation regarding the capabilities was taken from the linux manual pages (i.e.,
+ * http://man7.org/linux/man-pages/man3/cap_get_proc.3.html and
+ * http://man7.org/linux/man-pages/man3/cap_clear.3.html) [links from Dec. 14, 2017].
  *
- * Return 0 on success, or -1 otherwise.
+ * Note that in order to execute the code on linux, the 'libcap-dev'-package needs to be available
+ * on the working machine.
  */
-int drop_capabilities() {
-  int err = 0;
-  cap_t capabilities;
 
-  /*
-   * Allocate a capability state in working storage, set the state to that of the calling process,
-   * and return a pointer to the newly created capability state.
-   */
-  capabilities = cap_get_proc();
-
+void drop_capabilities() {
+  // Allocate a capability state in working storage, set the state to that of the calling process,
+  // and return a pointer to the newly created capability state.
+  cap_t capabilities = cap_get_proc();
   if (capabilities == NULL) {
-    err = -1;
+    err(1, "Getting capabilities of process failed");
   }
 
-  /*
-   * Clear all capability flags.
-   */
-  if (!err) {
-    err = cap_clear(capabilities);
+  // Clear all capability flags.
+  if (cap_clear(capabilities)) {
+    err(1, "cap_clear failed");
+  }
+  if (cap_set_proc(capabilities)) {
+    err(1, "Dropping capabilities failed");
   }
 
-  if (!err) {
-    err = cap_set_proc(capabilities);
+  // Free the releasable memory, as the capability state in working storage is no longer required.
+  if (cap_free(capabilities)) {
+    err(1, "cap_free failed");
   }
-
-  /*
-   * Free the releasable memory, as the capability state in working storage is no longer required.
-   */
-  if (!err) {
-    err = cap_free(capabilities);
-  }
-
-  return err;
 }
 
-/**
- * Drop privileges permanently.
- * If either a positive uid or gid is passed as parameter, the value is taken as the new
- * uid or gid, respectively.
- *
- * Warning:
- * If any problems are encountered in attempting to perform the task, abort() is called, terminating
- * the process immediately. If any manipulation of privileges cannot complete successfully, it's
- * safest to assume that the process is in an unknown state, and you should not allow it to
- * continue.
+/*
+ * Documentation and source code for dropping and restoring the root privileges can be found at
+ * https://www.safaribooksonline.com/library/view/secure-programming-cookbook/0596003943/ch01s03.html
+ * [link from Nov. 28, 2017]
  */
+
 void drop_root_privileges_by_id(uid_t uid, gid_t gid) {
-  gid_t newgid = gid > 0 ? gid : getgid(), oldgid = getegid();
-  uid_t newuid = uid > 0 ? uid : getuid(), olduid = geteuid();
+  gid_t newgid = gid > 0 ? gid : getgid();
+  gid_t oldgid = getegid();
+  uid_t newuid = uid > 0 ? uid : getuid();
+  uid_t olduid = geteuid();
 
   if (olduid != 0 && oldgid != 0) {
-    return;
+    return; // currently not root, nothing can be done
   }
 
   /*
@@ -100,45 +87,22 @@ void drop_root_privileges_by_id(uid_t uid, gid_t gid) {
   }
 
   if (newgid != oldgid) {
-#if !defined(linux)
-    setegid(newgid);
-    if (setgid(newgid) == -1) {
-      abort();
-    }
-#else
     if (setregid(newgid, newgid) == -1) {
-      abort();
+      err(1, "Changing group id of process failed");
     }
-#endif
   }
 
   if (newuid != olduid) {
-#if !defined(linux)
-    seteuid(newuid);
-    if (setuid(newuid) == -1) {
-      abort();
-    }
-#else
     if (setreuid(newuid, newuid) == -1) {
-      abort();
+      err(1, "Changing user id of process failed");
     }
-#endif
   }
 
   /* verify that the changes were successful */
-    if (newgid != oldgid && (setegid(oldgid) != -1 || getegid() != newgid)) {
-      abort();
-    }
-    if (newuid != olduid && (seteuid(olduid) != -1 || geteuid() != newuid)) {
-      abort();
-    }
-}
-
-/**
- * Drop privileges permanently.
- *
- * See #drop_root_privileges_by_id(int, uid_t, gid_t) for further information.
- */
-void drop_root_privileges() {
-  drop_root_privileges_by_id(-1, -1);
+  if (newgid != oldgid && (setegid(oldgid) != -1 || getegid() != newgid)) {
+    errx(1, "Changing group id of process failed");
+  }
+  if (newuid != olduid && (seteuid(olduid) != -1 || geteuid() != newuid)) {
+    errx(1, "Changing user id of process failed");
+  }
 }
