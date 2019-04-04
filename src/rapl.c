@@ -67,7 +67,7 @@ uint64_t num_pkg_threads = 0;  // number of physical threads per package
 uint64_t num_pkg_cores = 0;    // number of cores per package
 uint64_t os_cpu_count = 0;     // number of OS cpus
 
-static uint64_t *pkg_map; // node-to-cpu mapping
+static node_t *pkg_map; // node-to-cpu mapping
 
 typedef struct rapl_unit_multiplier_t {
   double power;
@@ -166,7 +166,7 @@ int build_topology() {
   num_nodes = max_pkg + 1;
 
   // Construct a pkg map: pkg_map[pkg id] = (os_id of first thread on pkg)
-  pkg_map = (uint64_t *)malloc(num_nodes * sizeof(uint64_t));
+  pkg_map = (node_t *)malloc(num_nodes * sizeof(node_t));
 
   uint64_t p, t;
   for (uint64_t i = 0; i < os_cpu_count; i++) {
@@ -224,6 +224,14 @@ void config_msr_table() {
   msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 }
 
+node_t get_cpu_from_node(node_t node) {
+#ifndef TEST
+  return pkg_map[node];
+#else // simply return value 0 when unit-testing, as the pkg_map isn't initialized then
+  return 0;
+#endif
+}
+
 /*!
  * This function must be called before calling any other function from this class.
  * \return 0 on success, -1 otherwise
@@ -272,7 +280,7 @@ int init_rapl() {
     return MY_ERROR;
   }
 
-  err = open_msr_fd(num_nodes, pkg_map);
+  err = open_msr_fd(num_nodes, &get_cpu_from_node);
   if (err) {
     fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
     return MY_ERROR;
@@ -362,14 +370,6 @@ uint64_t is_supported_domain(uint64_t power_domain) {
  */
 uint64_t get_num_rapl_nodes() {
   return num_nodes;
-}
-
-uint64_t get_cpu_from_node(uint64_t node) {
-#ifndef TEST
-  return pkg_map[node];
-#else // simply return value 0 when unit-testing, as the pkg_map isn't initialized then
-  return 0;
-#endif
 }
 
 int get_rapl_unit_multiplier(uint64_t node, rapl_unit_multiplier_t *unit_obj) {
