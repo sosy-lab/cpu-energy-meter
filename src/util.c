@@ -64,6 +64,10 @@ int drop_capabilities() {
     err = cap_clear(capabilities);
   }
 
+  if (!err) {
+    err = cap_set_proc(capabilities);
+  }
+
   /*
    * Free the releasable memory, as the capability state in working storage is no longer required.
    */
