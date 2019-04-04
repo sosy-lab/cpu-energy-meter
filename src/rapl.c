@@ -272,7 +272,7 @@ int init_rapl() {
     return MY_ERROR;
   }
 
-  err = open_msr_fd(num_nodes);
+  err = open_msr_fd(num_nodes, pkg_map);
   if (err) {
     fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
     return MY_ERROR;

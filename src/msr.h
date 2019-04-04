@@ -101,7 +101,7 @@ typedef struct rapl_parameters_msr_t {
  *
  * @return 0 on success and MY_ERROR, if at least one node fails to open
  */
-int open_msr_fd(uint64_t num_nodes);
+int open_msr_fd(uint64_t num_nodes, uint64_t pkg_map[]);
 
 /**
  * Read the given MSR on the given CPU.

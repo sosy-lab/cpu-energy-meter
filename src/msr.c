@@ -38,7 +38,7 @@ size_t fds_size;
  *
  * Returns 0 on success and MY_ERROR, if at least one msr-file fails to open.
  */
-int open_msr_fd(uint64_t num_nodes) {
+int open_msr_fd(uint64_t num_nodes, uint64_t pkg_map[]) {
   int err = 0;
   int fd = 0;
   char msr_path[32];
@@ -47,7 +47,7 @@ int open_msr_fd(uint64_t num_nodes) {
   fds = malloc(fds_size * sizeof(int));
 
   for (size_t i = 0; i < fds_size; i++) {
-    sprintf(msr_path, "/dev/cpu/%ld/msr", i);
+    sprintf(msr_path, "/dev/cpu/%ld/msr", pkg_map[i]);
     fd = open(msr_path, O_RDONLY);
     fds[i] = fd;
 
