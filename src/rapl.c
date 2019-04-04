@@ -32,17 +32,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _GNU_SOURCE
 #endif
 
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include "cpuid.h"
 #include "intel-family.h"
 #include "msr.h"
 #include "rapl.h"
+#include "rapl-impl.h"
 #include "util.h"
+
+#include <assert.h>
+#include <math.h>
+#include <sched.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 uint64_t debug_enabled = 0;
 

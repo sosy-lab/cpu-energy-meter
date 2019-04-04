@@ -7,6 +7,7 @@
 #include "mock_msr.h"
 #include "mock_util.h"
 #include "rapl.h"
+#include "rapl-impl.h"
 
 const uint32_t INTEL_SIG = 526057;
 const cpuid_info_t CPUID = {22, 1970169159, 1818588270, 1231384169};

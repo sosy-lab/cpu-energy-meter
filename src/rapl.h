@@ -30,8 +30,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_rapl
 #define _h_rapl
 
-#include <sched.h>
 #include <stdint.h>
+#include <time.h>
 
 #define MY_ERROR -1
 
