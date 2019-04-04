@@ -64,13 +64,13 @@ int open_msr_fd(uint64_t num_nodes, uint64_t pkg_map[]) {
  *
  * Will return 0 on success and MY_ERROR on failure.
  */
-int read_msr(int cpu, uint64_t address, uint64_t *value) {
+int read_msr(uint64_t node, uint64_t address, uint64_t *value) {
   int err = 0;
   FILE *fp;
 
   // dup is used here to clone the fd. This way, we can close the stream afterwards, while we still
   // retain an open file descriptor.
-  fp = fdopen(dup(fds[cpu]), "r");
+  fp = fdopen(dup(fds[node]), "r");
   err = fp == NULL;
   if (!err) {
     err = (fseek(fp, address, SEEK_SET) != 0);

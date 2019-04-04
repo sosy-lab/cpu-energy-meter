@@ -104,11 +104,11 @@ typedef struct rapl_parameters_msr_t {
 int open_msr_fd(uint64_t num_nodes, uint64_t pkg_map[]);
 
 /**
- * Read the given MSR on the given CPU.
+ * Read the given MSR on the given node.
  *
  * @return 0 on success and MY_ERROR on failure
  */
-int read_msr(int cpu, uint64_t address, uint64_t *val);
+int read_msr(uint64_t node, uint64_t address, uint64_t *val);
 
 /**
  * Close each file descriptor and free the allocated array memory.

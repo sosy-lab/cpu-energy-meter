@@ -372,14 +372,14 @@ uint64_t get_cpu_from_node(uint64_t node) {
 #endif
 }
 
-int get_rapl_unit_multiplier(uint64_t cpu, rapl_unit_multiplier_t *unit_obj) {
+int get_rapl_unit_multiplier(uint64_t node, rapl_unit_multiplier_t *unit_obj) {
   int err = 0;
   uint64_t msr = 0;
   rapl_unit_multiplier_msr_t unit_msr;
 
   err = !is_supported_msr(MSR_RAPL_POWER_UNIT);
   if (!err) {
-    err = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
+    err = read_msr(node, MSR_RAPL_POWER_UNIT, &msr);
   }
   if (!err) {
     unit_msr = *(rapl_unit_multiplier_msr_t *)&msr;
@@ -394,7 +394,7 @@ int get_rapl_unit_multiplier(uint64_t cpu, rapl_unit_multiplier_t *unit_obj) {
 
 /* Common methods (should not be interfaced directly) */
 
-int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
+int get_total_energy_consumed(uint64_t node, uint64_t msr_address,
                               double *total_energy_consumed_joules) {
   int err = 0;
   uint64_t msr = 0;
@@ -403,8 +403,8 @@ int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
 
   err = !is_supported_msr(msr_address);
   if (!err) {
-    bind_cpu(cpu, &old_context); // improve performance on Linux
-    err = read_msr(cpu, msr_address, &msr);
+    bind_cpu(get_cpu_from_node(node), &old_context); // improve performance on Linux
+    err = read_msr(node, msr_address, &msr);
     bind_context(&old_context, NULL);
   }
 
@@ -433,8 +433,7 @@ int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
  * \return 0 on success, -1 otherwise
  */
 int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
-  uint64_t cpu = get_cpu_from_node(node);
-  return get_total_energy_consumed(cpu, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
+  return get_total_energy_consumed(node, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 /*
@@ -471,8 +470,7 @@ double rapl_dram_energy_units_probe(double rapl_energy_units) {
  * \return 0 on success, -1 otherwise
  */
 int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
-  uint64_t cpu = get_cpu_from_node(node);
-  return get_total_energy_consumed(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, total_energy_consumed_joules);
+  return get_total_energy_consumed(node, MSR_RAPL_DRAM_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 /*!
@@ -484,8 +482,7 @@ int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed_
  * \return 0 on success, -1 otherwise
  */
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
-  uint64_t cpu = get_cpu_from_node(node);
-  return get_total_energy_consumed(cpu, MSR_RAPL_PP0_ENERGY_STATUS, total_energy_consumed_joules);
+  return get_total_energy_consumed(node, MSR_RAPL_PP0_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 /*!
@@ -497,8 +494,7 @@ int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed_j
  * \return 0 on success, -1 otherwise
  */
 int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
-  uint64_t cpu = get_cpu_from_node(node);
-  return get_total_energy_consumed(cpu, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
+  return get_total_energy_consumed(node, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
 /*!
@@ -515,8 +511,7 @@ int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed_j
  * \return 0 on success, -1 otherwise
  */
 int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
-  uint64_t cpu = get_cpu_from_node(node);
-  return get_total_energy_consumed(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS,
+  return get_total_energy_consumed(node, MSR_RAPL_PLATFORM_ENERGY_STATUS,
                                    total_energy_consumed_joules);
 }
 
@@ -543,8 +538,7 @@ int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *pkg_obj) {
 
   err = !is_supported_msr(MSR_RAPL_PKG_POWER_INFO);
   if (!err) {
-    unsigned int cpu = get_cpu_from_node(node);
-    err = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
+    err = read_msr(node, MSR_RAPL_PKG_POWER_INFO, &msr);
   }
 
   if (!err) {

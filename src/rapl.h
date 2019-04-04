@@ -79,7 +79,7 @@ uint64_t get_num_rapl_nodes();
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
 
-int get_total_energy_consumed(uint64_t cpu, uint64_t msr_address,
+int get_total_energy_consumed(uint64_t node, uint64_t msr_address,
                               double *total_energy_consumed_joules);
 int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
 int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
