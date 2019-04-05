@@ -78,3 +78,11 @@ typedef struct rapl_parameters_msr_t {
 } rapl_parameters_msr_t;
 
 void config_msr_table();
+
+/**
+ * Check if MSR is supported on this machine.
+ */
+int is_supported_msr(off_t msr);
+
+int get_total_energy_consumed_via_msr(
+    int node, off_t msr_address, double *total_energy_consumed_joules);

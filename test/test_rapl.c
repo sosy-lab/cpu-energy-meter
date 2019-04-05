@@ -168,7 +168,7 @@ void test_GetTotalEnergyConsumed_ComputesCorrectValue(void) {
 
   // Test that the function completes and returns the correct value
   double consumed_energy = 0;
-  int retval = get_total_energy_consumed(cpu, msr_address, &consumed_energy);
+  int retval = get_total_energy_consumed_via_msr(cpu, msr_address, &consumed_energy);
   TEST_ASSERT_EQUAL_INT(0, retval);
   TEST_ASSERT_GREATER_THAN(0, consumed_energy);
 
@@ -203,7 +203,7 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   energy_status_msr_t domain_msr;
 
   // Test that for PKG_ENERGY_STATUS, the value from RAPL_ENERGY_UNIT is taken as multiplier
-  act_retval = get_total_energy_consumed(node, MSR_RAPL_PKG_ENERGY_STATUS, &energy_consumed);
+  act_retval = get_total_energy_consumed_via_msr(node, MSR_RAPL_PKG_ENERGY_STATUS, &energy_consumed);
   TEST_ASSERT_EQUAL(exp_retval, act_retval);
 
   exp_consumed_energy = 30182.876953125; // value computed by hand
@@ -218,7 +218,7 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   // Test that for DRAM_ENERGY_STATUS, the value from RAPL_DRAM_ENERGY_UNIT is taken as multiplier
-  act_retval = get_total_energy_consumed(node, MSR_RAPL_DRAM_ENERGY_STATUS, &energy_consumed);
+  act_retval = get_total_energy_consumed_via_msr(node, MSR_RAPL_DRAM_ENERGY_STATUS, &energy_consumed);
   TEST_ASSERT_EQUAL(exp_retval, act_retval);
 
   exp_consumed_energy = 580.0003254; // value computed by hand

@@ -212,13 +212,27 @@ void terminate_rapl() {
   num_nodes = 0;
 }
 
-/*!
- * \brief Check if MSR is supported on this machine.
- * \return 1 if supported, 0 otherwise
- */
-uint64_t is_supported_msr(uint64_t msr) {
-  return (uint64_t)msr_support_table[msr & MSR_SUPPORT_MASK];
+int is_supported_msr(off_t msr) {
+  return msr_support_table[msr & MSR_SUPPORT_MASK];
 }
+
+static off_t get_msr_for_domain(enum RAPL_DOMAIN power_domain) {
+  switch (power_domain) {
+  case RAPL_PKG:
+    return MSR_RAPL_PKG_ENERGY_STATUS;
+  case RAPL_PP0:
+    return MSR_RAPL_PP0_ENERGY_STATUS;
+  case RAPL_PP1:
+    return MSR_RAPL_PP1_ENERGY_STATUS;
+  case RAPL_DRAM:
+    return MSR_RAPL_DRAM_ENERGY_STATUS;
+  case RAPL_PSYS:
+    return MSR_RAPL_PLATFORM_ENERGY_STATUS;
+  default:
+    abort();
+  }
+}
+
 
 /*!
  * \brief Check if power domain (PKG, PP0, PP1, DRAM) is supported on this machine.
@@ -228,20 +242,7 @@ uint64_t is_supported_msr(uint64_t msr) {
  * \return 1 if supported, 0 otherwise
  */
 int is_supported_domain(enum RAPL_DOMAIN power_domain) {
-  switch (power_domain) {
-  case RAPL_PKG:
-    return is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS);
-  case RAPL_PP0:
-    return is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS);
-  case RAPL_PP1:
-    return is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS);
-  case RAPL_DRAM:
-    return is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS);
-  case RAPL_PSYS:
-    return is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS);
-  default:
-    abort();
-  }
+  return is_supported_msr(get_msr_for_domain(power_domain));
 }
 
 /*!
@@ -276,10 +277,8 @@ int get_rapl_unit_multiplier(uint64_t node, rapl_unit_multiplier_t *unit_obj) {
   return err;
 }
 
-/* Common methods (should not be interfaced directly) */
-
-int get_total_energy_consumed(int node, uint64_t msr_address,
-                              double *total_energy_consumed_joules) {
+int get_total_energy_consumed_via_msr(
+    int node, off_t msr_address, double *total_energy_consumed_joules) {
   int err = 0;
   uint64_t msr = 0;
   energy_status_msr_t domain_msr;
@@ -308,16 +307,10 @@ int get_total_energy_consumed(int node, uint64_t msr_address,
   return err;
 }
 
-/*!
- * \brief Get a pointer to the RAPL PKG energy consumed register.
- *
- * This read-only register provides energy consumed in joules for the package power domain since the
- * last machine reboot (or energy register wraparound)
- *
- * \return 0 on success, -1 otherwise
- */
-int get_pkg_total_energy_consumed(int node, double *total_energy_consumed_joules) {
-  return get_total_energy_consumed(node, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
+int get_total_energy_consumed(
+    int node, enum RAPL_DOMAIN power_domain, double *total_energy_consumed_joules) {
+  return get_total_energy_consumed_via_msr(
+      node, get_msr_for_domain(power_domain), total_energy_consumed_joules);
 }
 
 /*
@@ -343,60 +336,6 @@ double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_en
     }
     return rapl_energy_units;
   }
-}
-
-/*!
- * \brief Get a pointer to the RAPL DRAM energy consumed register.
- *
- * This read-only register provides energy consumed in joules for the DRAM power domain since the
- * last machine reboot (or energy register wraparound)
- *
- * \return 0 on success, -1 otherwise
- */
-int get_dram_total_energy_consumed(int node, double *total_energy_consumed_joules) {
-  return get_total_energy_consumed(node, MSR_RAPL_DRAM_ENERGY_STATUS, total_energy_consumed_joules);
-}
-
-/*!
- * \brief Get a pointer to the RAPL PP0 energy consumed register.
- *
- * This read-only register provides energy consumed in joules for the PP0 (core) power domain since
- * the last machine reboot (or energy register wraparound)
- *
- * \return 0 on success, -1 otherwise
- */
-int get_pp0_total_energy_consumed(int node, double *total_energy_consumed_joules) {
-  return get_total_energy_consumed(node, MSR_RAPL_PP0_ENERGY_STATUS, total_energy_consumed_joules);
-}
-
-/*!
- * \brief Get a pointer to the RAPL PP1 energy consumed register.
- *
- * This read-only register provides energy consumed in joules for the PP1 (uncore) power domain
- * since the last machine reboot (or energy register wraparound)
- *
- * \return 0 on success, -1 otherwise
- */
-int get_pp1_total_energy_consumed(int node, double *total_energy_consumed_joules) {
-  return get_total_energy_consumed(node, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
-}
-
-/*!
- * \brief Get a pointer to the RAPL plattform energy (psys) consumed register.
- *
- * This read-only register provides energy consumed in joules for the PSYS domain since the last
- * machine reboot (or energy register wraparound)
- *
- * According to Intel Software Devlopers Manual Volume 4, Table 2-38, the consumed energy is the
- * total energy consumed by all devices in the plattform that receive power from integrated power
- * delivery mechanism. Included plattform devices are processor cores, SOC, memory, add-on or
- * peripheral devies that get powered directly from the platform power delivery means.
- *
- * \return 0 on success, -1 otherwise
- */
-int get_psys_total_energy_consumed(int node, double *total_energy_consumed_joules) {
-  return get_total_energy_consumed(node, MSR_RAPL_PLATFORM_ENERGY_STATUS,
-                                   total_energy_consumed_joules);
 }
 
 double convert_to_watts(unsigned int raw) {

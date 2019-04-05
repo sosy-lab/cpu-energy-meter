@@ -36,7 +36,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MY_ERROR -1
 
 /* Power Domains */
-enum RAPL_DOMAIN { RAPL_PKG, RAPL_PP0, RAPL_PP1, RAPL_DRAM, RAPL_PSYS };
+enum RAPL_DOMAIN {
+  RAPL_PKG,
+  RAPL_PP0,
+  RAPL_PP1,
+  RAPL_DRAM,
+  /**
+   * According to Intel Software Devlopers Manual Volume 4, Table 2-38, the consumed energy is the
+   * total energy consumed by all devices in the plattform that receive power from integrated power
+   * delivery mechanism. Included plattform devices are processor cores, SOC, memory, add-on or
+   * peripheral devies that get powered directly from the platform power delivery means.
+   */
+  RAPL_PSYS,
+};
 #define RAPL_NR_DOMAIN 5 /* Number of power domains */
 
 extern uint64_t debug_enabled;
@@ -67,16 +79,16 @@ double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
 
 int get_num_rapl_nodes();
 
-uint64_t is_supported_msr(uint64_t msr);
 int is_supported_domain(enum RAPL_DOMAIN power_domain);
 
-int get_total_energy_consumed(int node, uint64_t msr_address,
-                              double *total_energy_consumed_joules);
-int get_pkg_total_energy_consumed(int node, double *total_energy_consumed);
-int get_pp0_total_energy_consumed(int node, double *total_energy_consumed);
-int get_pp1_total_energy_consumed(int node, double *total_energy_consumed);
-int get_dram_total_energy_consumed(int node, double *total_energy_consumed);
-int get_psys_total_energy_consumed(int node, double *total_energy_consumed);
+/**
+ * Read the energy consumed in joules for the given power domain of the given node
+ * since the last machine reboot (or energy-register wraparound).
+ *
+ * Returns 0 on success, -1 otherwise
+ */
+int get_total_energy_consumed(
+    int node, enum RAPL_DOMAIN power_domain, double *total_energy_consumed_joules);
 
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {

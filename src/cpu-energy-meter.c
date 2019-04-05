@@ -48,33 +48,6 @@ uint64_t print_rawtext = 0;
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
 
-int get_rapl_energy_info(uint64_t power_domain, int node, double *total_energy_consumed) {
-  int err;
-
-  switch (power_domain) {
-  case RAPL_PKG:
-    err = get_pkg_total_energy_consumed(node, total_energy_consumed);
-    break;
-  case RAPL_PP0:
-    err = get_pp0_total_energy_consumed(node, total_energy_consumed);
-    break;
-  case RAPL_PP1:
-    err = get_pp1_total_energy_consumed(node, total_energy_consumed);
-    break;
-  case RAPL_DRAM:
-    err = get_dram_total_energy_consumed(node, total_energy_consumed);
-    break;
-  case RAPL_PSYS:
-    err = get_psys_total_energy_consumed(node, total_energy_consumed);
-    break;
-  default:
-    err = MY_ERROR;
-    break;
-  }
-
-  return err;
-}
-
 void convert_time_to_string(struct timeval tv, char *time_buf) {
   time_t sec;
   int msec;
@@ -234,7 +207,7 @@ void do_print_energy_info() {
   for (int i = node; i < num_node; i++) {
     for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
-        get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
+        get_total_energy_consumed(i, domain, &prev_sample[i][domain]);
       }
     }
   }
@@ -258,7 +231,7 @@ void do_print_energy_info() {
     for (int i = node; i < num_node; i++) {
       for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
         if (is_supported_domain(domain)) {
-          get_rapl_energy_info(domain, i, &new_sample);
+          get_total_energy_consumed(i, domain, &new_sample);
           delta = new_sample - prev_sample[i][domain];
 
           /* Handle wraparound */
