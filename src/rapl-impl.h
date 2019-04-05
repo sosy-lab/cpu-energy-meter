@@ -66,15 +66,18 @@ typedef struct energy_status_msr_t {
 } energy_status_msr_t;
 
 /* PKG domain */
-typedef struct rapl_parameters_msr_t {
-  unsigned int thermal_spec_power : 15;
-  unsigned int : 1;
-  unsigned int minimum_power : 15;
-  unsigned int : 1;
-  unsigned int maximum_power : 15;
-  unsigned int : 1;
-  unsigned int maximum_limit_time_window : 6;
-  unsigned int : 10;
+typedef union {
+  uint64_t as_uint64_t;
+  struct rapl_parameters_msr_t {
+    unsigned int thermal_spec_power : 15;
+    unsigned int : 1;
+    unsigned int minimum_power : 15;
+    unsigned int : 1;
+    unsigned int maximum_power : 15;
+    unsigned int : 1;
+    unsigned int maximum_limit_time_window : 6;
+    unsigned int : 10;
+  } fields;
 } rapl_parameters_msr_t;
 
 void config_msr_table();
@@ -86,3 +89,8 @@ int is_supported_msr(off_t msr);
 
 int get_total_energy_consumed_via_msr(
     int node, off_t msr_address, double *total_energy_consumed_joules);
+
+/**
+ * Get the maximum power that the given node can consume in watts.
+ */
+double get_max_power(int node);

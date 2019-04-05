@@ -268,31 +268,22 @@ void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
   read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
-  // Test that the method completes and returns successfully
-  pkg_rapl_parameters_t pkg_parameters;
-  int retval = get_pkg_rapl_parameters(node, &pkg_parameters);
-  TEST_ASSERT_EQUAL(0, retval);
-
-  // Test that the pkg_parameters contains the correct values
-  TEST_ASSERT_EQUAL(15, pkg_parameters.thermal_spec_power_watts); // exp. 15W
-  TEST_ASSERT_EQUAL(0, pkg_parameters.maximum_power_watts);       // exp. 0W
+  double retval = get_max_power(node);
+  TEST_ASSERT_EQUAL(120*RAPL_POWER_UNIT, retval); // exp. 15W
 }
 
 void test_CalculateProbeIntervalTime_ReturnsCorrectValues(void) {
   RAPL_ENERGY_UNIT = 6.103515625e-05; // some arbitrary value
-  double thermal_spec_power = 15;     // some arbitrary value
+  RAPL_DRAM_ENERGY_UNIT = 6.103515625e-05; // some arbitrary value
 
-  int exp_result_sec = 8737;     // computed by hand; value equates to nearly 2,5h
-  int exp_result_ns = 133331298; // computed by hand
+  long exp_result_sec = 131070; // computed by hand; value equates to roughly 36h
 
-  struct timespec signal_timelimit;
-  calculate_probe_interval_time(&signal_timelimit, thermal_spec_power);
+  long seconds = get_maximum_read_interval();
 
-  // RAPL_ENERGY_UNIT as thermal_spec_power of 15W should lead to nearly 5 hours
+  // RAPL_ENERGY_UNIT with thermal_spec_power of 1W should lead to almost 73 hours
   // until an overflow comes to pass. We take half of this value as interval time
   // for the probes of the msr's.
-  TEST_ASSERT_EQUAL_INT(exp_result_sec, signal_timelimit.tv_sec);
-  TEST_ASSERT_EQUAL_INT(exp_result_ns, signal_timelimit.tv_nsec);
+  TEST_ASSERT_EQUAL_INT64(exp_result_sec, seconds);
 }
 
 void test_ReadRaplUnits_ReturnsCorrectValues(void) {

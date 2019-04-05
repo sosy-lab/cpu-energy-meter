@@ -51,6 +51,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define warnx(...)
 #endif
 
+static const int FALLBACK_THERMAL_SPEC_POWER = 200.0; // maximum power in watts that we assume if we cannot read it
+static const int MIN_THERMAL_SPEC_POWER = 1.0e-03; // minimum power in watts that we assume as a legal value
+
 uint64_t debug_enabled = 0;
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
@@ -75,6 +78,10 @@ typedef struct rapl_unit_multiplier_t {
   double energy;
   double time;
 } rapl_unit_multiplier_t;
+
+unsigned int umax(unsigned int a, unsigned int b) {
+  return a > b ? a : b;
+}
 
 // For documentation, see:
 // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
@@ -338,58 +345,45 @@ double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_en
   }
 }
 
-double convert_to_watts(unsigned int raw) {
-  return RAPL_POWER_UNIT * raw;
-}
-
-/*!
- * \brief Get a pointer to the RAPL PKG power info register
- *
- * This read-only register provides information about the max/min power limiting settings available
- * on the machine. This register is defined in the pkg_rapl_parameters_t data structure.
- *
- * \return 0 on success, -1 otherwise
- */
-int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *pkg_obj) {
-  int err = 0;
-  uint64_t msr = 0;
-  rapl_parameters_msr_t domain_msr;
-
-  err = !is_supported_msr(MSR_RAPL_PKG_POWER_INFO);
-  if (!err) {
-    err = read_msr(node, MSR_RAPL_PKG_POWER_INFO, &msr);
+long get_maximum_read_interval() {
+  // get maximum power consumption over all nodes (this will lead to the fastest overflow)
+  double max_power = 1;
+  for (int node = 0; node < num_nodes; node ++) {
+    max_power = fmax(max_power, get_max_power(node));
   }
 
-  if (!err) {
-    domain_msr = *(rapl_parameters_msr_t *)&msr;
+  // get smallest energy unit over all domains (this will lead to the fastest overflow)
+  double energy_unit = fmin(RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
 
-    pkg_obj->thermal_spec_power_watts = convert_to_watts(domain_msr.thermal_spec_power);
-    pkg_obj->maximum_power_watts = convert_to_watts(domain_msr.maximum_power);
-  }
+  double seconds = ((pow(2, 32) - 1) * energy_unit) / max_power;
 
-  return err;
+  // divide by two to guarantee that we measure twice between overflows
+  seconds = seconds / 2;
+  assert(seconds >= 2);
+
+  return floor(seconds - 1);
 }
 
-/*!
- * Calculates the measurement interval between the msr probes.
- * The goal is to measure as rarely as possible, but often enough so that no overflow will be
- * missed out.
- *
- * The calculation is based on the values of 'RAPL_ENERGY_UNIT' in [J] and 'thermal_spec_power' in
- * [W], and is computed as follows (unit in [s]econds):
- * ((2^32 - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power
- *
- * For the final result, the value from the above formula is taken and divided by two afterwards.
- */
-void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power) {
-  double result = ((pow(2, 32) - 1) * RAPL_ENERGY_UNIT) / thermal_spec_power;
-  result = result / 2 - 1;
+double get_max_power(int node) {
+  if (!is_supported_msr(MSR_RAPL_PKG_POWER_INFO)) {
+    goto err;
+  }
 
-  long seconds = floor(result);
-  long nano_seconds = result * pow(10, 9) - seconds * pow(10, 9);
+  rapl_parameters_msr_t rapl_parameters;
+  if (read_msr(node, MSR_RAPL_PKG_POWER_INFO, &rapl_parameters.as_uint64_t) != 0) {
+    goto err;
+  }
 
-  signal_timelimit->tv_sec = seconds;
-  signal_timelimit->tv_nsec = nano_seconds;
+  const unsigned int max_raw_power =
+      umax(rapl_parameters.fields.thermal_spec_power, rapl_parameters.fields.maximum_power);
+  const double max_power_watts = max_raw_power * RAPL_POWER_UNIT;
+
+  if (max_power_watts > MIN_THERMAL_SPEC_POWER) {
+    return max_power_watts;
+  }
+
+err:
+  return FALLBACK_THERMAL_SPEC_POWER;
 }
 
 /* Utilities */

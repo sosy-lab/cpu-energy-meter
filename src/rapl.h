@@ -31,7 +31,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _h_rapl
 
 #include <stdint.h>
-#include <time.h>
 
 #define MY_ERROR -1
 
@@ -90,15 +89,16 @@ int is_supported_domain(enum RAPL_DOMAIN power_domain);
 int get_total_energy_consumed(
     int node, enum RAPL_DOMAIN power_domain, double *total_energy_consumed_joules);
 
-/*! \brief RAPL parameters info structure, PKG domain */
-typedef struct pkg_rapl_parameters_t {
-  double thermal_spec_power_watts;
-  double maximum_power_watts;
-} pkg_rapl_parameters_t;
-int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *rapl_parameters);
+/**
+ * Calculate how often the RAPL values need to be read such that overflows can be detected reliably.
+ * The goal is to measure as rarely as possible, but often enough so that no overflow will be
+ * missed out.
+ *
+ * Returns the number of seconds that should be waited between reads at most.
+ */
+long get_maximum_read_interval();
 
 double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units);
-void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power);
 
 /* Utilities */
 int read_rapl_units();

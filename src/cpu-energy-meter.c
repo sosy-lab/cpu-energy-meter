@@ -35,8 +35,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rapl.h"
 #include "util.h"
 
-#define DEFAULT_THERMAL_SPEC_POWER 200.0
-
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
 const char *version = "1.1-dev";
 
@@ -158,24 +156,9 @@ void compute_msr_probe_interval_time(struct timespec *signal_timelimit) {
     return;
   }
 
-  double thermal_spec_power = DEFAULT_THERMAL_SPEC_POWER;
-
-  int err = 0;
-  pkg_rapl_parameters_t pkg_parameters;
-
-  err = get_pkg_rapl_parameters(0, &pkg_parameters);
-  if (!err) {
-    double epsilon = 1.0e-03;
-    if ((abs(pkg_parameters.thermal_spec_power_watts - 0) > epsilon) ||
-        (abs(pkg_parameters.maximum_power_watts - 0) > epsilon)) {
-      // if either of the values is not equal to zero, we take the higher value as the new value for
-      // thermal_spec_power.
-      thermal_spec_power =
-          fmax(pkg_parameters.thermal_spec_power_watts, pkg_parameters.maximum_power_watts);
-    }
-  }
-
-  calculate_probe_interval_time(signal_timelimit, thermal_spec_power);
+  long seconds = get_maximum_read_interval();
+  signal_timelimit->tv_sec = seconds;
+  signal_timelimit->tv_nsec = 0;
 }
 
 void do_print_energy_info() {
