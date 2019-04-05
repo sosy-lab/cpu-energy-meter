@@ -52,19 +52,19 @@ int get_rapl_energy_info(uint64_t power_domain, int node, double *total_energy_c
   int err;
 
   switch (power_domain) {
-  case PKG:
+  case RAPL_PKG:
     err = get_pkg_total_energy_consumed(node, total_energy_consumed);
     break;
-  case PP0:
+  case RAPL_PP0:
     err = get_pp0_total_energy_consumed(node, total_energy_consumed);
     break;
-  case PP1:
+  case RAPL_PP1:
     err = get_pp1_total_energy_consumed(node, total_energy_consumed);
     break;
-  case DRAM:
+  case RAPL_DRAM:
     err = get_dram_total_energy_consumed(node, total_energy_consumed);
     break;
-  case PSYS:
+  case RAPL_PSYS:
     err = get_psys_total_energy_consumed(node, total_energy_consumed);
     break;
   default:

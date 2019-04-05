@@ -227,7 +227,7 @@ uint64_t is_supported_msr(uint64_t msr) {
  *
  * \return 1 if supported, 0 otherwise
  */
-uint64_t is_supported_domain(uint64_t power_domain) {
+int is_supported_domain(enum RAPL_DOMAIN power_domain) {
   switch (power_domain) {
   case RAPL_PKG:
     return is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS);

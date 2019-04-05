@@ -36,12 +36,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MY_ERROR -1
 
 /* Power Domains */
-#define RAPL_PKG 0       /*!< \brief Package power domain */
-#define RAPL_PP0 1       /*!< \brief Core power domain */
-#define RAPL_PP1 2       /*!< \brief Uncore power domain */
-#define RAPL_DRAM 3      /*!< \brief DRAM power domain */
-#define RAPL_PSYS 4      /*!< \brief PLATFORM power domain */
-#define RAPL_NR_DOMAIN 5 /*!< \brief Number of power domains */
+enum RAPL_DOMAIN { RAPL_PKG, RAPL_PP0, RAPL_PP1, RAPL_DRAM, RAPL_PSYS };
+#define RAPL_NR_DOMAIN 5 /* Number of power domains */
 
 extern uint64_t debug_enabled;
 
@@ -50,8 +46,6 @@ extern double RAPL_TIME_UNIT;
 extern double RAPL_ENERGY_UNIT;
 extern double RAPL_DRAM_ENERGY_UNIT;
 extern double RAPL_POWER_UNIT;
-
-enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
@@ -74,7 +68,7 @@ double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
 int get_num_rapl_nodes();
 
 uint64_t is_supported_msr(uint64_t msr);
-uint64_t is_supported_domain(uint64_t power_domain);
+int is_supported_domain(enum RAPL_DOMAIN power_domain);
 
 int get_total_energy_consumed(int node, uint64_t msr_address,
                               double *total_energy_consumed_joules);
