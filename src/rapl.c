@@ -258,31 +258,20 @@ uint64_t is_supported_msr(uint64_t msr) {
  * \return 1 if supported, 0 otherwise
  */
 uint64_t is_supported_domain(uint64_t power_domain) {
-  uint64_t supported = 0;
-
   switch (power_domain) {
   case RAPL_PKG:
-    supported = is_supported_msr(MSR_RAPL_PKG_POWER_LIMIT);
-    supported &= is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS);
-    break;
+    return is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS);
   case RAPL_PP0:
-    supported = is_supported_msr(MSR_RAPL_PP0_POWER_LIMIT);
-    supported &= is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS);
-    break;
+    return is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS);
   case RAPL_PP1:
-    supported = is_supported_msr(MSR_RAPL_PP1_POWER_LIMIT);
-    supported &= is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS);
-    break;
+    return is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS);
   case RAPL_DRAM:
-    supported = is_supported_msr(MSR_RAPL_DRAM_POWER_LIMIT);
-    supported &= is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS);
-    break;
+    return is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS);
   case RAPL_PSYS:
-    supported = is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS);
-    break;
+    return is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS);
+  default:
+    abort();
   }
-
-  return supported;
 }
 
 /*!
