@@ -237,28 +237,23 @@ void test_RaplDramEnergyUnitsProbe_ReturnsCorrectValues(void) {
   // Only a selection of Intel CPUs is tested in the following:
 
   // HASWELL_SERVER
-  processor_signature = CPU_INTEL_HASWELL_X;
-  act_retval = rapl_dram_energy_units_probe(param_energy_units);
+  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_HASWELL_X, param_energy_units);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
 
   // BROADWELL_SERVER
-  processor_signature = CPU_INTEL_BROADWELL_X;
-  act_retval = rapl_dram_energy_units_probe(param_energy_units);
+  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_BROADWELL_X, param_energy_units);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
 
   // BROADWELL_CORE
-  processor_signature = CPU_INTEL_BROADWELL_CORE;
-  act_retval = rapl_dram_energy_units_probe(param_energy_units);
+  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_BROADWELL_CORE, param_energy_units);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_param_energy_units, act_retval);
 
   // SKYLAKE_DESKTOP
-  processor_signature = CPU_INTEL_SKYLAKE_DESKTOP;
-  act_retval = rapl_dram_energy_units_probe(param_energy_units);
+  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_SKYLAKE_DESKTOP, param_energy_units);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_param_energy_units, act_retval);
 
   // SKYLAKE_SERVER
-  processor_signature = CPU_INTEL_SKYLAKE_X;
-  act_retval = rapl_dram_energy_units_probe(param_energy_units);
+  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_SKYLAKE_X, param_energy_units);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
 }
 
@@ -315,7 +310,8 @@ void test_ReadRaplUnits_ReturnsCorrectValues(void) {
   int delta = 1e-14;
   double exp_rapl_time_unit = 0.0009765625;
   double exp_rapl_energy_unit = 6.103515625e-05;
-  double exp_rapl_dram_energy_unit = rapl_dram_energy_units_probe(exp_rapl_energy_unit);
+  double exp_rapl_dram_energy_unit =
+      rapl_dram_energy_units_probe(CPU_INTEL_SANDYBRIDGE, exp_rapl_energy_unit);
   double exp_rapl_power_unit = 0.125;
 
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_rapl_time_unit, RAPL_TIME_UNIT);

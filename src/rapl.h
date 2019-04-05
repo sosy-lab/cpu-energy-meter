@@ -51,9 +51,6 @@ extern double RAPL_ENERGY_UNIT;
 extern double RAPL_DRAM_ENERGY_UNIT;
 extern double RAPL_POWER_UNIT;
 
-// Visible for testing
-extern uint32_t processor_signature;
-
 enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
@@ -89,7 +86,7 @@ typedef struct pkg_rapl_parameters_t {
 } pkg_rapl_parameters_t;
 int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
 
-double rapl_dram_energy_units_probe(double rapl_energy_units);
+double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units);
 void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power);
 
 /* Utilities */

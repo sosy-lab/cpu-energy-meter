@@ -60,8 +60,6 @@ double RAPL_ENERGY_UNIT;
 double RAPL_DRAM_ENERGY_UNIT;
 double RAPL_POWER_UNIT;
 
-uint32_t processor_signature;
-
 uint64_t num_nodes = 0;
 
 static node_t *pkg_map; // node-to-cpu mapping
@@ -176,7 +174,7 @@ int init_rapl() {
   }
 
   unsigned int family;
-  processor_signature = get_processor_signature();
+  const uint32_t processor_signature = get_processor_signature();
   family = (processor_signature >> 8) & 0xf;
   if (debug_enabled) {
     fprintf(stdout, "[DEBUG] Processor is from family %d and uses model 0x%05X.\n", family,
@@ -208,7 +206,7 @@ int init_rapl() {
 
   config_msr_table();
 
-  err = read_rapl_units();
+  err = read_rapl_units(processor_signature);
 
   /* 32 is the width of these fields when they are stored */
   MAX_ENERGY_STATUS_JOULES = (double)(RAPL_ENERGY_UNIT * (pow(2, 32) - 1));
@@ -345,7 +343,7 @@ int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed_j
 /*
  * Energy units are either hard-coded, or come from RAPL Energy Unit MSR.
  */
-double rapl_dram_energy_units_probe(double rapl_energy_units) {
+double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units) {
   switch (processor_signature & 0xfffffff0) {
   case CPU_INTEL_HASWELL_X:
   case CPU_INTEL_BROADWELL_X:
@@ -484,7 +482,7 @@ void calculate_probe_interval_time(struct timespec *signal_timelimit, double the
 
 /* Utilities */
 
-int read_rapl_units() {
+int read_rapl_units(uint32_t processor_signature) {
   int err = 0;
   rapl_unit_multiplier_t unit_multiplier;
 
@@ -492,7 +490,8 @@ int read_rapl_units() {
   if (!err) {
     RAPL_TIME_UNIT = unit_multiplier.time;
     RAPL_ENERGY_UNIT = unit_multiplier.energy;
-    RAPL_DRAM_ENERGY_UNIT = rapl_dram_energy_units_probe(unit_multiplier.energy);
+    RAPL_DRAM_ENERGY_UNIT =
+        rapl_dram_energy_units_probe(processor_signature, unit_multiplier.energy);
     RAPL_POWER_UNIT = unit_multiplier.power;
   }
   if (debug_enabled) {
