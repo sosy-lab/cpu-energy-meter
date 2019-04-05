@@ -27,6 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 
 typedef struct cpuid_info_t {
@@ -97,18 +98,27 @@ int get_core_information(int os_cpu, APIC_ID_t *result) {
   // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
 
   // Get the SMT ID
-  const uint64_t smt_mask_width = info_l0.eax & 0x1f;
-  const uint64_t smt_mask = (1 << smt_mask_width) - 1;
-  result->smt_id = info_l0.edx & smt_mask;
+  const uint32_t smt_mask_width = info_l0.eax & 0x1f;  // max value 31
+  const uint32_t smt_mask = (1 << smt_mask_width) - 1; // max value 0x7fffffff
+  const uint32_t smt_id = info_l0.edx & smt_mask;
 
   // Get the core ID
-  const uint64_t core_mask_width = info_l1.eax & 0x1f;
-  const uint64_t core_mask = (((1 << core_mask_width) -1)) ^ smt_mask;
-  result->core_id = (info_l1.edx & core_mask) >> smt_mask_width;
+  const uint32_t core_mask_width = info_l1.eax & 0x1f;                // max value 31
+  const uint32_t core_mask = ((1 << core_mask_width) - 1) ^ smt_mask; // max value 0x7fffffff
+  const uint32_t core_id = (info_l1.edx & core_mask) >> smt_mask_width;
 
   // Get the package ID
-  const uint64_t pkg_mask = (~(1 << core_mask_width)) + 1;
-  result->pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
+  const uint32_t pkg_mask = (~(1 << core_mask_width)) + 1; // max value 0x80000000
+  const uint32_t pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
+
+  // all values have at most 31 bits and fit into an int
+  assert(result->smt_id < INT_MAX);
+  assert(result->core_id < INT_MAX);
+  assert(result->pkg_id < INT_MAX);
+
+  result->smt_id = smt_id;
+  result->core_id = core_id;
+  result->pkg_id = pkg_id;
 
   return 0;
 }

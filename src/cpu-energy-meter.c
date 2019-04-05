@@ -40,7 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
 const char *version = "1.1-dev";
 
-uint64_t num_node = 0;
+int num_node = 0;
 uint64_t delay = 0;
 uint64_t delay_unit = 1000000000; // unit in nanoseconds
 uint64_t print_rawtext = 0;
@@ -48,7 +48,7 @@ uint64_t print_rawtext = 0;
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
 
-int get_rapl_energy_info(uint64_t power_domain, uint64_t node, double *total_energy_consumed) {
+int get_rapl_energy_info(uint64_t power_domain, int node, double *total_energy_consumed) {
   int err;
 
   switch (power_domain) {
@@ -108,7 +108,7 @@ void print_header(int socket) {
   double end_seconds = convert_time_to_sec(measurement_end_time);
 
   if (print_rawtext) {
-    fprintf(stdout, "\ncpu_count=%lu\n", num_node);
+    fprintf(stdout, "\ncpu_count=%d\n", num_node);
     fprintf(stdout, "duration_seconds=%f\n", end_seconds - start_seconds);
   } else {
     fprintf(stdout, "\b\b+--------------------------------------+\n");
@@ -136,11 +136,10 @@ void print_domain(int socket, int domain) {
 }
 
 void print_intermediate_results() {
-  uint64_t i = 0;
   int domain;
 
   if (cum_energy_J != NULL) {
-    for (i = 0; i < num_node; i++) {
+    for (int i = 0; i < num_node; i++) {
       if (cum_energy_J[i] == NULL) {
         continue;
       }
@@ -216,13 +215,13 @@ void do_print_energy_info() {
 
   sigset_t signal_set = get_sigset();
   int domain = 0;
-  uint64_t node = 0;
+  int node = 0;
   double new_sample;
   double delta;
 
   double prev_sample[num_node][RAPL_NR_DOMAIN];
   cum_energy_J = calloc(num_node, sizeof(double *));
-  for (uint64_t i = 0; i < num_node; i++) {
+  for (int i = 0; i < num_node; i++) {
     cum_energy_J[i] = calloc(RAPL_NR_DOMAIN, sizeof(double));
   }
 
@@ -232,7 +231,7 @@ void do_print_energy_info() {
   setbuf(stdout, NULL);
 
   /* Read initial values */
-  for (uint64_t i = node; i < num_node; i++) {
+  for (int i = node; i < num_node; i++) {
     for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
         get_rapl_energy_info(domain, i, &prev_sample[i][domain]);
@@ -256,7 +255,7 @@ void do_print_energy_info() {
     // If a signal is received, perform one probe before handling it.
     rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
 
-    for (uint64_t i = node; i < num_node; i++) {
+    for (int i = node; i < num_node; i++) {
       for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
         if (is_supported_domain(domain)) {
           get_rapl_energy_info(domain, i, &new_sample);
@@ -351,7 +350,7 @@ int main(int argc, char **argv) {
 
   num_node = get_num_rapl_nodes();
   if (debug_enabled) {
-    fprintf(stdout, "[DEBUG] Number of nodes detected: %ld\n", num_node);
+    fprintf(stdout, "[DEBUG] Number of nodes detected: %d\n", num_node);
   }
 
   do_print_energy_info();

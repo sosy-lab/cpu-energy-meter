@@ -184,7 +184,7 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   RAPL_ENERGY_UNIT = 6.103515625e-5;
   RAPL_DRAM_ENERGY_UNIT = 15.3e-6;
 
-  uint64_t node = 0;
+  int node = 0;
   int cpu = 0;
   double energy_consumed = 0;
   uint64_t read_msr_ret_ptr_val;

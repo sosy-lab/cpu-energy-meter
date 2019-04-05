@@ -29,9 +29,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 
 typedef struct {
-  uint64_t smt_id;
-  uint64_t core_id;
-  uint64_t pkg_id;
+  int smt_id;
+  int core_id;
+  int pkg_id;
 } APIC_ID_t;
 
 /**

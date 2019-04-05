@@ -33,9 +33,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 static int *fds;
-static node_t fds_size = 0;
+static int fds_size = 0;
 
-int open_msr_fd(node_t num_nodes, node_t (*pkg_map)(node_t)) {
+int open_msr_fd(int num_nodes, int (*pkg_map)(int)) {
   assert(fds_size == 0);
   assert(fds == NULL);
   int result = 0;
@@ -43,7 +43,7 @@ int open_msr_fd(node_t num_nodes, node_t (*pkg_map)(node_t)) {
   fds_size = num_nodes;
   fds = calloc(fds_size, sizeof(int));
 
-  for (node_t node = 0; node < fds_size; node++) {
+  for (int node = 0; node < fds_size; node++) {
     char msr_path[32];
     sprintf(msr_path, "/dev/cpu/%u/msr", pkg_map(node));
     int fd = open(msr_path, O_RDONLY);
@@ -58,7 +58,7 @@ int open_msr_fd(node_t num_nodes, node_t (*pkg_map)(node_t)) {
   return result;
 }
 
-int read_msr(node_t node, off_t address, uint64_t *value) {
+int read_msr(int node, off_t address, uint64_t *value) {
   assert(node < fds_size);
 
   int fd = fds[node];
@@ -85,7 +85,7 @@ void close_msr_fd() {
     return;
   }
 
-  for (node_t node = 0; node < fds_size; node++) {
+  for (int node = 0; node < fds_size; node++) {
     if (fds[node] != -1) {
       close(fds[node]);
     }

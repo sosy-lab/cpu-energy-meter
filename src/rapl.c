@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include <err.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,9 +66,9 @@ double RAPL_ENERGY_UNIT;
 double RAPL_DRAM_ENERGY_UNIT;
 double RAPL_POWER_UNIT;
 
-static uint64_t num_nodes = 0;
+static int num_nodes = 0;
 
-static node_t *pkg_map; // node-to-cpu mapping
+static int *pkg_map; // node-to-cpu mapping
 
 typedef struct rapl_unit_multiplier_t {
   double power;
@@ -82,11 +83,12 @@ static int build_topology() {
   assert(pkg_map == NULL);
 
   const long os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
-  unsigned int max_pkg = 0;
+  assert(os_cpu_count < INT_MAX);
+  int max_pkg = 0;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
   APIC_ID_t os_map[os_cpu_count];
-  for (long i = 0; i < os_cpu_count; i++) {
+  for (int i = 0; i < os_cpu_count; i++) {
 
     if (get_core_information(i, &(os_map[i])) != 0) {
       return -1;
@@ -100,10 +102,10 @@ static int build_topology() {
   num_nodes = max_pkg + 1;
 
   // Construct a pkg map: pkg_map[pkg id] = (os_id of first thread on pkg)
-  pkg_map = (node_t *)malloc(num_nodes * sizeof(node_t));
+  pkg_map = (int *)malloc(num_nodes * sizeof(int));
 
-  for (long i = 0; i < os_cpu_count; i++) {
-    uint64_t p = os_map[i].pkg_id;
+  for (int i = 0; i < os_cpu_count; i++) {
+    int p = os_map[i].pkg_id;
     assert(p < num_nodes);
     if (os_map[i].smt_id == 0 && os_map[i].core_id == 0) {
       pkg_map[p] = i;
@@ -133,7 +135,7 @@ void config_msr_table() {
   set_value_in_msr_table(MSR_RAPL_PLATFORM_ENERGY_STATUS);
 }
 
-node_t get_cpu_from_node(node_t node) {
+int get_cpu_from_node(int node) {
 #ifndef TEST
   return pkg_map[node];
 #else // simply return value 0 when unit-testing, as the pkg_map isn't initialized then
@@ -250,7 +252,7 @@ uint64_t is_supported_domain(uint64_t power_domain) {
  *
  * \return number of RAPL nodes.
  */
-uint64_t get_num_rapl_nodes() {
+int get_num_rapl_nodes() {
   return num_nodes;
 }
 
@@ -276,7 +278,7 @@ int get_rapl_unit_multiplier(uint64_t node, rapl_unit_multiplier_t *unit_obj) {
 
 /* Common methods (should not be interfaced directly) */
 
-int get_total_energy_consumed(uint64_t node, uint64_t msr_address,
+int get_total_energy_consumed(int node, uint64_t msr_address,
                               double *total_energy_consumed_joules) {
   int err = 0;
   uint64_t msr = 0;
@@ -314,7 +316,7 @@ int get_total_energy_consumed(uint64_t node, uint64_t msr_address,
  *
  * \return 0 on success, -1 otherwise
  */
-int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
+int get_pkg_total_energy_consumed(int node, double *total_energy_consumed_joules) {
   return get_total_energy_consumed(node, MSR_RAPL_PKG_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -351,7 +353,7 @@ double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_en
  *
  * \return 0 on success, -1 otherwise
  */
-int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
+int get_dram_total_energy_consumed(int node, double *total_energy_consumed_joules) {
   return get_total_energy_consumed(node, MSR_RAPL_DRAM_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -363,7 +365,7 @@ int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed_
  *
  * \return 0 on success, -1 otherwise
  */
-int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
+int get_pp0_total_energy_consumed(int node, double *total_energy_consumed_joules) {
   return get_total_energy_consumed(node, MSR_RAPL_PP0_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -375,7 +377,7 @@ int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed_j
  *
  * \return 0 on success, -1 otherwise
  */
-int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
+int get_pp1_total_energy_consumed(int node, double *total_energy_consumed_joules) {
   return get_total_energy_consumed(node, MSR_RAPL_PP1_ENERGY_STATUS, total_energy_consumed_joules);
 }
 
@@ -392,7 +394,7 @@ int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed_j
  *
  * \return 0 on success, -1 otherwise
  */
-int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed_joules) {
+int get_psys_total_energy_consumed(int node, double *total_energy_consumed_joules) {
   return get_total_energy_consumed(node, MSR_RAPL_PLATFORM_ENERGY_STATUS,
                                    total_energy_consumed_joules);
 }
@@ -413,7 +415,7 @@ double convert_to_seconds(unsigned int raw) {
  *
  * \return 0 on success, -1 otherwise
  */
-int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *pkg_obj) {
+int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *pkg_obj) {
   int err = 0;
   uint64_t msr = 0;
   rapl_parameters_msr_t domain_msr;

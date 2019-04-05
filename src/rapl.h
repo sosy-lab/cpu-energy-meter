@@ -71,18 +71,18 @@ void terminate_rapl();
 // Wraparound value for the total energy consumed. It is computed within init_rapl().
 double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
 
-uint64_t get_num_rapl_nodes();
+int get_num_rapl_nodes();
 
 uint64_t is_supported_msr(uint64_t msr);
 uint64_t is_supported_domain(uint64_t power_domain);
 
-int get_total_energy_consumed(uint64_t node, uint64_t msr_address,
+int get_total_energy_consumed(int node, uint64_t msr_address,
                               double *total_energy_consumed_joules);
-int get_pkg_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_pp0_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_pp1_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_dram_total_energy_consumed(uint64_t node, double *total_energy_consumed);
-int get_psys_total_energy_consumed(uint64_t node, double *total_energy_consumed);
+int get_pkg_total_energy_consumed(int node, double *total_energy_consumed);
+int get_pp0_total_energy_consumed(int node, double *total_energy_consumed);
+int get_pp1_total_energy_consumed(int node, double *total_energy_consumed);
+int get_dram_total_energy_consumed(int node, double *total_energy_consumed);
+int get_psys_total_energy_consumed(int node, double *total_energy_consumed);
 
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {
@@ -91,7 +91,7 @@ typedef struct pkg_rapl_parameters_t {
   double maximum_power_watts;
   double maximum_limit_time_window_seconds;
 } pkg_rapl_parameters_t;
-int get_pkg_rapl_parameters(unsigned int node, pkg_rapl_parameters_t *rapl_parameters);
+int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *rapl_parameters);
 
 double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units);
 void calculate_probe_interval_time(struct timespec *signal_timelimit, double thermal_spec_power);

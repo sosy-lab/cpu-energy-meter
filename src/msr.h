@@ -38,23 +38,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * Type for node indices (i.e., package numbers).
- */
-typedef unsigned int node_t;
-
-/**
  * Open and store file descriptors in an array for as often as specified in the num_nodes param.
  *
  * @return 0 on success and -1 if at least one node fails to open
  */
-int open_msr_fd(node_t num_nodes, node_t (*node_to_core)(node_t));
+int open_msr_fd(int num_nodes, int (*node_to_core)(int));
 
 /**
  * Read the given MSR on the given node.
  *
  * @return 0 on success and -1 on failure
  */
-int read_msr(node_t node, off_t address, uint64_t *val);
+int read_msr(int node, off_t address, uint64_t *val);
 
 /**
  * Close each file descriptor and free the allocated array memory.
