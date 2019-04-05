@@ -28,10 +28,10 @@ void test_ConfigMsrTable_SuccessWhenSetUpCorrectly(void) {
   // Test only a selection of registers (one from each domain)
   TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_POWER_UNIT));
 
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PKG_POWER_LIMIT));
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_DRAM_POWER_LIMIT));
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP0_POWER_LIMIT));
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP1_POWER_LIMIT));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PKG_POWER_INFO));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS));
   TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS));
 }
 
@@ -43,7 +43,6 @@ void test_ConfigMsrTable_should_DisableMsrWhenNotAvailable(void) {
 
   // Disable the msr-table for the following 4 register:
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, &msr, read_msr_retval);
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr, read_msr_retval);
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr, read_msr_retval);
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, &msr, read_msr_retval);
 
@@ -53,13 +52,12 @@ void test_ConfigMsrTable_should_DisableMsrWhenNotAvailable(void) {
   // Test the above config
   config_msr_table();
   TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_POWER_UNIT));
-  TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_PKG_POWER_LIMIT));
   TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS));
   TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_PKG_POWER_INFO));
 
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_DRAM_POWER_LIMIT));
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP0_POWER_LIMIT));
-  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP1_POWER_LIMIT));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_DRAM_ENERGY_STATUS));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP0_ENERGY_STATUS));
+  TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PP1_ENERGY_STATUS));
   TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_PLATFORM_ENERGY_STATUS));
 }
 
@@ -112,22 +110,18 @@ void test_IsSupportedDomain_ReturnsCorrectValues(void) {
   // Disable the msr-table for POWER_UNIT
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, &msr, !enable_msr);
 
-  // Disable msr-table for PKG_POWER_LIMIT and PKG_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr, !enable_msr);
+  // Disable msr-table for PKG_POWER_INFO and PKG_ENERGY_STATUS
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr, !enable_msr);
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, &msr, !enable_msr);
 
-  // Enable msr-table for DRAM_POWER_LIMIT and DRAM_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr, enable_msr);
+  // Enable msr-table for DRAM_ENERGY_STATUS
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr, enable_msr);
 
-  // Enable msr-table for PP0_POWER_LIMIT; disable for PP0_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr, enable_msr);
+  // Disable msr-table for PP0_ENERGY_STATUS
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr, !enable_msr);
 
-  // Disable msr-table for PP1_POWER_LIMIT; enable for PP1_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr, !enable_msr);
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr, enable_msr);
+  // Disable msr-table for PP1_ENERGY_STATUS
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr, !enable_msr);
 
   // Disable any remaining msr's
   read_msr_IgnoreAndReturn(!enable_msr);

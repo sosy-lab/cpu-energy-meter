@@ -31,20 +31,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSR_RAPL_POWER_UNIT 0x606 /* Unit Multiplier used in RAPL Interfaces (R/O) */
 
 /* Package RAPL Domain */
-#define MSR_RAPL_PKG_POWER_LIMIT 0x610   /* PKG RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PKG_ENERGY_STATUS 0x611 /* PKG Energy Status (R/O) */
 #define MSR_RAPL_PKG_POWER_INFO 0x614    /* PKG RAPL Parameters (R/O) */
 
 /* DRAM RAPL Domain */
-#define MSR_RAPL_DRAM_POWER_LIMIT 0x618   /* DRAM RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_DRAM_ENERGY_STATUS 0x619 /* DRAM Energy Status (R/O) */
 
 /* PP0 RAPL Domain */
-#define MSR_RAPL_PP0_POWER_LIMIT 0x638   /* PP0 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP0_ENERGY_STATUS 0x639 /* PP0 Energy Status (R/O) */
 
 /* PP1 RAPL Domain */
-#define MSR_RAPL_PP1_POWER_LIMIT 0x640   /* PP1 RAPL Power Limit Control (R/W) */
 #define MSR_RAPL_PP1_ENERGY_STATUS 0x641 /* PP1 Energy Status (R/O) */
 
 /* PSYS RAPL Domain */

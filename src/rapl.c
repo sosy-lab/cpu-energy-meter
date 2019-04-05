@@ -124,28 +124,20 @@ void config_msr_table() {
   msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for package-msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PKG_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
   msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for dram msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_DRAM_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for core msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PP0_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
   // values for uncore msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_POWER_LIMIT, &msr);
-  msr_support_table[MSR_RAPL_PP1_POWER_LIMIT & MSR_SUPPORT_MASK] = !err_read_msr;
   err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
   msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
 
