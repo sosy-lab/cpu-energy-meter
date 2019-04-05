@@ -27,6 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_util
 #define _h_util
 
+#include <sched.h>
 #include <sys/types.h>
 
 static const uid_t UID_NOBODY = 65534;
@@ -46,5 +47,21 @@ void drop_capabilities();
  * For security, terminates process on failure.
  */
 void drop_root_privileges_by_id(uid_t uid, gid_t gid);
+
+/**
+ * Set the CPU affinity of the current thread to the given CPU.
+ * If old_context is not null, store previous CPU affinity in it.
+ *
+ * Returns 0 on success and -1 on failure.
+ */
+int bind_cpu(int cpu, cpu_set_t *old_context);
+
+/**
+ * Set the CPU affinity of the current thread to the given set.
+ * If old_context is not null, store previous CPU affinity in it.
+ *
+ * Returns 0 on success and -1 on failure.
+ */
+int bind_context(cpu_set_t *new_context, cpu_set_t *old_context);
 
 #endif /* _h_util */

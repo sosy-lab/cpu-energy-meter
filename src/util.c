@@ -24,6 +24,10 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "util.h"
 
 #include <err.h>
@@ -105,4 +109,29 @@ void drop_root_privileges_by_id(uid_t uid, gid_t gid) {
   if (newuid != olduid && (seteuid(olduid) != -1 || geteuid() != newuid)) {
     errx(1, "Changing user id of process failed");
   }
+}
+
+
+int bind_cpu(int cpu, cpu_set_t *old_context) {
+  cpu_set_t cpu_context;
+  CPU_ZERO(&cpu_context);
+  CPU_SET(cpu, &cpu_context);
+
+  return bind_context(&cpu_context, old_context);
+}
+
+int bind_context(cpu_set_t *new_context, cpu_set_t *old_context) {
+  if (old_context != NULL) {
+    if (sched_getaffinity(0, sizeof(cpu_set_t), old_context) == -1) {
+      warn("Could not retrieve CPU affinity of process");
+      return -1;
+    }
+  }
+
+  if (sched_setaffinity(0, sizeof(cpu_set_t), new_context) == -1) {
+    warn("Could not set CPU affinity of process");
+    return -1;
+  }
+
+  return 0;
 }

@@ -37,10 +37,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "msr.h"
 #include "rapl.h"
 #include "rapl-impl.h"
+#include "util.h"
 
 #include <assert.h>
 #include <math.h>
-#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -71,39 +71,6 @@ typedef struct rapl_unit_multiplier_t {
   double energy;
   double time;
 } rapl_unit_multiplier_t;
-
-// OS specific
-int bind_context(cpu_set_t *new_context, cpu_set_t *old_context) {
-
-  int err = 0;
-  int ret = 0;
-
-  if (old_context != NULL) {
-    err = sched_getaffinity(0, sizeof(cpu_set_t), old_context);
-    if (0 != err) {
-      ret = MY_ERROR;
-    }
-  }
-
-  err += sched_setaffinity(0, sizeof(cpu_set_t), new_context);
-  if (0 != err) {
-    ret = MY_ERROR;
-  }
-
-  return ret;
-}
-
-int bind_cpu(uint64_t cpu, cpu_set_t *old_context) {
-
-  int err = 0;
-  cpu_set_t cpu_context;
-
-  CPU_ZERO(&cpu_context);
-  CPU_SET(cpu, &cpu_context);
-  err += bind_context(&cpu_context, old_context);
-
-  return err;
-}
 
 // Parse the x2APIC_ID_t into SMT, core and package ID.
 // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
