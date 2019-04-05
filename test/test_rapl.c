@@ -275,7 +275,6 @@ void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
 
   // Test that the pkg_parameters contains the correct values
   TEST_ASSERT_EQUAL(15, pkg_parameters.thermal_spec_power_watts); // exp. 15W
-  TEST_ASSERT_EQUAL(0, pkg_parameters.minimum_power_watts);       // exp. 0W
   TEST_ASSERT_EQUAL(0, pkg_parameters.maximum_power_watts);       // exp. 0W
 }
 

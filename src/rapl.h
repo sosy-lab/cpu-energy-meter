@@ -93,9 +93,7 @@ int get_total_energy_consumed(
 /*! \brief RAPL parameters info structure, PKG domain */
 typedef struct pkg_rapl_parameters_t {
   double thermal_spec_power_watts;
-  double minimum_power_watts;
   double maximum_power_watts;
-  double maximum_limit_time_window_seconds;
 } pkg_rapl_parameters_t;
 int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *rapl_parameters);
 

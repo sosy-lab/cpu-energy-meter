@@ -342,10 +342,6 @@ double convert_to_watts(unsigned int raw) {
   return RAPL_POWER_UNIT * raw;
 }
 
-double convert_to_seconds(unsigned int raw) {
-  return RAPL_TIME_UNIT * raw;
-}
-
 /*!
  * \brief Get a pointer to the RAPL PKG power info register
  *
@@ -368,10 +364,7 @@ int get_pkg_rapl_parameters(int node, pkg_rapl_parameters_t *pkg_obj) {
     domain_msr = *(rapl_parameters_msr_t *)&msr;
 
     pkg_obj->thermal_spec_power_watts = convert_to_watts(domain_msr.thermal_spec_power);
-    pkg_obj->minimum_power_watts = convert_to_watts(domain_msr.minimum_power);
     pkg_obj->maximum_power_watts = convert_to_watts(domain_msr.maximum_power);
-    pkg_obj->maximum_limit_time_window_seconds =
-        convert_to_seconds(domain_msr.maximum_limit_time_window);
   }
 
   return err;
