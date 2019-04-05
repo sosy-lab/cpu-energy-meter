@@ -288,7 +288,7 @@ int init_rapl() {
     return MY_ERROR;
   }
 
-  drop_root_privileges_by_id(PERMANENT, UID_NOBODY, GID_NOGROUP);
+  drop_root_privileges_by_id(UID_NOBODY, GID_NOGROUP);
   drop_capabilities();
 
   config_msr_table();

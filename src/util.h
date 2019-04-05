@@ -32,8 +32,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static const uid_t UID_NOBODY = 65534;
 static const gid_t GID_NOGROUP = 65534;
 
-enum { TEMPORARY = 0, PERMANENT = 1 };
-
 /*
  * The documentation regarding the capabilities was taken from the linux manual pages (i.e.,
  * http://man7.org/linux/man-pages/man3/cap_get_proc.3.html and
@@ -57,23 +55,14 @@ int drop_capabilities();
  */
 
 /**
- * Drop any extra group or user privileges either permanently or temporarily, depending on the value
- * of the argument. If a nonzero value is passed, privileges will be dropped permanently; otherwise,
- * the privilege drop is temporary. Custom values can be specified for uid and gid to be taken as
- * new id in the process.
+ * Drop any extra group or user privileges.
+ * Custom values can be specified for uid and gid to be taken as new id in the process.
  */
-void drop_root_privileges_by_id(int permanent, uid_t uid, gid_t gid);
+void drop_root_privileges_by_id(uid_t uid, gid_t gid);
 
 /**
- * Drop any extra group or user privileges either permanently or temporarily, depending on the value
- * of the argument. If a nonzero value is passed, privileges will be dropped permanently; otherwise,
- * the privilege drop is temporary.
+ * Drop any extra group or user privileges.
  */
-void drop_root_privileges(int permanent);
-
-/**
- *  Restore privileges to what they were at the last call to spc_drop_privileges().
- */
-void restore_root_privileges(void);
+void drop_root_privileges();
 
 #endif /* _h_util */
