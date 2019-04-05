@@ -180,7 +180,7 @@ File.open(TEST_MAKEFILE, "w") do |mkfile|
     mock_obj = File.join(MOCKS_DIR, mock_name + '.o')
 
     mkfile.puts "#{mock_src}: #{hdr}"
-    mkfile.puts "\t@CMOCK_DIR=${CMOCK_DIR} ruby ${CMOCK_DIR}/scripts/create_mock.rb #{hdr}"
+    mkfile.puts "\truby -e \"require '${CMOCK_DIR}/lib/cmock'; CMock.new({:plugins => [:ignore, :ignore_arg, :return_thru_ptr], :mock_prefix => 'mock_', :mock_path => './build/test/mocks'}).setup_mocks('#{hdr}')\" "
     mkfile.puts ""
 
     mkfile.puts "#{mock_obj}: #{mock_src} #{mock_header}"

@@ -37,14 +37,12 @@ void test_ConfigMsrTable_SuccessWhenSetUpCorrectly(void) {
 
 void test_ConfigMsrTable_should_DisableMsrWhenNotAvailable(void) {
   int cpu = 0;
-  uint64_t msr = 0;
-
   int read_msr_retval = 1;
 
   // Disable the msr-table for the following 4 register:
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, &msr, read_msr_retval);
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr, read_msr_retval);
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, &msr, read_msr_retval);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, NULL, read_msr_retval);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, NULL, read_msr_retval);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, NULL, read_msr_retval);
 
   // Enable the msr-table for everything else
   read_msr_IgnoreAndReturn(0);
@@ -101,27 +99,26 @@ void test_InitRapl_ReturnErrWhenNoFam6CPU(void) {
 
 void test_IsSupportedDomain_ReturnsCorrectValues(void) {
   int cpu = 0;
-  uint64_t msr = 0;
   int enable_msr = 0;
 
   // Config the msr-table such that afterwards only the test for MSR_RAPL_DRAM
   // will evaluate to true.
 
   // Disable the msr-table for POWER_UNIT
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, &msr, !enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_POWER_UNIT, NULL, !enable_msr);
 
   // Disable msr-table for PKG_POWER_INFO and PKG_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr, !enable_msr);
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, &msr, !enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, NULL, !enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_POWER_INFO, NULL, !enable_msr);
 
   // Enable msr-table for DRAM_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr, enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, NULL, enable_msr);
 
   // Disable msr-table for PP0_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr, !enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP0_ENERGY_STATUS, NULL, !enable_msr);
 
   // Disable msr-table for PP1_ENERGY_STATUS
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr, !enable_msr);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PP1_ENERGY_STATUS, NULL, !enable_msr);
 
   // Disable any remaining msr's
   read_msr_IgnoreAndReturn(!enable_msr);
@@ -158,12 +155,12 @@ void test_GetRaplUnitMultiplier_ReturnsCorrectValues(void) {
 void test_GetTotalEnergyConsumed_ComputesCorrectValue(void) {
   RAPL_ENERGY_UNIT = 6.103515625e-5;
   uint64_t msr_address = MSR_RAPL_PKG_ENERGY_STATUS;
-  uint64_t msr = 0;
   int cpu = 0;
 
   // Set up the expectations to the methods and what they should return
   uint64_t read_msr_ret_ptr_val = 494516256; // some arbitrary value
-  read_msr_ExpectAndReturn(cpu, msr_address, &msr, 0);
+  read_msr_ExpectAndReturn(cpu, msr_address, NULL, 0);
+  read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   // Test that the function completes and returns the correct value
@@ -185,14 +182,14 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   RAPL_DRAM_ENERGY_UNIT = 15.3e-6;
 
   uint64_t node = 0;
-  uint64_t msr = 0;
   int cpu = 0;
   double energy_consumed = 0;
   uint64_t read_msr_ret_ptr_val;
 
   // Set up mocks for testing RAPL_PKG_ENERGY_STATUS
   read_msr_ret_ptr_val = 494516256; // some arbitrary value
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr, 0);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, NULL, 0);
+  read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   int exp_retval = 0;
@@ -213,7 +210,8 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
 
   // Set up mocks for testing RAPL_DRAM_ENERGY_STATUS
   read_msr_ret_ptr_val = 37908518; // some arbitrary value
-  read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr, 0);
+  read_msr_ExpectAndReturn(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, NULL, 0);
+  read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   // Test that for DRAM_ENERGY_STATUS, the value from RAPL_DRAM_ENERGY_UNIT is taken as multiplier
@@ -261,10 +259,10 @@ void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
   RAPL_POWER_UNIT = 0.125;
 
   // Setup mocks
-  uint64_t msr = 0;
   int node = 0;
   uint64_t read_msr_ret_ptr_val = 120; // some arbitrary value
-  read_msr_ExpectAndReturn(node, MSR_RAPL_PKG_POWER_INFO, &msr, 0);
+  read_msr_ExpectAndReturn(node, MSR_RAPL_PKG_POWER_INFO, NULL, 0);
+  read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   // Test that the method completes and returns successfully
@@ -296,11 +294,11 @@ void test_CalculateProbeIntervalTime_ReturnsCorrectValues(void) {
 }
 
 void test_ReadRaplUnits_ReturnsCorrectValues(void) {
-  uint64_t msr = 0;
   int read_msr_retval = 0;
   uint64_t read_msr_ret_ptr_val = 658947; // expected value for MSR_RAPL_POWER_UNIT
 
-  read_msr_ExpectAndReturn(0, MSR_RAPL_POWER_UNIT, &msr, read_msr_retval);
+  read_msr_ExpectAndReturn(0, MSR_RAPL_POWER_UNIT, NULL, read_msr_retval);
+  read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
   int retval = read_rapl_units();
