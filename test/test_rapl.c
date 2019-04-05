@@ -137,8 +137,8 @@ void test_IsSupportedDomain_ReturnsCorrectValues(void) {
 }
 
 void test_GetRaplUnitMultiplier_ReturnsCorrectValues(void) {
-  uint64_t msr = 658947; // arbitrary value
-  rapl_unit_multiplier_msr_t unit_msr = *(rapl_unit_multiplier_msr_t *)&msr;
+  rapl_unit_multiplier_msr_t units;
+  units.as_uint64_t = 658947; // arbitrary value
 
   int delta = 1e-14;
   // exp. values below computed by hand
@@ -146,9 +146,9 @@ void test_GetRaplUnitMultiplier_ReturnsCorrectValues(void) {
   double exp_energy = 6.103515625e-05;
   double exp_power = 0.125;
 
-  double act_time = 1.0 / (double)(B2POW(unit_msr.time));
-  double act_energy = 1.0 / (double)(B2POW(unit_msr.energy));
-  double act_power = 1.0 / (double)(B2POW(unit_msr.power));
+  double act_time = RAW_UNIT_TO_DOUBLE(units.fields.time);
+  double act_energy = RAW_UNIT_TO_DOUBLE(units.fields.energy);
+  double act_power = RAW_UNIT_TO_DOUBLE(units.fields.power);
 
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_time, act_time);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_energy, act_energy);
@@ -227,37 +227,6 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_consumed_energy, act_consumed_energy);
 }
 
-void test_RaplDramEnergyUnitsProbe_ReturnsCorrectValues(void) {
-  double param_energy_units = 6.103515625e-05;
-  double exp_retval_server = 15.3E-6;
-  double exp_retval_param_energy_units = param_energy_units;
-
-  double act_retval;
-  double delta = 1e-9;
-
-  // Only a selection of Intel CPUs is tested in the following:
-
-  // HASWELL_SERVER
-  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_HASWELL_X, param_energy_units);
-  TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
-
-  // BROADWELL_SERVER
-  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_BROADWELL_X, param_energy_units);
-  TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
-
-  // BROADWELL_CORE
-  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_BROADWELL_CORE, param_energy_units);
-  TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_param_energy_units, act_retval);
-
-  // SKYLAKE_DESKTOP
-  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_SKYLAKE_DESKTOP, param_energy_units);
-  TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_param_energy_units, act_retval);
-
-  // SKYLAKE_SERVER
-  act_retval = rapl_dram_energy_units_probe(CPU_INTEL_SKYLAKE_X, param_energy_units);
-  TEST_ASSERT_FLOAT_WITHIN(delta, exp_retval_server, act_retval);
-}
-
 void test_GetPkgRaplParameters_ReturnsCorrectValues(void) {
   RAPL_POWER_UNIT = 0.125;
 
@@ -286,7 +255,7 @@ void test_CalculateProbeIntervalTime_ReturnsCorrectValues(void) {
   TEST_ASSERT_EQUAL_INT64(exp_result_sec, seconds);
 }
 
-void test_ReadRaplUnits_ReturnsCorrectValues(void) {
+static void check_ReadRaplUnits_ExpectedValues(uint32_t processor_signature, double exp_rapl_dram_energy_unit) {
   int read_msr_retval = 0;
   uint64_t read_msr_ret_ptr_val = 658947; // expected value for MSR_RAPL_POWER_UNIT
 
@@ -294,19 +263,30 @@ void test_ReadRaplUnits_ReturnsCorrectValues(void) {
   read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
 
-  int retval = read_rapl_units();
-  TEST_ASSERT_FALSE(retval == MY_ERROR);
+  int retval = read_rapl_units(processor_signature);
+  TEST_ASSERT_EQUAL_INT(retval, 0);
   TEST_ASSERT_TRUE(is_supported_msr(MSR_RAPL_POWER_UNIT));
 
   int delta = 1e-14;
   double exp_rapl_time_unit = 0.0009765625;
   double exp_rapl_energy_unit = 6.103515625e-05;
-  double exp_rapl_dram_energy_unit =
-      rapl_dram_energy_units_probe(CPU_INTEL_SANDYBRIDGE, exp_rapl_energy_unit);
   double exp_rapl_power_unit = 0.125;
 
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_rapl_time_unit, RAPL_TIME_UNIT);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_rapl_energy_unit, RAPL_ENERGY_UNIT);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_rapl_dram_energy_unit, RAPL_DRAM_ENERGY_UNIT);
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_rapl_power_unit, RAPL_POWER_UNIT);
+}
+
+void test_ReadRaplUnits_ReturnsCorrectValues(void) {
+  const double exp_retval_server = 15.3E-6;
+  const double exp_retval_regular = 6.103515625e-05;
+
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_SANDYBRIDGE, exp_retval_regular);
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_BROADWELL_CORE, exp_retval_regular);
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_SKYLAKE_DESKTOP, exp_retval_regular);
+
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_BROADWELL_X, exp_retval_server);
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_HASWELL_X, exp_retval_server);
+  check_ReadRaplUnits_ExpectedValues(CPU_INTEL_SKYLAKE_X, exp_retval_server);
 }

@@ -98,9 +98,4 @@ int get_total_energy_consumed(
  */
 long get_maximum_read_interval();
 
-double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units);
-
-/* Utilities */
-int read_rapl_units();
-
 #endif

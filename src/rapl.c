@@ -73,12 +73,6 @@ static int num_nodes = 0;
 
 static int *pkg_map; // node-to-cpu mapping
 
-typedef struct rapl_unit_multiplier_t {
-  double power;
-  double energy;
-  double time;
-} rapl_unit_multiplier_t;
-
 unsigned int umax(unsigned int a, unsigned int b) {
   return a > b ? a : b;
 }
@@ -264,26 +258,6 @@ int get_num_rapl_nodes() {
   return num_nodes;
 }
 
-int get_rapl_unit_multiplier(uint64_t node, rapl_unit_multiplier_t *unit_obj) {
-  int err = 0;
-  uint64_t msr = 0;
-  rapl_unit_multiplier_msr_t unit_msr;
-
-  err = !is_supported_msr(MSR_RAPL_POWER_UNIT);
-  if (!err) {
-    err = read_msr(node, MSR_RAPL_POWER_UNIT, &msr);
-  }
-  if (!err) {
-    unit_msr = *(rapl_unit_multiplier_msr_t *)&msr;
-
-    unit_obj->time = 1.0 / (double)(B2POW(unit_msr.time));
-    unit_obj->energy = 1.0 / (double)(B2POW(unit_msr.energy));
-    unit_obj->power = 1.0 / (double)(B2POW(unit_msr.power));
-  }
-
-  return err;
-}
-
 int get_total_energy_consumed_via_msr(
     int node, off_t msr_address, double *total_energy_consumed_joules) {
   int err = 0;
@@ -318,31 +292,6 @@ int get_total_energy_consumed(
     int node, enum RAPL_DOMAIN power_domain, double *total_energy_consumed_joules) {
   return get_total_energy_consumed_via_msr(
       node, get_msr_for_domain(power_domain), total_energy_consumed_joules);
-}
-
-/*
- * Energy units are either hard-coded, or come from RAPL Energy Unit MSR.
- */
-double rapl_dram_energy_units_probe(uint32_t processor_signature, double rapl_energy_units) {
-  switch (processor_signature & 0xfffffff0) {
-  case CPU_INTEL_HASWELL_X:
-  case CPU_INTEL_BROADWELL_X:
-  case CPU_INTEL_BROADWELL_XEON_D:
-  case CPU_INTEL_SKYLAKE_X:
-  case CPU_INTEL_XEON_PHI_KNL:
-  case CPU_INTEL_XEON_PHI_KNM:
-    if (debug_enabled) {
-      fprintf(stdout, "[DEBUG] Using a predefined unit for measuring the rapl DRAM values: %.6e\n",
-              15.3E-6);
-    }
-    return 15.3E-6;
-  default:
-    if (debug_enabled) {
-      fprintf(stdout, "[DEBUG] Using the default unit for measuring the rapl DRAM values: %.6e\n",
-              rapl_energy_units);
-    }
-    return rapl_energy_units;
-  }
 }
 
 long get_maximum_read_interval() {
@@ -388,20 +337,35 @@ err:
   return FALLBACK_THERMAL_SPEC_POWER;
 }
 
-/* Utilities */
-
 int read_rapl_units(uint32_t processor_signature) {
-  int err = 0;
-  rapl_unit_multiplier_t unit_multiplier;
-
-  err = get_rapl_unit_multiplier(0, &unit_multiplier);
-  if (!err) {
-    RAPL_TIME_UNIT = unit_multiplier.time;
-    RAPL_ENERGY_UNIT = unit_multiplier.energy;
-    RAPL_DRAM_ENERGY_UNIT =
-        rapl_dram_energy_units_probe(processor_signature, unit_multiplier.energy);
-    RAPL_POWER_UNIT = unit_multiplier.power;
+  if (!is_supported_msr(MSR_RAPL_POWER_UNIT)) {
+    return -1;
   }
+
+  uint64_t msr;
+  if (read_msr(0, MSR_RAPL_POWER_UNIT, &msr) != 0) {
+    return -1;
+  }
+
+  rapl_unit_multiplier_msr_t units;
+  units.as_uint64_t = msr;
+  RAPL_TIME_UNIT = RAW_UNIT_TO_DOUBLE(units.fields.time);
+  RAPL_ENERGY_UNIT = RAW_UNIT_TO_DOUBLE(units.fields.energy);
+  RAPL_POWER_UNIT = RAW_UNIT_TO_DOUBLE(units.fields.power);
+
+  switch (processor_signature & 0xfffffff0) {
+  case CPU_INTEL_HASWELL_X:
+  case CPU_INTEL_BROADWELL_X:
+  case CPU_INTEL_BROADWELL_XEON_D:
+  case CPU_INTEL_SKYLAKE_X:
+  case CPU_INTEL_XEON_PHI_KNL:
+  case CPU_INTEL_XEON_PHI_KNM:
+    RAPL_DRAM_ENERGY_UNIT = 15.3E-6;
+    break;
+  default:
+    RAPL_DRAM_ENERGY_UNIT = RAPL_ENERGY_UNIT;
+  }
+
   if (debug_enabled) {
     fprintf(stdout,
             "[DEBUG] Measured the following unit multipliers:\n"
@@ -410,5 +374,5 @@ int read_rapl_units(uint32_t processor_signature) {
             RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
   }
 
-  return err;
+  return 0;
 }
