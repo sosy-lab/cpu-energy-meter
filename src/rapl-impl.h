@@ -77,3 +77,4 @@ typedef struct rapl_parameters_msr_t {
   unsigned int : 10;
 } rapl_parameters_msr_t;
 
+void config_msr_table();

@@ -56,10 +56,17 @@ enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
 
-void config_msr_table();
-
+/*!
+ * This function must be called before calling any other function from this module.
+ * Returns 0 on success, 1 on failure.
+ * To free resources, call terminate_rapl() in the end.
+ */
 int init_rapl();
-int terminate_rapl();
+
+/**
+ * Call this function function to cleanup resources.
+ */
+void terminate_rapl();
 
 // Wraparound value for the total energy consumed. It is computed within init_rapl().
 double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */

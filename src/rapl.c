@@ -40,10 +40,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 #include <assert.h>
+#include <err.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifdef TEST // don't print the error-msg when unit-testing
+#define warnx(...)
+#endif
 
 uint64_t debug_enabled = 0;
 
@@ -60,7 +65,7 @@ double RAPL_ENERGY_UNIT;
 double RAPL_DRAM_ENERGY_UNIT;
 double RAPL_POWER_UNIT;
 
-uint64_t num_nodes = 0;
+static uint64_t num_nodes = 0;
 
 static node_t *pkg_map; // node-to-cpu mapping
 
@@ -72,25 +77,24 @@ typedef struct rapl_unit_multiplier_t {
 
 // For documentation, see:
 // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
-int build_topology() {
+static int build_topology() {
+  assert(num_nodes == 0);
+  assert(pkg_map == NULL);
 
-  int err;
-  uint64_t max_pkg = 0;
-  const uint64_t os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
+  const long os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
+  unsigned int max_pkg = 0;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
   APIC_ID_t os_map[os_cpu_count];
+  for (long i = 0; i < os_cpu_count; i++) {
 
-  for (uint64_t i = 0; i < os_cpu_count; i++) {
-
-    err = get_core_information(i, &(os_map[i]));
+    if (get_core_information(i, &(os_map[i])) != 0) {
+      return -1;
+    }
 
     if (os_map[i].pkg_id > max_pkg) {
       max_pkg = os_map[i].pkg_id;
     }
-
-    // printf("smt_id: %u core_id: %u pkg_id: %u os_id: %u\n",
-    //   os_map[i].smt_id, os_map[i].core_id, os_map[i].pkg_id, i);
   }
 
   num_nodes = max_pkg + 1;
@@ -98,7 +102,7 @@ int build_topology() {
   // Construct a pkg map: pkg_map[pkg id] = (os_id of first thread on pkg)
   pkg_map = (node_t *)malloc(num_nodes * sizeof(node_t));
 
-  for (uint64_t i = 0; i < os_cpu_count; i++) {
+  for (long i = 0; i < os_cpu_count; i++) {
     uint64_t p = os_map[i].pkg_id;
     assert(p < num_nodes);
     if (os_map[i].smt_id == 0 && os_map[i].core_id == 0) {
@@ -106,42 +110,27 @@ int build_topology() {
     }
   }
 
-  return err;
+  return 0;
+}
+
+static void set_value_in_msr_table(off_t address) {
+  const int cpu = 0;
+  uint64_t msr;
+  msr_support_table[address & MSR_SUPPORT_MASK] = !read_msr(cpu, address, &msr);
 }
 
 void config_msr_table() {
-  // calloc sets the allocated memory to zero (unlike malloc, where this is not the case)
+  assert(msr_support_table == NULL);
   msr_support_table = (unsigned char *)calloc(MSR_SUPPORT_MASK, sizeof(unsigned char));
 
-  uint64_t msr = 0;
-  int cpu = 0;
-  int err_read_msr = 0;
-
-  // values for unit-multiplier
-  err_read_msr = read_msr(cpu, MSR_RAPL_POWER_UNIT, &msr);
-  msr_support_table[MSR_RAPL_POWER_UNIT & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for package-msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PKG_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-  err_read_msr = read_msr(cpu, MSR_RAPL_PKG_POWER_INFO, &msr);
-  msr_support_table[MSR_RAPL_PKG_POWER_INFO & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for dram msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_DRAM_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_DRAM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for core msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP0_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PP0_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // values for uncore msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PP1_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PP1_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
-
-  // value for psys msr
-  err_read_msr = read_msr(cpu, MSR_RAPL_PLATFORM_ENERGY_STATUS, &msr);
-  msr_support_table[MSR_RAPL_PLATFORM_ENERGY_STATUS & MSR_SUPPORT_MASK] = !err_read_msr;
+  // read every MSR once and set flag in msr_support_table accordingly
+  set_value_in_msr_table(MSR_RAPL_POWER_UNIT);
+  set_value_in_msr_table(MSR_RAPL_PKG_ENERGY_STATUS);
+  set_value_in_msr_table(MSR_RAPL_PKG_POWER_INFO);
+  set_value_in_msr_table(MSR_RAPL_DRAM_ENERGY_STATUS);
+  set_value_in_msr_table(MSR_RAPL_PP0_ENERGY_STATUS);
+  set_value_in_msr_table(MSR_RAPL_PP1_ENERGY_STATUS);
+  set_value_in_msr_table(MSR_RAPL_PLATFORM_ENERGY_STATUS);
 }
 
 node_t get_cpu_from_node(node_t node) {
@@ -152,84 +141,73 @@ node_t get_cpu_from_node(node_t node) {
 #endif
 }
 
-/*!
- * This function must be called before calling any other function from this class.
- * \return 0 on success, -1 otherwise
- */
 int init_rapl() {
-  int err = 0;
-
   char vendor[VENDOR_LENGTH];
   get_vendor_name(vendor);
   if (!is_intel_processor()) {
-#ifndef TEST // don't print the error-msg when unit-testing
-    fprintf(stderr,
-            "The processor on the working machine is not from Intel. Found %s-processor instead.\n",
-            vendor);
-#endif
-    return MY_ERROR;
+    warnx(
+        "The processor on the working machine is not from Intel. Found %s processor instead.\n",
+        vendor);
+    return -1;
   }
   if (debug_enabled) {
     fprintf(stdout, "[DEBUG] %s processor found.\n", vendor);
   }
 
-  unsigned int family;
   const uint32_t processor_signature = get_processor_signature();
-  family = (processor_signature >> 8) & 0xf;
+  const unsigned int family = (processor_signature >> 8) & 0xf;
   if (debug_enabled) {
     fprintf(stdout, "[DEBUG] Processor is from family %d and uses model 0x%05X.\n", family,
             (processor_signature & 0xfffffff0));
   }
   if (family != 6) {
-  // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
-  // except "Netburst"
-#ifndef TEST // don't print the error-msg when unit-testing
-    fprintf(
-        stderr,
-        "The Intel processor must be from family 6, but instead a cpu from family %d was found.\n",
+    // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
+    // except "Netburst"
+    warnx(
+        "The Intel processor must be from family 6, but instead a CPU from family %d was found.\n",
         family);
-#endif
-    return MY_ERROR;
+    return -1;
   }
 
-  err = build_topology();
-  if (err) {
-    fprintf(stderr, "An error occured while binding the cpu and/or the context.\n");
-    return MY_ERROR;
+  if (build_topology() != 0) {
+    goto err;
   }
 
-  err = open_msr_fd(num_nodes, &get_cpu_from_node);
-  if (err) {
-    fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
-    return MY_ERROR;
+  if (open_msr_fd(num_nodes, &get_cpu_from_node) != 0) {
+    goto err;
   }
 
   config_msr_table();
 
-  err = read_rapl_units(processor_signature);
+  if (read_rapl_units(processor_signature) != 0) {
+    goto err;
+  }
 
   /* 32 is the width of these fields when they are stored */
   MAX_ENERGY_STATUS_JOULES = (double)(RAPL_ENERGY_UNIT * (pow(2, 32) - 1));
 
-  return err;
+  return 0;
+
+err:
+  terminate_rapl();
+  return -1;
 }
 
-/*!
- * Call this function function to cleanup resources.
- * \return 0 on success
- */
-int terminate_rapl() {
+void terminate_rapl() {
+  // This function should work correctly no matter in what state it is called.
   close_msr_fd();
 
   if (NULL != pkg_map) {
     free(pkg_map);
+    pkg_map = NULL;
   }
 
   if (NULL != msr_support_table) {
     free(msr_support_table);
+    msr_support_table = NULL;
   }
 
-  return 0;
+  num_nodes = 0;
 }
 
 /*!

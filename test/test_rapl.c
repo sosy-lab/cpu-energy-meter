@@ -16,11 +16,12 @@ void setUp(void) {
   bind_cpu_IgnoreAndReturn(0);
   bind_context_IgnoreAndReturn(0);
   read_msr_IgnoreAndReturn(0); // make each msr available in the table
+  close_msr_fd_Ignore();
+
   config_msr_table();
 }
 
 void tearDown(void) {
-  close_msr_fd_Ignore();
   terminate_rapl();
 }
 
@@ -48,6 +49,7 @@ void test_ConfigMsrTable_should_DisableMsrWhenNotAvailable(void) {
   read_msr_IgnoreAndReturn(0);
 
   // Test the above config
+  terminate_rapl();
   config_msr_table();
   TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_POWER_UNIT));
   TEST_ASSERT_FALSE(is_supported_msr(MSR_RAPL_PKG_ENERGY_STATUS));
@@ -125,6 +127,7 @@ void test_IsSupportedDomain_ReturnsCorrectValues(void) {
 
   // Test method #is_supported_domain(uint64_t) with the above config:
   // Only RAPL_DRAM domain should evaluate to true.
+  terminate_rapl();
   config_msr_table();
 
   TEST_ASSERT_FALSE(is_supported_domain(0)); // RAPL_PKG
