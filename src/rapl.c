@@ -37,7 +37,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "msr.h"
 #include "rapl.h"
 #include "rapl-impl.h"
-#include "util.h"
 
 #include <assert.h>
 #include <math.h>
@@ -287,9 +286,6 @@ int init_rapl() {
     fprintf(stderr, "An error occurred while opening the msr file through a FD.\n");
     return MY_ERROR;
   }
-
-  drop_root_privileges_by_id(UID_NOBODY, GID_NOGROUP);
-  drop_capabilities();
 
   config_msr_table();
 

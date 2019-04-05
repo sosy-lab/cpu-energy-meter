@@ -33,6 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 
 #include "rapl.h"
+#include "util.h"
 
 #define DEFAULT_THERMAL_SPEC_POWER 200.0
 
@@ -344,6 +345,9 @@ int main(int argc, char **argv) {
     terminate_rapl();
     return MY_ERROR;
   }
+
+  drop_root_privileges_by_id(UID_NOBODY, GID_NOGROUP);
+  drop_capabilities();
 
   num_node = get_num_rapl_nodes();
   if (debug_enabled) {
