@@ -1,4 +1,5 @@
 #include <sched.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "unity.h" // needs to be placed before all the other custom h-files
@@ -10,7 +11,6 @@
 #include "rapl-impl.h"
 
 const uint32_t INTEL_SIG = 526057;
-const cpuid_info_t CPUID = {22, 1970169159, 1818588270, 1231384169};
 
 void setUp(void) {
   bind_cpu_IgnoreAndReturn(0);
@@ -64,10 +64,7 @@ void test_ConfigMsrTable_should_DisableMsrWhenNotAvailable(void) {
 }
 
 void test_InitRapl_should_ReturnErrWhenNoIntelSig(void) {
-  // some arbitrary values that don't translate to 'GenuineIntel'
-  cpuid_info_t wrong_cpuid = {0, 0, 0, 0};
-
-  get_vendor_signature_IgnoreAndReturn(wrong_cpuid);
+  is_intel_processor_IgnoreAndReturn(false);
   get_vendor_name_Ignore();
 
   int retval = init_rapl();
@@ -75,7 +72,7 @@ void test_InitRapl_should_ReturnErrWhenNoIntelSig(void) {
 }
 
 void test_InitRapl_SuccessWhenFam6CPU(void) {
-  get_vendor_signature_IgnoreAndReturn(CPUID);
+  is_intel_processor_IgnoreAndReturn(true);
   get_vendor_name_Ignore();
   get_processor_signature_IgnoreAndReturn(INTEL_SIG);
 
@@ -88,7 +85,7 @@ void test_InitRapl_SuccessWhenFam6CPU(void) {
 }
 
 void test_InitRapl_ReturnErrWhenNoFam6CPU(void) {
-  get_vendor_signature_IgnoreAndReturn(CPUID);
+  is_intel_processor_IgnoreAndReturn(true);
   get_vendor_name_Ignore();
 
   uint32_t wrongSig = 0; // some arbitrary value

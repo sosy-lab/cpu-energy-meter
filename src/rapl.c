@@ -72,25 +72,6 @@ typedef struct rapl_unit_multiplier_t {
   double time;
 } rapl_unit_multiplier_t;
 
-// Parse the x2APIC_ID_t into SMT, core and package ID.
-// http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
-void parse_apic_id(cpuid_info_t info_l0, cpuid_info_t info_l1, APIC_ID_t *my_id) {
-
-  // Get the SMT ID
-  uint64_t smt_mask_width = info_l0.eax & 0x1f;
-  uint64_t smt_mask = (1 << smt_mask_width) - 1;
-  my_id->smt_id = info_l0.edx & smt_mask;
-
-  // Get the core ID
-  uint64_t core_mask_width = info_l1.eax & 0x1f;
-  uint64_t core_mask = (((1 << core_mask_width) -1)) ^ smt_mask;
-  my_id->core_id = (info_l1.edx & core_mask) >> smt_mask_width;
-
-  // Get the package ID
-  uint64_t pkg_mask = (~(1 << core_mask_width)) + 1;
-  my_id->pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
-}
-
 // For documentation, see:
 // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
 int build_topology() {
@@ -98,29 +79,20 @@ int build_topology() {
   int err;
   uint64_t max_pkg = 0;
   const uint64_t os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
-  cpu_set_t prev_context;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
   APIC_ID_t os_map[os_cpu_count];
 
   for (uint64_t i = 0; i < os_cpu_count; i++) {
 
-    err = bind_cpu(i, &prev_context);
-
-    cpuid_info_t info_l0 = get_processor_topology(0);
-    cpuid_info_t info_l1 = get_processor_topology(1);
-
-    os_map[i].os_id = i;
-    parse_apic_id(info_l0, info_l1, &os_map[i]);
+    err = get_core_information(i, &(os_map[i]));
 
     if (os_map[i].pkg_id > max_pkg) {
       max_pkg = os_map[i].pkg_id;
     }
 
-    err = bind_context(&prev_context, NULL);
-
     // printf("smt_id: %u core_id: %u pkg_id: %u os_id: %u\n",
-    //   os_map[i].smt_id, os_map[i].core_id, os_map[i].pkg_id, os_map[i].os_id);
+    //   os_map[i].smt_id, os_map[i].core_id, os_map[i].pkg_id, i);
   }
 
   num_nodes = max_pkg + 1;
@@ -132,7 +104,7 @@ int build_topology() {
     uint64_t p = os_map[i].pkg_id;
     assert(p < num_nodes);
     if (os_map[i].smt_id == 0 && os_map[i].core_id == 0) {
-      pkg_map[p] = os_map[i].os_id;
+      pkg_map[p] = i;
     }
   }
 
@@ -197,11 +169,9 @@ node_t get_cpu_from_node(node_t node) {
 int init_rapl() {
   int err = 0;
 
-  cpuid_info_t sig;
-  sig = get_vendor_signature();
-  char vendor[12];
+  char vendor[VENDOR_LENGTH];
   get_vendor_name(vendor);
-  if (sig.ebx != 0x756e6547 || sig.ecx != 0x6c65746e || sig.edx != 0x49656e69) {
+  if (!is_intel_processor()) {
 #ifndef TEST // don't print the error-msg when unit-testing
     fprintf(stderr,
             "The processor on the working machine is not from Intel. Found %s-processor instead.\n",

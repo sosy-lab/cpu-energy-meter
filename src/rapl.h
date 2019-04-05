@@ -59,13 +59,6 @@ enum RAPL_DOMAIN { PKG, PP0, PP1, DRAM, PSYS };
 char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
 
-typedef struct APIC_ID_t {
-  uint64_t smt_id;
-  uint64_t core_id;
-  uint64_t pkg_id;
-  uint64_t os_id;
-} APIC_ID_t;
-
 void config_msr_table();
 
 int init_rapl();

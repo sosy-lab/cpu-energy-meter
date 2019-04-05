@@ -23,11 +23,21 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "cpuid.h"
+#include "util.h"
+
+#include <assert.h>
 #include <stdio.h>
 
-#include "cpuid.h"
+typedef struct cpuid_info_t {
+  uint32_t eax;
+  uint32_t ebx;
+  uint32_t ecx;
+  uint32_t edx;
+} cpuid_info_t;
 
-void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
+static void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
+  assert(ci != NULL);
 #ifndef TEST
   asm(
 #if defined(__LP64__)       /* 64-bit architecture */
@@ -51,10 +61,14 @@ void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
 #endif
 }
 
-cpuid_info_t get_vendor_signature() {
-  cpuid_info_t info;
-  cpuid(0, 0, &info);
-  return info;
+int is_intel_processor() {
+  cpuid_info_t sig;
+  cpuid(0, 0, &sig); // get vendor signature
+
+  const uint32_t exp_ebx = 0x756e6547; // translates to "Genu"
+  const uint32_t exp_ecx = 0x6c65746e; // translates to "ineI"
+  const uint32_t exp_edx = 0x49656e69; // translates to "ntel"
+  return sig.ebx == exp_ebx && sig.ecx == exp_ecx && sig.edx == exp_edx;
 }
 
 uint32_t get_processor_signature() {
@@ -63,29 +77,55 @@ uint32_t get_processor_signature() {
   return info.eax;
 }
 
-cpuid_info_t get_processor_topology(uint32_t level) {
-  cpuid_info_t info;
-  cpuid(0xb, level, &info);
-  return info;
+int get_core_information(int os_cpu, APIC_ID_t *result) {
+  assert(result != NULL);
+  cpu_set_t prev_context;
+  if (bind_cpu(os_cpu, &prev_context) == -1) {
+    return -1;
+  }
+
+  cpuid_info_t info_l0;
+  cpuid_info_t info_l1;
+  cpuid(0xb, 0, &info_l0);
+  cpuid(0xb, 1, &info_l1);
+
+  if (bind_context(&prev_context, NULL) == -1) {
+    return -1;
+  }
+
+  // Parse the x2APIC_ID_t into SMT, core and package ID.
+  // http://software.intel.com/en-us/articles/intel-64-architecture-processor-topology-enumeration
+
+  // Get the SMT ID
+  const uint64_t smt_mask_width = info_l0.eax & 0x1f;
+  const uint64_t smt_mask = (1 << smt_mask_width) - 1;
+  result->smt_id = info_l0.edx & smt_mask;
+
+  // Get the core ID
+  const uint64_t core_mask_width = info_l1.eax & 0x1f;
+  const uint64_t core_mask = (((1 << core_mask_width) -1)) ^ smt_mask;
+  result->core_id = (info_l1.edx & core_mask) >> smt_mask_width;
+
+  // Get the package ID
+  const uint64_t pkg_mask = (~(1 << core_mask_width)) + 1;
+  result->pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
+
+  return 0;
 }
 
-void cast_uint_to_str(char *out, uint32_t in) {
-  int i;
+static void cast_uint_to_str(char *out, uint32_t in) {
   uint32_t mask = 0x000000ff;
-  for (i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     out[i] = (char)((in & (mask << (i * 8))) >> (i * 8));
   }
-  out[4] = '\0';
 }
 
 void get_vendor_name(char *vendor) {
+  assert(vendor != NULL);
   cpuid_info_t c;
-  char vendor1[5];
-  char vendor2[5];
-  char vendor3[5];
   cpuid(0, 0, &c);
-  cast_uint_to_str(vendor1, c.ebx);
-  cast_uint_to_str(vendor2, c.edx);
-  cast_uint_to_str(vendor3, c.ecx);
-  sprintf(vendor, "%s%s%s", vendor1, vendor2, vendor3);
+  cast_uint_to_str(&(vendor[0]), c.ebx);
+  cast_uint_to_str(&(vendor[4]), c.edx);
+  cast_uint_to_str(&(vendor[8]), c.ecx);
+  vendor[VENDOR_LENGTH-1] = 0;
 }

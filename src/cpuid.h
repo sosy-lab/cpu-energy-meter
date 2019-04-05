@@ -28,21 +28,35 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 
-typedef struct cpuid_info_t {
-  uint32_t eax;
-  uint32_t ebx;
-  uint32_t ecx;
-  uint32_t edx;
-} cpuid_info_t;
+typedef struct {
+  uint64_t smt_id;
+  uint64_t core_id;
+  uint64_t pkg_id;
+} APIC_ID_t;
 
-void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *info);
+/**
+ * Check if system has an Intel processor.
+ */
+int is_intel_processor();
 
-cpuid_info_t get_vendor_signature();
-
+/**
+ * Get processor signature (vendor-specific).
+ */
 uint32_t get_processor_signature();
 
-cpuid_info_t get_processor_topology(uint32_t level);
+/**
+ * Read information about physical topology for an OS core.
+ *
+ * Returns 0 on success and -1 on failure.
+ */
+int get_core_information(int os_cpu, APIC_ID_t *result);
 
+/**
+ * Read string with vendor name from processor.
+ * Needs to be passed an array of length VENDOR_LENGTH.
+ */
 void get_vendor_name(char *vendor);
+// Vendor name has 12 characters, plus trailing \0
+#define VENDOR_LENGTH 13
 
 #endif
