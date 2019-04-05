@@ -63,10 +63,6 @@ double RAPL_POWER_UNIT;
 uint32_t processor_signature;
 
 uint64_t num_nodes = 0;
-uint64_t num_core_threads = 0; // number of physical threads per core
-uint64_t num_pkg_threads = 0;  // number of physical threads per package
-uint64_t num_pkg_cores = 0;    // number of cores per package
-uint64_t os_cpu_count = 0;     // number of OS cpus
 
 static node_t *pkg_map; // node-to-cpu mapping
 
@@ -134,7 +130,7 @@ int build_topology() {
 
   int err;
   uint64_t max_pkg = 0;
-  os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
+  const uint64_t os_cpu_count = sysconf(_SC_NPROCESSORS_CONF);
   cpu_set_t prev_context;
 
   // Construct an os map: os_map[APIC_ID ... APIC_ID]
@@ -150,9 +146,6 @@ int build_topology() {
     os_map[i].os_id = i;
     parse_apic_id(info_l0, info_l1, &os_map[i]);
 
-    num_core_threads = info_l0.ebx & 0xffff;
-    num_pkg_threads = info_l1.ebx & 0xffff;
-
     if (os_map[i].pkg_id > max_pkg) {
       max_pkg = os_map[i].pkg_id;
     }
@@ -163,18 +156,15 @@ int build_topology() {
     //   os_map[i].smt_id, os_map[i].core_id, os_map[i].pkg_id, os_map[i].os_id);
   }
 
-  num_pkg_cores = num_pkg_threads / num_core_threads;
   num_nodes = max_pkg + 1;
 
   // Construct a pkg map: pkg_map[pkg id] = (os_id of first thread on pkg)
   pkg_map = (node_t *)malloc(num_nodes * sizeof(node_t));
 
-  uint64_t p, t;
   for (uint64_t i = 0; i < os_cpu_count; i++) {
-    p = os_map[i].pkg_id;
+    uint64_t p = os_map[i].pkg_id;
     assert(p < num_nodes);
-    t = os_map[i].smt_id * num_pkg_cores + os_map[i].core_id;
-    if (t == 0) {
+    if (os_map[i].smt_id == 0 && os_map[i].core_id == 0) {
       pkg_map[p] = os_map[i].os_id;
     }
   }
