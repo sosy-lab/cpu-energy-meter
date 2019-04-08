@@ -369,11 +369,13 @@ double get_max_power(int node) {
     goto err;
   }
 
-  rapl_parameters_msr_t rapl_parameters;
-  if (read_msr(node, MSR_RAPL_PKG_POWER_INFO, &rapl_parameters.as_uint64_t) != 0) {
+  uint64_t msr;
+  if (read_msr(node, MSR_RAPL_PKG_POWER_INFO, &msr) != 0) {
     goto err;
   }
 
+  rapl_parameters_msr_t rapl_parameters;
+  rapl_parameters.as_uint64_t = msr;
   const unsigned int max_raw_power =
       umax(rapl_parameters.fields.thermal_spec_power, rapl_parameters.fields.maximum_power);
   const double max_power_watts = max_raw_power * RAPL_POWER_UNIT;
