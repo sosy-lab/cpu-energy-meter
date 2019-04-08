@@ -52,14 +52,8 @@ enum RAPL_DOMAIN {
 
 extern uint64_t debug_enabled;
 
-// Visible for testing
-extern double RAPL_TIME_UNIT;
-extern double RAPL_ENERGY_UNIT;
-extern double RAPL_DRAM_ENERGY_UNIT;
-extern double RAPL_POWER_UNIT;
-
-char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
-char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
+const char * const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
+const char * const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
 
 /*!
  * This function must be called before calling any other function from this module.

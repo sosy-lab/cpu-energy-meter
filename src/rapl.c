@@ -56,8 +56,8 @@ static const int MIN_THERMAL_SPEC_POWER = 1.0e-03; // minimum power in watts tha
 
 uint64_t debug_enabled = 0;
 
-char *RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
-char *RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {"Package", "Core", "Uncore", "DRAM", "PSYS"};
+const char * const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
+const char * const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {"Package", "Core", "Uncore", "DRAM", "PSYS"};
 
 /* rapl msr availablility */
 #define MSR_SUPPORT_MASK 0xff
@@ -73,7 +73,7 @@ static int num_nodes = 0;
 
 static int *pkg_map; // node-to-cpu mapping
 
-unsigned int umax(unsigned int a, unsigned int b) {
+static unsigned int umax(unsigned int a, unsigned int b) {
   return a > b ? a : b;
 }
 

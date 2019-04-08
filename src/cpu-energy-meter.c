@@ -36,12 +36,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
-const char *version = "1.1-dev";
+const char * const version = "1.1-dev";
 
-int num_node = 0;
-uint64_t delay = 0;
-uint64_t delay_unit = 1000000000; // unit in nanoseconds
-uint64_t print_rawtext = 0;
+static int num_node = 0;
+static uint64_t delay = 0;
+static const uint64_t delay_unit = 1000000000; // unit in nanoseconds
+static int print_rawtext = 0;
 
 double **cum_energy_J = NULL;
 struct timeval measurement_start_time, measurement_end_time;
@@ -96,7 +96,7 @@ void print_domain(int socket, int domain) {
     return;
   }
 
-  char *domain_string;
+  const char *domain_string;
   if (print_rawtext) {
     domain_string = RAPL_DOMAIN_STRINGS[domain];
     fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, cum_energy_J[socket][domain]);

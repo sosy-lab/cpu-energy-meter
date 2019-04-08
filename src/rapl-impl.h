@@ -87,6 +87,11 @@ typedef union {
   } fields;
 } rapl_parameters_msr_t;
 
+extern double RAPL_TIME_UNIT;
+extern double RAPL_ENERGY_UNIT;
+extern double RAPL_DRAM_ENERGY_UNIT;
+extern double RAPL_POWER_UNIT;
+
 void config_msr_table();
 
 /**
