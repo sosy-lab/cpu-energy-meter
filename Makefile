@@ -18,7 +18,7 @@ TEST_MAKEFILE = ${TEST_BUILD_DIR}/MakefileTestSupport
 OBJ = ${OBJ_DIR}
 
 CC =gcc -g
-CFLAGS =-I. -I$(SRC_DIR) -std=gnu99 -Wall -Wextra -Wpedantic -Werror
+CFLAGS =-I. -I$(SRC_DIR) -std=gnu99 -Wall -Wextra -Wpedantic -Werror -Wno-variadic-macros
 TEST_CFLAGS =-DTEST $(CFLAGS) -Wno-unused-parameter
 LDFLAGS =-Wl,--no-as-needed -lm -lcap
 LIBS =-lm -lcap

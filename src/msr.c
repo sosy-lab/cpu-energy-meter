@@ -24,6 +24,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "msr.h"
+#include "util.h"
 
 #include <assert.h>
 #include <err.h>
@@ -46,6 +47,7 @@ int open_msr_fd(int num_nodes, int (*pkg_map)(int)) {
   for (int node = 0; node < fds_size; node++) {
     char msr_path[32];
     sprintf(msr_path, "/dev/cpu/%u/msr", pkg_map(node));
+    DEBUG("Using %s for accessing MSR of socket %d.", msr_path, node);
     int fd = open(msr_path, O_RDONLY);
     if (fd == -1) {
       warn("Could not open %s", msr_path);

@@ -54,8 +54,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static const int FALLBACK_THERMAL_SPEC_POWER = 200.0; // maximum power in watts that we assume if we cannot read it
 static const int MIN_THERMAL_SPEC_POWER = 1.0e-03; // minimum power in watts that we assume as a legal value
 
-uint64_t debug_enabled = 0;
-
 const char * const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
 const char * const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {"Package", "Core", "Uncore", "DRAM", "PSYS"};
 
@@ -153,16 +151,12 @@ int check_if_supported_processor(uint32_t *current_processor_signature) {
         vendor);
     return -1;
   }
-  if (debug_enabled) {
-    fprintf(stdout, "[DEBUG] %s processor found.\n", vendor);
-  }
+  DEBUG("%s processor found.", vendor);
 
   const uint32_t processor_signature = get_processor_signature();
   const unsigned int family = (processor_signature >> 8) & 0xf;
-  if (debug_enabled) {
-    fprintf(stdout, "[DEBUG] Processor is from family %d and uses model 0x%05X.\n", family,
-            (processor_signature & 0xfffffff0));
-  }
+  DEBUG("Processor is from family %d and uses model 0x%05X.",
+      family, processor_signature & 0xfffffff0);
   if (family != 6) {
     // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
     // except "Netburst"
@@ -335,6 +329,7 @@ double get_max_power(int node) {
   const double max_power_watts = max_raw_power * RAPL_POWER_UNIT;
 
   if (max_power_watts > MIN_THERMAL_SPEC_POWER) {
+    DEBUG("Max power consumption of node %d is %fW.", node, max_power_watts);
     return max_power_watts;
   }
 
@@ -371,13 +366,9 @@ int read_rapl_units(uint32_t processor_signature) {
     RAPL_DRAM_ENERGY_UNIT = RAPL_ENERGY_UNIT;
   }
 
-  if (debug_enabled) {
-    fprintf(stdout,
-            "[DEBUG] Measured the following unit multipliers:\n"
-            "[DEBUG] RAPL_ENERGY_UNIT: %0.6e J\n"
-            "[DEBUG] RAPL_DRAM_ENERGY_UNIT: %0.6e J\n",
-            RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
-  }
+  DEBUG("Measured the following unit multipliers:"
+      "   RAPL_ENERGY_UNIT=%0.6eJ   RAPL_DRAM_ENERGY_UNIT=%0.6eJ",
+      RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
 
   return 0;
 }

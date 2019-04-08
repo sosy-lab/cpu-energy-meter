@@ -13,6 +13,7 @@
 const uint32_t INTEL_SIG = 526057;
 
 void setUp(void) {
+  is_debug_enabled_IgnoreAndReturn(0);
   bind_cpu_IgnoreAndReturn(0);
   bind_context_IgnoreAndReturn(0);
   read_msr_IgnoreAndReturn(0); // make each msr available in the table

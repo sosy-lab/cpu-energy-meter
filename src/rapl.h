@@ -48,8 +48,6 @@ enum RAPL_DOMAIN {
 };
 #define RAPL_NR_DOMAIN 5 /* Number of power domains */
 
-extern uint64_t debug_enabled;
-
 const char * const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
 const char * const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
 

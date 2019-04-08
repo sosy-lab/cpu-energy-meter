@@ -164,10 +164,8 @@ void compute_msr_probe_interval_time(struct timespec *signal_timelimit) {
 void do_print_energy_info() {
   struct timespec signal_timelimit;
   compute_msr_probe_interval_time(&signal_timelimit);
-  if (debug_enabled) {
-    fprintf(stdout, "[DEBUG] Interval time of msr probes set to %lds, %ldns:\n",
-            signal_timelimit.tv_sec, signal_timelimit.tv_nsec);
-  }
+  DEBUG("Interval time of msr probes set to %lds, %ldns.",
+      signal_timelimit.tv_sec, signal_timelimit.tv_nsec);
 
   sigset_t signal_set = get_sigset();
   int domain = 0;
@@ -260,7 +258,7 @@ int read_cmdline(int argc, char **argv) {
   while ((opt = getopt(argc, argv, "de:hr")) != -1) {
     switch (opt) {
     case 'd':
-      debug_enabled = 1;
+      enable_debug();
       break;
     case 'e':
       delay_ms_temp = atoi(optarg);
@@ -305,9 +303,6 @@ int main(int argc, char **argv) {
   drop_capabilities();
 
   num_node = get_num_rapl_nodes();
-  if (debug_enabled) {
-    fprintf(stdout, "[DEBUG] Number of nodes detected: %d\n", num_node);
-  }
 
   do_print_energy_info();
 

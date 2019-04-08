@@ -35,6 +35,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/capability.h>
 #include <unistd.h>
 
+static int debug_enabled = 0;
+
+void enable_debug() {
+  debug_enabled = 1;
+}
+
+int is_debug_enabled() {
+  return debug_enabled;
+}
+
 /*
  * The documentation regarding the capabilities was taken from the linux manual pages (i.e.,
  * http://man7.org/linux/man-pages/man3/cap_get_proc.3.html and
@@ -79,6 +89,7 @@ void drop_root_privileges_by_id(uid_t uid, gid_t gid) {
   uid_t olduid = geteuid();
 
   if (olduid != 0 && oldgid != 0) {
+    DEBUG("Not changing UID because not running as root (uid=%d gid=%d).", olduid, oldgid);
     return; // currently not root, nothing can be done
   }
 
