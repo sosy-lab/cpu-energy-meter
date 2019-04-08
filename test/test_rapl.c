@@ -175,8 +175,9 @@ void test_GetTotalEnergyConsumed_ComputesCorrectValue(void) {
   // Test that the compution is calculated correctly
   double delta = 1e-09;
   double exp_consumed_energy = 30182.876953125;
-  energy_status_msr_t domain_msr = *(energy_status_msr_t *)&read_msr_ret_ptr_val;
-  double act_consumed_energy = RAPL_ENERGY_UNIT * domain_msr.total_energy_consumed;
+  energy_status_msr_t energy_status;
+  energy_status.as_uint64_t = read_msr_ret_ptr_val;
+  double act_consumed_energy = RAPL_ENERGY_UNIT * energy_status.fields.total_energy_consumed;
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_consumed_energy, act_consumed_energy);
 }
 
@@ -187,10 +188,9 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   int node = 0;
   int cpu = 0;
   double energy_consumed = 0;
-  uint64_t read_msr_ret_ptr_val;
 
   // Set up mocks for testing RAPL_PKG_ENERGY_STATUS
-  read_msr_ret_ptr_val = 494516256; // some arbitrary value
+  uint64_t read_msr_ret_ptr_val = 494516256; // some arbitrary value
   read_msr_ExpectAndReturn(cpu, MSR_RAPL_PKG_ENERGY_STATUS, NULL, 0);
   read_msr_IgnoreArg_val();
   read_msr_ReturnThruPtr_val(&read_msr_ret_ptr_val);
@@ -200,15 +200,15 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   int act_retval;
   double exp_consumed_energy;
   double act_consumed_energy;
-  energy_status_msr_t domain_msr;
 
   // Test that for PKG_ENERGY_STATUS, the value from RAPL_ENERGY_UNIT is taken as multiplier
   act_retval = get_total_energy_consumed_via_msr(node, MSR_RAPL_PKG_ENERGY_STATUS, &energy_consumed);
   TEST_ASSERT_EQUAL(exp_retval, act_retval);
 
+  energy_status_msr_t energy_status;
+  energy_status.as_uint64_t = read_msr_ret_ptr_val;
   exp_consumed_energy = 30182.876953125; // value computed by hand
-  domain_msr = *(energy_status_msr_t *)&read_msr_ret_ptr_val;
-  act_consumed_energy = RAPL_ENERGY_UNIT * domain_msr.total_energy_consumed;
+  act_consumed_energy = RAPL_ENERGY_UNIT * energy_status.fields.total_energy_consumed;
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_consumed_energy, act_consumed_energy);
 
   // Set up mocks for testing RAPL_DRAM_ENERGY_STATUS
@@ -221,9 +221,9 @@ void test_GetTotalEnergyConsumed_should_DifferCorrectlyBetweenDramAndDefault(voi
   act_retval = get_total_energy_consumed_via_msr(node, MSR_RAPL_DRAM_ENERGY_STATUS, &energy_consumed);
   TEST_ASSERT_EQUAL(exp_retval, act_retval);
 
+  energy_status.as_uint64_t = read_msr_ret_ptr_val;
   exp_consumed_energy = 580.0003254; // value computed by hand
-  domain_msr = *(energy_status_msr_t *)&read_msr_ret_ptr_val;
-  act_consumed_energy = RAPL_DRAM_ENERGY_UNIT * domain_msr.total_energy_consumed;
+  act_consumed_energy = RAPL_DRAM_ENERGY_UNIT * energy_status.fields.total_energy_consumed;
   TEST_ASSERT_FLOAT_WITHIN(delta, exp_consumed_energy, act_consumed_energy);
 }
 

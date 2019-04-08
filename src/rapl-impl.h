@@ -64,9 +64,12 @@ typedef union {
 } rapl_unit_multiplier_msr_t;
 
 /* Updated every ~1ms. Wraparound time of 60s under load. */
-typedef struct energy_status_msr_t {
-  uint64_t total_energy_consumed : 32;
-  uint64_t : 32;
+typedef union {
+  uint64_t as_uint64_t;
+  struct energy_status_msr_t {
+    uint64_t total_energy_consumed : 32;
+    uint64_t : 32;
+  } fields;
 } energy_status_msr_t;
 
 /* PKG domain */

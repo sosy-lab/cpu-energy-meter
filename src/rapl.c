@@ -260,32 +260,27 @@ int get_num_rapl_nodes() {
 
 int get_total_energy_consumed_via_msr(
     int node, off_t msr_address, double *total_energy_consumed_joules) {
-  int err = 0;
-  uint64_t msr = 0;
-  energy_status_msr_t domain_msr;
+  if (!is_supported_msr(msr_address)) {
+    return -1;
+  }
+
+  uint64_t msr;
   cpu_set_t old_context;
+  bind_cpu(get_cpu_from_node(node), &old_context); // improve performance on Linux
+  int result = read_msr(node, msr_address, &msr);
+  bind_context(&old_context, NULL);
 
-  err = !is_supported_msr(msr_address);
-  if (!err) {
-    bind_cpu(get_cpu_from_node(node), &old_context); // improve performance on Linux
-    err = read_msr(node, msr_address, &msr);
-    bind_context(&old_context, NULL);
+  if (result != 0) {
+    return -1;
   }
+  energy_status_msr_t energy_status;
+  energy_status.as_uint64_t = msr;
 
-  if (!err) {
-    domain_msr = *(energy_status_msr_t *)&msr;
+  const double energy_unit =
+      (msr_address == MSR_RAPL_DRAM_ENERGY_STATUS) ? RAPL_DRAM_ENERGY_UNIT : RAPL_ENERGY_UNIT;
+  *total_energy_consumed_joules = energy_unit * energy_status.fields.total_energy_consumed;
 
-    switch (msr_address) {
-    case MSR_RAPL_DRAM_ENERGY_STATUS:
-      *total_energy_consumed_joules = RAPL_DRAM_ENERGY_UNIT * domain_msr.total_energy_consumed;
-      break;
-    default:
-      *total_energy_consumed_joules = RAPL_ENERGY_UNIT * domain_msr.total_energy_consumed;
-      break;
-    }
-  }
-
-  return err;
+  return 0;
 }
 
 int get_total_energy_consumed(
