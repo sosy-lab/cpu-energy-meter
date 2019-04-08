@@ -144,7 +144,7 @@ int get_cpu_from_node(int node) {
 #endif
 }
 
-int init_rapl() {
+int check_if_supported_processor(uint32_t *current_processor_signature) {
   char vendor[VENDOR_LENGTH];
   get_vendor_name(vendor);
   if (!is_intel_processor()) {
@@ -169,6 +169,16 @@ int init_rapl() {
     warnx(
         "The Intel processor must be from family 6, but instead a CPU from family %d was found.\n",
         family);
+    return -1;
+  }
+
+  *current_processor_signature = processor_signature;
+  return 0;
+}
+
+int init_rapl() {
+  uint32_t processor_signature;
+  if (check_if_supported_processor(&processor_signature) != 0) {
     return -1;
   }
 

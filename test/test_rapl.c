@@ -66,7 +66,7 @@ void test_InitRapl_should_ReturnErrWhenNoIntelSig(void) {
   get_vendor_name_Ignore();
 
   int retval = init_rapl();
-  TEST_ASSERT_EQUAL(MY_ERROR, retval);
+  TEST_ASSERT_EQUAL(-1, retval);
 }
 
 void test_InitRapl_SuccessWhenFam6CPU(void) {
@@ -96,7 +96,7 @@ void test_InitRapl_ReturnErrWhenNoFam6CPU(void) {
 
   int retval = init_rapl();
   TEST_ASSERT_FALSE(exp_family == act_family);
-  TEST_ASSERT_EQUAL(MY_ERROR, retval);
+  TEST_ASSERT_EQUAL(-1, retval);
 }
 
 void test_IsSupportedDomain_ReturnsCorrectValues(void) {
