@@ -289,7 +289,7 @@ int read_cmdline(int argc, char **argv) {
 int main(int argc, char **argv) {
   if (0 != read_cmdline(argc, argv)) {
     // Error occured while reading command line
-    return MY_ERROR;
+    return 1;
   }
 
   sigset_t signal_set = get_sigset();
@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
   if (0 != init_rapl()) {
     fprintf(stdout, "Init failed!\n");
     terminate_rapl();
-    return MY_ERROR;
+    return 1;
   }
 
   drop_root_privileges_by_id(UID_NOBODY, GID_NOGROUP);

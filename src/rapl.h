@@ -32,8 +32,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
 
-#define MY_ERROR -1
-
 /* Power Domains */
 enum RAPL_DOMAIN {
   RAPL_PKG,
