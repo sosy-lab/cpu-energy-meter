@@ -280,6 +280,11 @@ static int read_cmdline(int argc, char **argv) {
       return -1;
     }
   }
+  if (optind < argc) {
+    warnx("no positional argument expected");
+    usage(stderr);
+    return -1;
+  }
   return 0;
 }
 
