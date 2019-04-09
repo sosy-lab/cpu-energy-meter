@@ -23,11 +23,13 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <assert.h>
-#include <math.h>
+#include <err.h>
+#include <errno.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
@@ -38,34 +40,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
 const char * const version = "1.1-dev";
 
-static int num_node = 0;
+// Configuration (from command-line parameters)
 static uint64_t delay = 0;
 static const uint64_t delay_unit = 1000000000; // unit in nanoseconds
 static int print_rawtext = 0;
 
-double **cum_energy_J = NULL;
-struct timeval measurement_start_time, measurement_end_time;
-
-void convert_time_to_string(struct timeval tv, char *time_buf) {
-  time_t sec;
-  int msec;
-  struct tm *timeinfo;
-  char tmp_buf[9];
-
-  sec = tv.tv_sec;
-  timeinfo = localtime(&sec);
-  msec = tv.tv_usec / 1000;
-
-  strftime(tmp_buf, 9, "%H:%M:%S", timeinfo);
-  sprintf(time_buf, "%s:%d", tmp_buf, msec);
-}
-
-double convert_time_to_sec(struct timeval tv) {
+static double convert_time_to_sec(struct timeval tv) {
   double elapsed_time = (double)(tv.tv_sec) + ((double)(tv.tv_usec) / 1000000);
   return elapsed_time;
 }
 
-sigset_t get_sigset() {
+/**
+ * Create set with signals that we care about.
+ */
+static sigset_t get_sigset() {
   sigset_t set;
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
@@ -74,7 +62,11 @@ sigset_t get_sigset() {
   return set;
 }
 
-void print_header(int socket) {
+static void print_header(
+    int num_node,
+    int socket,
+    struct timeval measurement_start_time,
+    struct timeval measurement_end_time) {
   double start_seconds = convert_time_to_sec(measurement_start_time);
   double end_seconds = convert_time_to_sec(measurement_end_time);
 
@@ -83,159 +75,160 @@ void print_header(int socket) {
     fprintf(stdout, "duration_seconds=%f\n", end_seconds - start_seconds);
   } else {
     fprintf(stdout, "\b\b+--------------------------------------+\n");
-    fprintf(stdout, "| %-21s %12s %u |\n", "CPU-Energy-Meter", "Socket", socket);
+    fprintf(stdout, "| CPU Energy Meter            Socket %u |\n", socket);
     fprintf(stdout, "+--------------------------------------+\n");
-    fprintf(stdout, "%-19s %14.6lf %s\n", "Duration", end_seconds - start_seconds, "sec");
+    fprintf(stdout, "%-19s %14.6lf sec\n", "Duration", end_seconds - start_seconds);
   }
 }
 
-void print_domain(int socket, int domain) {
-  if (cum_energy_J[socket][domain] == 0.0) {
-    // The values in the double-array were explicitly initialized with 0.0, that's why we can safely
-    // check with '=='-equality here
+static void print_value(int socket, int domain, double value_J) {
+  if (value_J == 0.0) {
+    // Sometimes measurement seems to work but energy consumption is 0.
+    // This means an unsupported domain, because even for short measurements value would be larger.
     return;
   }
 
   const char *domain_string;
   if (print_rawtext) {
     domain_string = RAPL_DOMAIN_STRINGS[domain];
-    fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, cum_energy_J[socket][domain]);
+    fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, value_J);
   } else {
     domain_string = RAPL_DOMAIN_FORMATTED_STRINGS[domain];
-    fprintf(stdout, "%-19s %14.6f %s\n", domain_string, cum_energy_J[socket][domain], "Joule");
+    fprintf(stdout, "%-19s %14.6f Joule\n", domain_string, value_J);
   }
 }
 
-void print_intermediate_results() {
-  int domain;
+static void print_results(
+    int num_node,
+    double cum_energy_J[num_node][RAPL_NR_DOMAIN],
+    struct timeval measurement_start_time,
+    struct timeval measurement_end_time) {
+  for (int i = 0; i < num_node; i++) {
 
-  if (cum_energy_J != NULL) {
-    for (int i = 0; i < num_node; i++) {
-      if (cum_energy_J[i] == NULL) {
-        continue;
-      }
+    print_header(num_node, i, measurement_start_time, measurement_end_time);
 
-      print_header(i);
-
-      for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-        if (is_supported_domain(domain)) {
-          print_domain(i, domain);
-        }
+    for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
+      if (is_supported_domain(domain)) {
+        print_value(i, domain, cum_energy_J[i][domain]);
       }
     }
   }
 }
 
-// Returns 1 if the process is supposed to continue, 0 if the process is supposed to stop
-int handle_signal(int sig) {
-  if (sig < 0) {
-    return 1;
-
-  } else if (sig == SIGINT || sig == SIGQUIT) {
-    print_intermediate_results();
-    return 0;
-
-  } else if (sig == SIGUSR1) {
-    print_intermediate_results();
-    return 1;
-
-  } else {
-    printf("Didn't handle signal number %d", sig);
-    return 1;
-  }
-}
-
-void compute_msr_probe_interval_time(struct timespec *signal_timelimit) {
+static struct timespec compute_msr_probe_interval_time() {
+  struct timespec signal_timelimit;
   if (delay) {
     // delay set by user; i.e. use the according values and return
-    long seconds = delay / delay_unit;
-    long nano_seconds = delay % delay_unit;
-
-    signal_timelimit->tv_sec = seconds;
-    signal_timelimit->tv_nsec = nano_seconds;
-    return;
+    signal_timelimit.tv_sec = delay / delay_unit;
+    signal_timelimit.tv_nsec = delay % delay_unit;
+  } else {
+    signal_timelimit.tv_sec = get_maximum_read_interval();
+    signal_timelimit.tv_nsec = 0;
   }
-
-  long seconds = get_maximum_read_interval();
-  signal_timelimit->tv_sec = seconds;
-  signal_timelimit->tv_nsec = 0;
-}
-
-void do_print_energy_info() {
-  struct timespec signal_timelimit;
-  compute_msr_probe_interval_time(&signal_timelimit);
   DEBUG("Interval time of msr probes set to %lds, %ldns.",
       signal_timelimit.tv_sec, signal_timelimit.tv_nsec);
+  return signal_timelimit;
+}
 
-  sigset_t signal_set = get_sigset();
-  int domain = 0;
-  int node = 0;
-  double new_sample;
-  double delta;
-
-  double prev_sample[num_node][RAPL_NR_DOMAIN];
-  cum_energy_J = calloc(num_node, sizeof(double *));
+/**
+ * Read measurements and write them to current_measurements.
+ * If cum_energy_J is not NULL, read previous measurements from current_measurements
+ * and accumulate delta in cum_energy_J.
+ */
+static int read_measurements(
+    int num_node,
+    double current_measurements[num_node][RAPL_NR_DOMAIN],
+    double cum_energy_J[num_node][RAPL_NR_DOMAIN],
+    struct timeval *measurement_time) {
+  int result = 0;
   for (int i = 0; i < num_node; i++) {
-    cum_energy_J[i] = calloc(RAPL_NR_DOMAIN, sizeof(double));
-  }
-
-  struct timeval tv;
-
-  /* don't buffer if piped */
-  setbuf(stdout, NULL);
-
-  /* Read initial values */
-  for (int i = node; i < num_node; i++) {
-    for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
+    for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
-        get_total_energy_consumed(i, domain, &prev_sample[i][domain]);
-      }
-    }
-  }
+        double new_sample;
+        if (get_total_energy_consumed(i, domain, &new_sample) != 0) {
+          warnx("Measuring domain %s of CPU %d failed.", RAPL_DOMAIN_FORMATTED_STRINGS[domain], i);
+          result = 1;
+          continue; // at least continue reading other domains
+        }
 
-  gettimeofday(&tv, NULL);
-  measurement_start_time = tv;
-  measurement_end_time = measurement_start_time;
-
-  char time_string[12];
-  convert_time_to_string(tv, time_string);
-  // fprintf(stdout, "start_time=%f (%s o'clock)\n", convert_time_to_sec(tv), time_string);
-
-  int rcvd_signal;
-  int do_continue = 1;
-  siginfo_t signal_info;
-  /* Begin sampling */
-  while (do_continue) {
-    // If a signal is received, perform one probe before handling it.
-    rcvd_signal = sigtimedwait(&signal_set, &signal_info, &signal_timelimit);
-
-    for (int i = node; i < num_node; i++) {
-      for (domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-        if (is_supported_domain(domain)) {
-          get_total_energy_consumed(i, domain, &new_sample);
-          delta = new_sample - prev_sample[i][domain];
+        if (cum_energy_J != NULL) {
+          double delta = new_sample - current_measurements[i][domain];
 
           /* Handle wraparound */
           if (delta < 0) {
             delta += MAX_ENERGY_STATUS_JOULES;
           }
 
-          prev_sample[i][domain] = new_sample;
-
           cum_energy_J[i][domain] += delta;
         }
+
+        current_measurements[i][domain] = new_sample;
+      }
+    }
+  }
+
+  gettimeofday(measurement_time, NULL);
+  return result;
+}
+
+static int measure_and_print_results() {
+  const int num_node = get_num_rapl_nodes();
+  struct timeval measurement_start_time, measurement_end_time;
+  double prev_sample[num_node][RAPL_NR_DOMAIN];
+
+  // Read initial values
+  if (read_measurements(num_node, prev_sample, NULL, &measurement_start_time) != 0) {
+    return 1;
+  }
+
+  double cum_energy_J[num_node][RAPL_NR_DOMAIN];
+  memset(cum_energy_J, 0, sizeof(cum_energy_J));
+  const struct timespec signal_timelimit = compute_msr_probe_interval_time();
+  const sigset_t signal_set = get_sigset();
+
+  // Actual measurement loop
+  while (true) {
+    // Wait for signal or timeout
+    const int rcvd_signal = sigtimedwait(&signal_set, NULL, &signal_timelimit);
+
+    // handle errors
+    if (rcvd_signal == -1) {
+      if (errno == EAGAIN) {
+        DEBUG("Time limit elapsed, reading values to ensure overflows are detected.%s", "");
+      } else if (errno == EINTR) {
+        // interrupted, just try again
+      } else {
+        warn("Waiting for signal failed.");
+        return 1;
       }
     }
 
-    gettimeofday(&tv, NULL);
-    measurement_end_time = tv;
+    // make sure to read in each iteration, otherwise we might miss overflows
+    if (read_measurements(num_node, prev_sample, cum_energy_J, &measurement_end_time) != 0) {
+      return 1;
+    }
+
+    // handle signals
     if (rcvd_signal != -1) {
-      do_continue = handle_signal(rcvd_signal);
+      DEBUG("Received signal %d.", rcvd_signal);
+      if (rcvd_signal == SIGINT || rcvd_signal == SIGQUIT) {
+        print_results(num_node, cum_energy_J, measurement_start_time, measurement_end_time);
+        break;
+
+      } else if (rcvd_signal == SIGUSR1) {
+        print_results(num_node, cum_energy_J, measurement_start_time, measurement_end_time);
+
+      } else {
+        warnx("Received unexpected signal %d", rcvd_signal);
+        return 1;
+      }
     }
   }
+
+  return 0;
 }
 
-void usage(FILE *target) {
+static void usage(FILE *target) {
   fprintf(target, "\n");
   fprintf(target, "CPU Energy Meter v%s\n", version);
   fprintf(target, "\n");
@@ -249,19 +242,17 @@ void usage(FILE *target) {
   fprintf(target, "\n");
 }
 
-int read_cmdline(int argc, char **argv) {
-  int opt;
-  uint64_t delay_ms_temp = 1000;
-
+static int read_cmdline(int argc, char **argv) {
   progname = argv[0];
 
+  int opt;
   while ((opt = getopt(argc, argv, "de:hr")) != -1) {
     switch (opt) {
     case 'd':
       enable_debug();
       break;
-    case 'e':
-      delay_ms_temp = atoi(optarg);
+    case 'e': {
+      uint64_t delay_ms_temp = atoi(optarg);
       if (delay_ms_temp > 50) {
         delay = delay_ms_temp * 1000000; // delay in ns
       } else {
@@ -269,6 +260,7 @@ int read_cmdline(int argc, char **argv) {
         return -1;
       }
       break;
+    }
     case 'h':
       usage(stdout);
       exit(0);
@@ -285,28 +277,35 @@ int read_cmdline(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
+  // Check cmdline first because we don't want to attempt accessing MSRs if -h is given.
   if (0 != read_cmdline(argc, argv)) {
-    // Error occured while reading command line
     return 1;
   }
+  int result = 0;
 
-  sigset_t signal_set = get_sigset();
-  sigprocmask(SIG_BLOCK, &signal_set, NULL);
-  // First init the RAPL library
+  // Block signals as fast as possible to ensure proper results if we get a signal soon
+  const sigset_t signal_set = get_sigset();
+  if (sigprocmask(SIG_BLOCK, &signal_set, NULL)) {
+    err(1, "Failed to block signals");
+  }
+
+  // Initialize RAPL
   if (0 != init_rapl()) {
-    fprintf(stderr, "Init failed!\n");
-    terminate_rapl();
-    return 1;
+    fprintf(stderr, "Cannot access RAPL!\n");
+    result = 1;
+    goto out;
   }
 
   drop_root_privileges_by_id(UID_NOBODY, GID_NOGROUP);
   drop_capabilities();
 
-  num_node = get_num_rapl_nodes();
+  // Turn off buffering to ensure intermediate results are not delayed
+  setbuf(stdout, NULL);
 
-  do_print_energy_info();
+  result = measure_and_print_results();
 
+out:
   terminate_rapl();
   sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
-  return 0;
+  return result;
 }
