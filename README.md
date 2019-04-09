@@ -1,40 +1,74 @@
 CPU Energy Meter
-=====================
+================
 
-CPU Energy Meter is a software utility and library, which allows to monitor
-power at very fine time granularities (few tens of milliseconds).
+[![Build Status](https://gitlab.com/sosy-lab/software/cpu-energy-meter/badges/master/pipeline.svg)](https://gitlab.com/sosy-lab/software/cpu-energy-meter/pipelines)
+[![BSD License](https://img.shields.io/badge/license-BSD--2--clause-brightgreen.svg)](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE)
+[![Releases](https://img.shields.io/github/release/sosy-lab/cpu-energy-meter.svg)](https://github.com/sosy-lab/cpu-energy-meter/releases)
+[![DOI via Zenodo](https://zenodo.org/badge/46493895.svg)](https://zenodo.org/badge/latestdoi/46493895)
+
+
+CPU Energy Meter is a Linux tool that allows to monitor power consumption of Intel CPUs
+at fine time granularities (few tens of milliseconds).
 Power monitoring is available for the following power domains:
 - per package domain (CPU socket)
-- per core domain (all the cpu cores on a package)
-- per uncore domain (uncore components, e.g. integrated graphics, client parts
-  only)
-- per memory node (memory local to a package, server parts only)
-- per platform (all devices in the plattform that receive power from integraded
+- per core domain (all the CPU cores on a package)
+- per uncore domain (uncore components, e.g., integrated graphics on client CPUs)
+- per memory node (memory local to a package, server CPUs only)
+- per platform (all devices in the platform that receive power from integrated
   power delivery mechanism, e.g., processor cores, SOC, memory, add-on or
   peripheral devices)
-To do this, the tool uses an architected capability in
-Intel(r) processors which is called RAPL (Runtime Average Power Limiting).
-RAPL is available on Intel(r) codename Sandy Bridge and later processors.
 
+To do this, the tool uses a feature of Intel CPUs that is called [RAPL (Running Average Power Limit)](https://en.wikipedia.org/wiki/Running_average_power_limit),
+which is documented in the [Intel Software Developers Manual](https://software.intel.com/en-us/articles/intel-sdm), Volume 3B Chapter 14.9.
+RAPL is available on CPUs from the generation [Sandy Bridge](https://en.wikipedia.org/wiki/Sandy_Bridge) and later.
+Because CPU Energy Meter uses the maximal possible measurement interval
+(depending on the hardware this is between a few minutes and an hour),
+it causes negligible overhead.
+
+CPU Energy Meter is a fork of the [Intel Power Gadget](https://software.intel.com/en-us/articles/intel-power-gadget-20)
+and developed at the [Software Systems Lab](https://www.sosy-lab.org)
+of the [Ludwig-Maximilians-Universität München (LMU Munich)](https://www.uni-muenchen.de)
+under the [BSD License](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE).
+
+
+Installation
+------------
+
+The recommended way is to download the [latest Debian package](https://github.com/sosy-lab/cpu-energy-meter/releases)
+and install it.
+
+Dependencies of CPU Energy Meter are [libcap](https://sites.google.com/site/fullycapable/),
+which is available on most Linux distributions in package `libcap` (e.g., Fedora)
+or `libcap2` (e.g, Debian and Ubuntu: `sudo apt install libcap2`),
+and a Linux kernel with the MSR and CPUID modules (available by default)
+
+Alternatively, for running CPU Energy Meter from source (quick and dirty):
+
+    sudo apt install libcap-dev
+    sudo modprobe msr
+    sudo modprobe cpuid
+    make
+    sudo ./cpu-energy-meter
+
+It is also possible (and recommended) to run CPU Energy Meter without root.
+To do so, the following needs to be done:
+
+- Load kernel modules `msr` and `cpuid`.
+- Add a group `msr`.
+- Add a Udev rule that grants access to `/dev/cpu/*/msr` to group `msr` ([example](https://github.com/sosy-lab/cpu-energy-meter/blob/master/debian/additional_files/59-msr.rules)).
+- Run `chgrp msr`, `chmod 2711`, and `setcap cap_sys_rawio=ep` on the binary (`make setup` is a shortcut for this).
+
+The provided [Debian package](https://github.com/sosy-lab/cpu-energy-meter/releases) does these steps automatically
+and lets all users execute CPU Energy Meter.
 
 How to use it
 -------------
 
-Prerequisites:
-This tool uses the msr and cpuid kernel modules. You may have to do:
-> modprobe msr
-
-> modprobe cpuid
-
-To build:
-> make
-
-To run:
-> ./cpu-energy-meter [-e [sampling_delay_ms] optional] [-r optional]
+    cpu-energy-meter [-d] [-e sampling_delay_ms] [-r]
 
 The tool will continue counting the cumulative energy use of all supported CPUs
 in the background and will report a key-value list of its measurements when it
-receives SIGINT:
+receives SIGINT (Ctrl+C):
 
 ```
 +--------------------------------------+
@@ -48,8 +82,10 @@ DRAM                      0.727783 Joule
 PSYS                     29.792603 Joule
 ```
 
-Optionally, the tool can be executed together with a '-r'-tag to print the
-output as a raw list:
+To get intermediate measurements, send signal `USR1` to the process.
+
+Optionally, the tool can be executed with parameter `-r`
+to print the output as a raw (easily parsable) list:
 
 ```
 cpu_count=1
@@ -61,4 +97,6 @@ cpu0_dram_joules=0.953979
 cpu0_psys_joules=38.904785
 ```
 
-
+The parameter `-d` adds debug output.
+By default, CPU Energy Meter computes the necessary measurement interval automatically,
+this can be overridden with the parameter `-e`.

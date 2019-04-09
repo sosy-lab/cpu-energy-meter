@@ -20,6 +20,7 @@ Files: cpu-energy-meter.c
        msr.h
        rapl.c
        rapl.h
+       rapl-impl.h
 Copyright: 2012 Intel Corporation
            2015-2018 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
 License: BSD-2-Clause
