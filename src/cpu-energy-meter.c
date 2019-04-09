@@ -235,18 +235,18 @@ void do_print_energy_info() {
   }
 }
 
-void usage() {
-  fprintf(stdout, "\n");
-  fprintf(stdout, "CPU Energy Meter v%s\n", version);
-  fprintf(stdout, "\n");
-  fprintf(stdout, "Usage: %s [OPTION]...\n", progname);
-  fprintf(stdout, "  %-20s %s\n", "-d", "print additional debug information to the output");
-  fprintf(stdout, "  %-20s %s\n", "-e=MILLISEC", "set the sampling delay in ms");
-  fprintf(stdout, "  %-20s %s\n", "-h", "show this help text");
-  fprintf(stdout, "  %-20s %s\n", "-r", "print the output as raw-text");
-  fprintf(stdout, "\n");
-  fprintf(stdout, "Example: %s -r\n", progname);
-  fprintf(stdout, "\n");
+void usage(FILE *target) {
+  fprintf(target, "\n");
+  fprintf(target, "CPU Energy Meter v%s\n", version);
+  fprintf(target, "\n");
+  fprintf(target, "Usage: %s [OPTION]...\n", progname);
+  fprintf(target, "  %-20s %s\n", "-d", "print additional debug information to the output");
+  fprintf(target, "  %-20s %s\n", "-e=MILLISEC", "set the sampling delay in ms");
+  fprintf(target, "  %-20s %s\n", "-h", "show this help text");
+  fprintf(target, "  %-20s %s\n", "-r", "print the output as raw-text");
+  fprintf(target, "\n");
+  fprintf(target, "Example: %s -r\n", progname);
+  fprintf(target, "\n");
 }
 
 int read_cmdline(int argc, char **argv) {
@@ -265,19 +265,19 @@ int read_cmdline(int argc, char **argv) {
       if (delay_ms_temp > 50) {
         delay = delay_ms_temp * 1000000; // delay in ns
       } else {
-        fprintf(stdout, "Sampling delay must be greater than 50 ms.\n");
+        fprintf(stderr, "Sampling delay must be greater than 50 ms.\n");
         return -1;
       }
       break;
     case 'h':
-      usage();
+      usage(stdout);
       exit(0);
       break;
     case 'r':
       print_rawtext = 1;
       break;
     default:
-      usage();
+      usage(stderr);
       return -1;
     }
   }
@@ -294,7 +294,7 @@ int main(int argc, char **argv) {
   sigprocmask(SIG_BLOCK, &signal_set, NULL);
   // First init the RAPL library
   if (0 != init_rapl()) {
-    fprintf(stdout, "Init failed!\n");
+    fprintf(stderr, "Init failed!\n");
     terminate_rapl();
     return 1;
   }
