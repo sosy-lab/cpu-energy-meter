@@ -57,7 +57,6 @@ static sigset_t get_sigset() {
   sigset_t set;
   sigemptyset(&set);
   sigaddset(&set, SIGINT);
-  sigaddset(&set, SIGQUIT);
   sigaddset(&set, SIGUSR1);
   return set;
 }
@@ -218,7 +217,7 @@ static int measure_and_print_results() {
     // handle signals
     if (rcvd_signal != -1) {
       DEBUG("Received signal %d.", rcvd_signal);
-      if (rcvd_signal == SIGINT || rcvd_signal == SIGQUIT) {
+      if (rcvd_signal == SIGINT) {
         print_results(num_node, cum_energy_J, measurement_start_time, measurement_end_time);
         break;
 
