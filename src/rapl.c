@@ -132,6 +132,12 @@ void config_msr_table() {
   set_value_in_msr_table(MSR_RAPL_PP0_ENERGY_STATUS);
   set_value_in_msr_table(MSR_RAPL_PP1_ENERGY_STATUS);
   set_value_in_msr_table(MSR_RAPL_PLATFORM_ENERGY_STATUS);
+  if (is_debug_enabled()) {
+    for (int domain = 0; domain < RAPL_NR_DOMAIN; domain++) {
+      DEBUG("Domain %s is %ssupported.",
+          RAPL_DOMAIN_FORMATTED_STRINGS[domain], is_supported_domain(domain) ? "" : "NOT ");
+    }
+  }
 }
 
 int get_cpu_from_node(int node) {
