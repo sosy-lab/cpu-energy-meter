@@ -62,22 +62,25 @@ static sigset_t get_sigset() {
   return set;
 }
 
-static void print_header(
-    int num_node,
-    int socket,
-    struct timeval measurement_start_time,
-    struct timeval measurement_end_time) {
-  double start_seconds = convert_time_to_sec(measurement_start_time);
-  double end_seconds = convert_time_to_sec(measurement_end_time);
-
+/**
+ * Print header of measurements.
+ */
+static void print_global_header(int num_node, double duration) {
   if (print_rawtext) {
     fprintf(stdout, "\ncpu_count=%d\n", num_node);
-    fprintf(stdout, "duration_seconds=%f\n", end_seconds - start_seconds);
-  } else {
+    fprintf(stdout, "duration_seconds=%f\n", duration);
+  }
+}
+
+/**
+ * Print socket-specific header of measurements.
+ */
+static void print_header(int socket, double duration) {
+  if (!print_rawtext) {
     fprintf(stdout, "\b\b+--------------------------------------+\n");
     fprintf(stdout, "| CPU Energy Meter            Socket %u |\n", socket);
     fprintf(stdout, "+--------------------------------------+\n");
-    fprintf(stdout, "%-19s %14.6lf sec\n", "Duration", end_seconds - start_seconds);
+    fprintf(stdout, "%-19s %14.6lf sec\n", "Duration", duration);
   }
 }
 
@@ -103,9 +106,13 @@ static void print_results(
     double cum_energy_J[num_node][RAPL_NR_DOMAIN],
     struct timeval measurement_start_time,
     struct timeval measurement_end_time) {
-  for (int i = 0; i < num_node; i++) {
 
-    print_header(num_node, i, measurement_start_time, measurement_end_time);
+  const double duration =
+      convert_time_to_sec(measurement_end_time) - convert_time_to_sec(measurement_start_time);
+  print_global_header(num_node, duration);
+
+  for (int i = 0; i < num_node; i++) {
+    print_header(i, duration);
 
     for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
