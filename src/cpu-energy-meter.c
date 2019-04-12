@@ -138,56 +138,16 @@ static struct timespec compute_msr_probe_interval_time() {
   return signal_timelimit;
 }
 
-/**
- * Read measurements and write them to current_measurements.
- * If cum_energy_J is not NULL, read previous measurements from current_measurements
- * and accumulate delta in cum_energy_J.
- */
-static int read_measurements(
-    int num_node,
-    double current_measurements[num_node][RAPL_NR_DOMAIN],
-    double cum_energy_J[num_node][RAPL_NR_DOMAIN],
-    struct timeval *measurement_time) {
-  int result = 0;
-  for (int i = 0; i < num_node; i++) {
-    for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
-      if (is_supported_domain(domain)) {
-        double new_sample;
-        if (get_total_energy_consumed(i, domain, &new_sample) != 0) {
-          warnx("Measuring domain %s of CPU %d failed.", RAPL_DOMAIN_FORMATTED_STRINGS[domain], i);
-          result = 1;
-          continue; // at least continue reading other domains
-        }
-
-        if (cum_energy_J != NULL) {
-          double delta = new_sample - current_measurements[i][domain];
-
-          /* Handle wraparound */
-          if (delta < 0) {
-            delta += MAX_ENERGY_STATUS_JOULES;
-          }
-
-          cum_energy_J[i][domain] += delta;
-        }
-
-        current_measurements[i][domain] = new_sample;
-      }
-    }
-  }
-
-  gettimeofday(measurement_time, NULL);
-  return result;
-}
-
 static int measure_and_print_results() {
   const int num_node = get_num_rapl_nodes();
   struct timeval measurement_start_time, measurement_end_time;
   double prev_sample[num_node][RAPL_NR_DOMAIN];
 
   // Read initial values
-  if (read_measurements(num_node, prev_sample, NULL, &measurement_start_time) != 0) {
+  if (get_total_energy_consumed_for_nodes(num_node, prev_sample, NULL) != 0) {
     return 1;
   }
+  gettimeofday(&measurement_start_time, NULL);
 
   double cum_energy_J[num_node][RAPL_NR_DOMAIN];
   memset(cum_energy_J, 0, sizeof(cum_energy_J));
@@ -212,12 +172,13 @@ static int measure_and_print_results() {
     }
 
     // make sure to read in each iteration, otherwise we might miss overflows
-    if (read_measurements(num_node, prev_sample, cum_energy_J, &measurement_end_time) != 0) {
+    if (get_total_energy_consumed_for_nodes(num_node, prev_sample, cum_energy_J) != 0) {
       return 1;
     }
 
     // handle signals
     if (rcvd_signal != -1) {
+      gettimeofday(&measurement_end_time, NULL);
       DEBUG("Received signal %d.", rcvd_signal);
       if (rcvd_signal == SIGINT) {
         print_results(num_node, cum_energy_J, measurement_start_time, measurement_end_time);

@@ -306,6 +306,40 @@ int get_total_energy_consumed(
       node, get_msr_for_domain(power_domain), total_energy_consumed_joules);
 }
 
+int get_total_energy_consumed_for_nodes(
+    int num_node,
+    double current_measurements[num_node][RAPL_NR_DOMAIN],
+    double cum_energy_J[num_node][RAPL_NR_DOMAIN]) {
+  int result = 0;
+  for (int i = 0; i < num_node; i++) {
+    for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
+      if (is_supported_domain(domain)) {
+        double new_sample;
+        if (get_total_energy_consumed(i, domain, &new_sample) != 0) {
+          warnx("Measuring domain %s of CPU %d failed.", RAPL_DOMAIN_FORMATTED_STRINGS[domain], i);
+          result = 1;
+          continue; // at least continue reading other domains
+        }
+
+        if (cum_energy_J != NULL) {
+          double delta = new_sample - current_measurements[i][domain];
+
+          /* Handle wraparound */
+          if (delta < 0) {
+            delta += MAX_ENERGY_STATUS_JOULES;
+          }
+
+          cum_energy_J[i][domain] += delta;
+        }
+
+        current_measurements[i][domain] = new_sample;
+      }
+    }
+  }
+
+  return result;
+}
+
 long get_maximum_read_interval() {
   // get maximum power consumption over all nodes (this will lead to the fastest overflow)
   double max_power = 1;

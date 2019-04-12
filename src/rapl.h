@@ -80,6 +80,16 @@ int get_total_energy_consumed(
     int node, enum RAPL_DOMAIN power_domain, double *total_energy_consumed_joules);
 
 /**
+ * Read measurements for all nodes and domains and write them to current_measurements.
+ * If cum_energy_J is not NULL, read previous measurements from current_measurements
+ * and accumulate delta in cum_energy_J.
+ */
+int get_total_energy_consumed_for_nodes(
+    int num_node,
+    double current_measurements[num_node][RAPL_NR_DOMAIN],
+    double cum_energy_J[num_node][RAPL_NR_DOMAIN]);
+
+/**
  * Calculate how often the RAPL values need to be read such that overflows can be detected reliably.
  * The goal is to measure as rarely as possible, but often enough so that no overflow will be
  * missed out.
