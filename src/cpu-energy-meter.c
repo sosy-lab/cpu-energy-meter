@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
-const char * const version = "1.1-dev";
+const char * const version = "1.1";
 
 // Configuration (from command-line parameters)
 static uint64_t delay = 0;
