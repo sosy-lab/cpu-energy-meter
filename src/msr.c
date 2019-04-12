@@ -29,9 +29,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <err.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static int *fds;
 static int fds_size = 0;
@@ -75,7 +75,7 @@ int read_msr(int node, off_t address, uint64_t *value) {
 
   if (read(fd, value, sizeof(uint64_t)) != sizeof(uint64_t)) {
     // expected if hardware does not support this domain
-    //warn("Could not read from address 0x%lX of MSR for CPU %u", address, node);
+    // warn("Could not read from address 0x%lX of MSR for CPU %u", address, node);
     return -1;
   }
 

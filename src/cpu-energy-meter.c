@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 const char *progname = "CPU Energy Meter"; // will be overwritten when parsing the command line
-const char * const version = "1.2-dev";
+const char *const version = "1.2-dev";
 
 // Configuration (from command-line parameters)
 static uint64_t delay = 0;
@@ -131,8 +131,10 @@ static struct timespec compute_msr_probe_interval_time() {
     signal_timelimit.tv_sec = get_maximum_read_interval();
     signal_timelimit.tv_nsec = 0;
   }
-  DEBUG("Interval time of msr probes set to %lds, %ldns.",
-      signal_timelimit.tv_sec, signal_timelimit.tv_nsec);
+  DEBUG(
+      "Interval time of msr probes set to %lds, %ldns.",
+      signal_timelimit.tv_sec,
+      signal_timelimit.tv_nsec);
   return signal_timelimit;
 }
 

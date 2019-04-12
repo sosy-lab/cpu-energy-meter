@@ -93,6 +93,10 @@ gprof: all
 	rm -f gmon.out
 	make clean
 
+.PHONY: format-source
+format-source:
+	clang-format -i $(SOURCES) $(HEADERS)
+
 .PHONY: dist
 dist:
 	-rm -rf $(DESTDIR)$(TARGET_BIN)-$(VERSION)

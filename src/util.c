@@ -122,7 +122,6 @@ void drop_root_privileges_by_id(uid_t uid, gid_t gid) {
   }
 }
 
-
 int bind_cpu(int cpu, cpu_set_t *old_context) {
   cpu_set_t cpu_context;
   CPU_ZERO(&cpu_context);

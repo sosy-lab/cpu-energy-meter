@@ -2,8 +2,13 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 UseTab: Never
 BreakBeforeBraces: Attach
+AlignAfterOpenBracket: AlwaysBreak
+#AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: false
+BinPackArguments: false
+BinPackParameters: false
 IndentCaseLabels: false
 ColumnLimit: 100

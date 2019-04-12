@@ -32,10 +32,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _GNU_SOURCE
 #endif
 
+#include "rapl.h"
 #include "cpuid.h"
 #include "intel-family.h"
 #include "msr.h"
-#include "rapl.h"
 #include "rapl-impl.h"
 #include "util.h"
 
@@ -51,11 +51,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define warnx(...)
 #endif
 
-static const int FALLBACK_THERMAL_SPEC_POWER = 200.0; // maximum power in watts that we assume if we cannot read it
-static const int MIN_THERMAL_SPEC_POWER = 1.0e-03; // minimum power in watts that we assume as a legal value
+static const int FALLBACK_THERMAL_SPEC_POWER =
+    200.0; // maximum power in watts that we assume if we cannot read it
+static const int MIN_THERMAL_SPEC_POWER =
+    1.0e-03; // minimum power in watts that we assume as a legal value
 
-const char * const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {"package", "core", "uncore", "dram", "psys"};
-const char * const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {"Package", "Core", "Uncore", "DRAM", "PSYS"};
+const char *const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {
+    "package", "core", "uncore", "dram", "psys"};
+const char *const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {
+    "Package", "Core", "Uncore", "DRAM", "PSYS"};
 
 /* rapl msr availablility */
 #define MSR_SUPPORT_MASK 0xff
@@ -134,8 +138,10 @@ void config_msr_table() {
   set_value_in_msr_table(MSR_RAPL_PLATFORM_ENERGY_STATUS);
   if (is_debug_enabled()) {
     for (int domain = 0; domain < RAPL_NR_DOMAIN; domain++) {
-      DEBUG("Domain %s is %ssupported.",
-          RAPL_DOMAIN_FORMATTED_STRINGS[domain], is_supported_domain(domain) ? "" : "NOT ");
+      DEBUG(
+          "Domain %s is %ssupported.",
+          RAPL_DOMAIN_FORMATTED_STRINGS[domain],
+          is_supported_domain(domain) ? "" : "NOT ");
     }
   }
 }
@@ -161,8 +167,10 @@ int check_if_supported_processor(uint32_t *current_processor_signature) {
 
   const uint32_t processor_signature = get_processor_signature();
   const unsigned int family = (processor_signature >> 8) & 0xf;
-  DEBUG("Processor is from family %d and uses model 0x%05X.",
-      family, processor_signature & 0xfffffff0);
+  DEBUG(
+      "Processor is from family %d and uses model 0x%05X.",
+      family,
+      processor_signature & 0xfffffff0);
   if (family != 6) {
     // CPUID.family == 6 means it's anything from Pentium Pro (1995) to the latest Kaby Lake (2017)
     // except "Netburst"
@@ -244,7 +252,6 @@ static off_t get_msr_for_domain(enum RAPL_DOMAIN power_domain) {
   }
 }
 
-
 /*!
  * \brief Check if power domain (PKG, PP0, PP1, DRAM) is supported on this machine.
  *
@@ -302,7 +309,7 @@ int get_total_energy_consumed(
 long get_maximum_read_interval() {
   // get maximum power consumption over all nodes (this will lead to the fastest overflow)
   double max_power = 1;
-  for (int node = 0; node < num_nodes; node ++) {
+  for (int node = 0; node < num_nodes; node++) {
     max_power = fmax(max_power, get_max_power(node));
   }
 
@@ -372,9 +379,11 @@ int read_rapl_units(uint32_t processor_signature) {
     RAPL_DRAM_ENERGY_UNIT = RAPL_ENERGY_UNIT;
   }
 
-  DEBUG("Measured the following unit multipliers:"
+  DEBUG(
+      "Measured the following unit multipliers:"
       "   RAPL_ENERGY_UNIT=%0.6eJ   RAPL_DRAM_ENERGY_UNIT=%0.6eJ",
-      RAPL_ENERGY_UNIT, RAPL_DRAM_ENERGY_UNIT);
+      RAPL_ENERGY_UNIT,
+      RAPL_DRAM_ENERGY_UNIT);
 
   return 0;
 }

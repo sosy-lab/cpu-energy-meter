@@ -34,10 +34,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /*
-* "Big Core" Processors (Branded as Core, Xeon, etc...). The "_X" parts are generally the EP and EX
-* Xeons.
-*/
-
+ * "Big Core" Processors (Branded as Core, Xeon, etc...). The "_X" parts are generally the EP and EX
+ * Xeons.
+ */
+// clang-format off
 #define CPU_INTEL_SANDYBRIDGE           0x206A0     // Family 6 Model 42 (0x2a)
 #define CPU_INTEL_SANDYBRIDGE_X         0x206D0     // Family 6 Model 45 (0x2d)
 
@@ -77,5 +77,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Xeon Phi */
 #define CPU_INTEL_XEON_PHI_KNL          0x50670     // Family 6 Model 87 (0x57) /* Knights Landing */
 #define CPU_INTEL_XEON_PHI_KNM          0x80650     // Family 6 Model 133 (0x85) /* Knights Mill */
+// clang-format on
 
 #endif /* _ASM_X86_INTEL_FAMILY_H */

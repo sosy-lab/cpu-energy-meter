@@ -137,5 +137,5 @@ void get_vendor_name(char *vendor) {
   cast_uint_to_str(&(vendor[0]), c.ebx);
   cast_uint_to_str(&(vendor[4]), c.edx);
   cast_uint_to_str(&(vendor[8]), c.ecx);
-  vendor[VENDOR_LENGTH-1] = 0;
+  vendor[VENDOR_LENGTH - 1] = 0;
 }

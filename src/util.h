@@ -27,11 +27,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _h_util
 #define _h_util
 
-#include <stdio.h>
 #include <sched.h>
+#include <stdio.h>
 #include <sys/types.h>
 
-#define DEBUG(msg, args...) if (is_debug_enabled()) { fprintf(stderr, "[DEBUG] "msg"\n", args); }
+#define DEBUG(msg, args...)                                                                        \
+  if (is_debug_enabled()) {                                                                        \
+    fprintf(stderr, "[DEBUG] " msg "\n", args);                                                    \
+  }
 
 void enable_debug();
 int is_debug_enabled();

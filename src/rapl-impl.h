@@ -53,13 +53,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef union {
   uint64_t as_uint64_t;
   struct rapl_unit_multiplier_msr_t {
-   uint64_t power : 4;
-   uint64_t : 4;
-   uint64_t energy : 5;
-   uint64_t : 3;
-   uint64_t time : 4;
-   uint64_t : 32;
-   uint64_t : 12;
+    uint64_t power : 4;
+    uint64_t : 4;
+    uint64_t energy : 5;
+    uint64_t : 3;
+    uint64_t time : 4;
+    uint64_t : 32;
+    uint64_t : 12;
   } fields;
 } rapl_unit_multiplier_msr_t;
 
