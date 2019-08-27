@@ -23,8 +23,8 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _h_cpuid
-#define _h_cpuid
+#ifndef _h_cpuinfo
+#define _h_cpuinfo
 
 #include <stdint.h>
 

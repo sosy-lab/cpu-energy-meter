@@ -4,7 +4,7 @@
 
 #include "unity.h" // needs to be placed before all the other custom h-files
 #include "intel-family.h"
-#include "mock_cpuid.h"
+#include "mock_cpuinfo.h"
 #include "mock_msr.h"
 #include "mock_util.h"
 #include "rapl.h"

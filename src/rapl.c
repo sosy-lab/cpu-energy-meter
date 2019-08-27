@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include "rapl.h"
-#include "cpuid.h"
+#include "cpuinfo.h"
 #include "intel-family.h"
 #include "msr.h"
 #include "rapl-impl.h"

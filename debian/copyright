@@ -14,8 +14,8 @@ Copyright: 2015-2018 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
 License: BSD-2-Clause
 
 Files: cpu-energy-meter.c
-       cpuid.c
-       cpuid.h
+       cpuinfo.c
+       cpuinfo.h
        msr.c
        msr.h
        rapl.c

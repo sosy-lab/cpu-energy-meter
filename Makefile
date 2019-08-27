@@ -25,9 +25,9 @@ LIBS =-lm -lcap
 export
 
 TARGET_BIN = cpu-energy-meter
-_SOURCES = cpu-energy-meter.c cpuid.c msr.c rapl.c util.c
+_SOURCES = cpu-energy-meter.c cpuinfo.c msr.c rapl.c util.c
 SOURCES = $(patsubst %,$(SRC_DIR)/%,$(_SOURCES)) #convert to $SRC_DIR/_SOURCES
-_HEADERS = cpuid.h intel-family.h msr.h rapl.h rapl-impl.h util.h
+_HEADERS = cpuinfo.h intel-family.h msr.h rapl.h rapl-impl.h util.h
 HEADERS = $(patsubst %,$(SRC_DIR)/%,$(_HEADERS)) #convert to $SRC_DIR/_HEADERS
 TESTFILES = $(wildcard $(TEST_DIR)/*.c)
 _OBJECTS = $(_SOURCES:.c=.o)
