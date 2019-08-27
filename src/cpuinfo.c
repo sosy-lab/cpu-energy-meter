@@ -27,6 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 #include <assert.h>
+#include <cpuid.h>
 #include <limits.h>
 #include <stdio.h>
 
@@ -40,19 +41,7 @@ typedef struct cpuid_info_t {
 static void cpuid(uint32_t eax_in, uint32_t ecx_in, cpuid_info_t *ci) {
   assert(ci != NULL);
 #ifndef TEST
-  asm(
-#if defined(__LP64__)       /* 64-bit architecture */
-      "cpuid;"              /* execute the cpuid instruction */
-      "movl %%ebx, %[ebx];" /* save ebx output */
-#else                       /* 32-bit architecture */
-      "pushl %%ebx;"        /* save ebx */
-      "cpuid;"              /* execute the cpuid instruction */
-      "movl %%ebx, %[ebx];" /* save ebx output */
-      "popl %%ebx;"         /* restore ebx */
-#endif
-      : "=a"(ci->eax), [ebx] "=r"(ci->ebx), "=c"(ci->ecx), "=d"(ci->edx)
-      : "a"(eax_in), "c"(ecx_in));
-
+  __cpuid_count(eax_in, ecx_in, ci->eax, ci->ebx, ci->ecx, ci->edx);
 #else // when unit-testing, compile with -DTest for using preset values instead of executing the
       // above
   ci->eax = 0x806e9;
