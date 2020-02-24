@@ -79,7 +79,7 @@ static void print_header(int socket, double duration) {
     fprintf(stdout, "\b\b+--------------------------------------+\n");
     fprintf(stdout, "| CPU Energy Meter            Socket %u |\n", socket);
     fprintf(stdout, "+--------------------------------------+\n");
-    fprintf(stdout, "%-19s %14.6lf sec\n", "Duration", duration);
+    fprintf(stdout, "%-19s %14.6lf s\n", "Duration", duration);
   }
 }
 
