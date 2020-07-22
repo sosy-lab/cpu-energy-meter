@@ -50,6 +50,11 @@ static double convert_time_to_sec(struct timeval tv) {
   return elapsed_time;
 }
 
+const int PRINT_JOULES = 0;
+const int PRINT_WATTS = 1;
+
+static int print_units = PRINT_JOULES;
+
 /**
  * Create set with signals that we care about.
  */
@@ -83,20 +88,33 @@ static void print_header(int socket, double duration) {
   }
 }
 
-static void print_value(int socket, int domain, double value_J) {
+static void print_value(int socket, int domain, double value_J, double duration) {
   if (value_J == 0.0) {
     // Sometimes measurement seems to work but energy consumption is 0.
     // This means an unsupported domain, because even for short measurements value would be larger.
     return;
   }
 
+  double value_W = value_J / duration;
+
   const char *domain_string;
   if (print_rawtext) {
     domain_string = RAPL_DOMAIN_STRINGS[domain];
-    fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, value_J);
+
+    if (print_units == PRINT_WATTS) {
+      fprintf(stdout, "cpu%d_%s_watts=%f\n", socket, domain_string, value_W);
+    } else {
+      fprintf(stdout, "cpu%d_%s_joules=%f\n", socket, domain_string, value_J);
+    }
+
   } else {
     domain_string = RAPL_DOMAIN_FORMATTED_STRINGS[domain];
-    fprintf(stdout, "%-19s %14.6f Joule\n", domain_string, value_J);
+
+    if (print_units == PRINT_WATTS) {
+      fprintf(stdout, "%-19s %14.6f Watts \n", domain_string, value_W);
+    } else {
+      fprintf(stdout, "%-19s %14.6f Joule \n", domain_string, value_J);
+    }
   }
 }
 
@@ -115,7 +133,7 @@ static void print_results(
 
     for (int domain = 0; domain < RAPL_NR_DOMAIN; ++domain) {
       if (is_supported_domain(domain)) {
-        print_value(i, domain, cum_energy_J[i][domain]);
+        print_value(i, domain, cum_energy_J[i][domain], duration);
       }
     }
   }
@@ -204,6 +222,7 @@ static void usage(FILE *target) {
   fprintf(target, "Usage: %s [OPTION]...\n", progname);
   fprintf(target, "  %-20s %s\n", "-d", "print additional debug information to the output");
   fprintf(target, "  %-20s %s\n", "-e=MILLISEC", "set the sampling delay in ms");
+  fprintf(target, "  %-20s %s\n", "-w", "Set the units to display as Watts (default Joule)");
   fprintf(target, "  %-20s %s\n", "-h", "show this help text");
   fprintf(target, "  %-20s %s\n", "-r", "print the output as raw-text");
   fprintf(target, "\n");
@@ -215,7 +234,7 @@ static int read_cmdline(int argc, char **argv) {
   progname = argv[0];
 
   int opt;
-  while ((opt = getopt(argc, argv, "de:hr")) != -1) {
+  while ((opt = getopt(argc, argv, "de:hrw")) != -1) {
     switch (opt) {
     case 'd':
       enable_debug();
@@ -236,6 +255,9 @@ static int read_cmdline(int argc, char **argv) {
       break;
     case 'r':
       print_rawtext = 1;
+      break;
+    case 'w':
+      print_units = PRINT_WATTS;
       break;
     default:
       usage(stderr);
