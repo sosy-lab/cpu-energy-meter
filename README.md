@@ -34,8 +34,13 @@ under the [BSD License](https://github.com/sosy-lab/cpu-energy-meter/blob/master
 Installation
 ------------
 
-The recommended way is to download the [latest Debian package](https://github.com/sosy-lab/cpu-energy-meter/releases)
-and install it.
+For Debian or Ubuntu the easiest way is to install from our [PPA](https://launchpad.net/~sosy-lab/+archive/ubuntu/benchmarking):
+
+    sudo add-apt-repository ppa:sosy-lab/benchmarking
+    sudo apt install cpu-energy-meter
+
+Alternatively, you can download our `.deb` package from [GitHub](https://github.com/sosy-lab/cpu-energy-meter/releases)
+and install it with `apt install ./cpu-energy-meter*.deb`.
 
 Dependencies of CPU Energy Meter are [libcap](https://sites.google.com/site/fullycapable/),
 which is available on most Linux distributions in package `libcap` (e.g., Fedora)
@@ -58,7 +63,8 @@ To do so, the following needs to be done:
 - Add a Udev rule that grants access to `/dev/cpu/*/msr` to group `msr` ([example](https://github.com/sosy-lab/cpu-energy-meter/blob/master/debian/additional_files/59-msr.rules)).
 - Run `chgrp msr`, `chmod 2711`, and `setcap cap_sys_rawio=ep` on the binary (`make setup` is a shortcut for this).
 
-The provided [Debian package](https://github.com/sosy-lab/cpu-energy-meter/releases) does these steps automatically
+The provided Debian package in our [PPA](https://launchpad.net/~sosy-lab/+archive/ubuntu/benchmarking)
+and on [GitHub](https://github.com/sosy-lab/cpu-energy-meter/releases) does these steps automatically
 and lets all users execute CPU Energy Meter.
 
 How to use it
