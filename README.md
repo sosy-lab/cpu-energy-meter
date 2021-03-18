@@ -13,7 +13,7 @@ CPU Energy Meter
 ================
 
 [![Build Status](https://gitlab.com/sosy-lab/software/cpu-energy-meter/badges/master/pipeline.svg)](https://gitlab.com/sosy-lab/software/cpu-energy-meter/pipelines)
-[![BSD License](https://img.shields.io/badge/license-BSD--2--clause-brightgreen.svg)](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE)
+[![BSD-3-Clause License](https://img.shields.io/badge/license-BSD--3--clause-brightgreen.svg)](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE)
 [![Releases](https://img.shields.io/github/release/sosy-lab/cpu-energy-meter.svg)](https://github.com/sosy-lab/cpu-energy-meter/releases)
 [![DOI via Zenodo](https://zenodo.org/badge/46493895.svg)](https://zenodo.org/badge/latestdoi/46493895)
 
@@ -39,7 +39,7 @@ it causes negligible overhead.
 CPU Energy Meter is a fork of the [Intel Power Gadget](https://software.intel.com/en-us/articles/intel-power-gadget-20)
 and developed at the [Software Systems Lab](https://www.sosy-lab.org)
 of the [Ludwig-Maximilians-Universität München (LMU Munich)](https://www.uni-muenchen.de)
-under the [BSD License](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE).
+under the [BSD-3-Clause License](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE).
 
 
 Installation
