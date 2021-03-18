@@ -34,6 +34,18 @@ test:
   script:
     - make test
 
+# check license declarations etc.
+reuse:
+  stage: test
+  image:
+    name: fsfe/reuse:latest
+    entrypoint: [""]
+  dependencies: []
+  needs: []
+  before_script: []
+  script:
+    - reuse lint
+
 deb:
   stage: dist
   script:
