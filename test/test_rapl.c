@@ -1,3 +1,11 @@
+// This file is part of CPU Energy Meter,
+// a tool for measuring energy consumption of Intel CPUs:
+// https://github.com/sosy-lab/cpu-energy-meter
+//
+// SPDX-FileCopyrightText: 2018-2021 Dirk Beyer <https://www.sosy-lab.org>
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <sched.h>
 #include <stdbool.h>
 #include <stdlib.h>

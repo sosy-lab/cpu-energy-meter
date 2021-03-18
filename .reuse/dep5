@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: CPU Energy Meter
+Source: https://github.com/sosy-lab/cpu-energy-meter
+
+Files: debian/*
+Copyright: 2018-2021 Dirk Beyer <https://www.sosy-lab.org>
+License: BSD-3-Clause
