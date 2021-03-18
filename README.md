@@ -6,7 +6,7 @@ https://github.com/sosy-lab/cpu-energy-meter
 SPDX-FileCopyrightText: 2012 Intel Corporation
 SPDX-FileCopyrightText: 2015-2021 Dirk Beyer <https://www.sosy-lab.org>
 
-SPDX-License-Identifier: BSD-2-Clause
+SPDX-License-Identifier: BSD-3-Clause
 -->
 
 CPU Energy Meter
