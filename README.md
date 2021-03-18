@@ -1,3 +1,14 @@
+<!--
+This file is part of CPU Energy Meter,
+a tool for measuring energy consumption of Intel CPUs:
+https://github.com/sosy-lab/cpu-energy-meter
+
+SPDX-FileCopyrightText: 2012 Intel Corporation
+SPDX-FileCopyrightText: 2015-2021 Dirk Beyer <https://www.sosy-lab.org>
+
+SPDX-License-Identifier: BSD-2-Clause
+-->
+
 CPU Energy Meter
 ================
 
