@@ -6,11 +6,11 @@ Files: util.c
        util.h
 Copyright: 2003, O'Reilly: Taken from "Secure Programming Cookbook for C and
            C++" (https://resources.oreilly.com/examples/9780596003944/)
-           2015-2018 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
+           2015-2021 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
 License: BSD-3-Clause
 
 Files: intel-family.h
-Copyright: 2015-2018 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
+Copyright: 2015-2021 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
 License: BSD-3-Clause
 
 Files: cpu-energy-meter.c
@@ -22,7 +22,7 @@ Files: cpu-energy-meter.c
        rapl.h
        rapl-impl.h
 Copyright: 2012 Intel Corporation
-           2015-2018 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
+           2015-2021 Dirk Beyer <Dirk.Beyer@sosy-lab.org>
 License: BSD-3-Clause
 
 License: BSD-3-Clause

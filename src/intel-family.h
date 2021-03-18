@@ -2,7 +2,7 @@
 // a tool for measuring energy consumption of Intel CPUs:
 // https://github.com/sosy-lab/cpu-energy-meter
 //
-// SPDX-FileCopyrightText: 2015-2018 Dirk Beyer
+// SPDX-FileCopyrightText: 2015-2021 Dirk Beyer <https://www.sosy-lab.org>
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
