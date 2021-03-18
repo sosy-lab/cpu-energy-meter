@@ -1,3 +1,14 @@
+# This file is part of CPU Energy Meter,
+# a tool for measuring energy consumption of Intel CPUs:
+# https://github.com/sosy-lab/cpu-energy-meter
+#
+# SPDX-FileCopyrightText: 2007-2014 Mike Karlesky, Mark VanderVoord, Greg Williams
+# SPDX-FileCopyrightText: 2018-2021 Dirk Beyer <https://www.sosy-lab.org>
+#
+# SPDX-License-Identifier: MIT
+
+# Taken from CMock
+
 require 'fileutils'
 ABS_ROOT = FileUtils.pwd
 CMOCK_DIR = File.expand_path(ENV.fetch('CMOCK_DIR', File.join(ABS_ROOT, 'vendor', 'CMock')))
