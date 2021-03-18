@@ -8,6 +8,7 @@ before_script:
   - make clean
 
 stages:
+  - images
   - build
   - test
   - dist
@@ -32,3 +33,24 @@ deb:
   artifacts:
     paths:
       - "*.deb"
+
+# Build Docker images
+# following this guideline: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+.build-docker:
+  stage: images
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /root/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination $CI_REGISTRY_IMAGE/$IMAGE
+  only:
+    - schedules
+    - web
+
+build-docker:test:
+  extends: .build-docker
+  variables:
+    DOCKERFILE: test/Dockerfile
+    IMAGE: test:latest
