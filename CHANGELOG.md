@@ -10,6 +10,10 @@ SPDX-License-Identifier: BSD-3-Clause
 
 # Changelog
 
+## CPU Energy Meter 1.2
+
+- Fix for segfault on some systems
+
 ## CPU Energy Meter 1.1
 
 - Now works on systems with more than one CPU socket.
