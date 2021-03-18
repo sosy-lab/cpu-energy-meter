@@ -6,7 +6,7 @@
 # docker build -t registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test - < Dockerfile
 # docker push registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 RUN apt-get update && apt-get install -y \
   build-essential \
   debhelper \

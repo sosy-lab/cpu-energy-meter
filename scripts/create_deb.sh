@@ -17,5 +17,5 @@ cp -a ../debian .
 dch -v "$VERSION-1" "New upstream version"
 dh_make -y -s --createorig -p cpu-energy-meter -c bsd -f "../$TAR" || true
 dpkg-buildpackage --build=binary --no-sign
-dpkg-buildpackage --build=source
-echo "No upload manually to GitHub and to PPA with "dput ppa:sosy-lab/benchmarking ..._source.changes"
+dpkg-buildpackage --build=source --no-sign
+echo 'Now upload manually to GitHub and to PPA with "dput ppa:sosy-lab/benchmarking ..._source.changes"'
