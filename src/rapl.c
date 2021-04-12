@@ -45,6 +45,9 @@ const char *const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN] = {
 const char *const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN] = {
     "Package", "Core", "Uncore", "DRAM", "PSYS"};
 
+// Wraparound value for the total energy consumed. It is computed within init_rapl().
+double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
+
 /* rapl msr availablility */
 #define MSR_SUPPORT_MASK 0xff
 unsigned char *msr_support_table;

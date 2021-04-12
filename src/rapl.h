@@ -32,8 +32,8 @@ enum RAPL_DOMAIN {
 };
 #define RAPL_NR_DOMAIN 5 /* Number of power domains */
 
-const char *const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
-const char *const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
+extern const char *const RAPL_DOMAIN_STRINGS[RAPL_NR_DOMAIN];
+extern const char *const RAPL_DOMAIN_FORMATTED_STRINGS[RAPL_NR_DOMAIN];
 
 /*!
  * This function must be called before calling any other function from this module.
@@ -48,7 +48,7 @@ int init_rapl();
 void terminate_rapl();
 
 // Wraparound value for the total energy consumed. It is computed within init_rapl().
-double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
+extern double MAX_ENERGY_STATUS_JOULES; /* default: 65536 */
 
 int get_num_rapl_nodes();
 
