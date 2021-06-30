@@ -12,8 +12,8 @@ SPDX-License-Identifier: BSD-3-Clause
 CPU Energy Meter
 ================
 
-[![Build Status](https://gitlab.com/sosy-lab/software/cpu-energy-meter/badges/master/pipeline.svg)](https://gitlab.com/sosy-lab/software/cpu-energy-meter/pipelines)
-[![BSD-3-Clause License](https://img.shields.io/badge/license-BSD--3--clause-brightgreen.svg)](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE)
+[![Build Status](https://gitlab.com/sosy-lab/software/cpu-energy-meter/badges/main/pipeline.svg)](https://gitlab.com/sosy-lab/software/cpu-energy-meter/pipelines)
+[![BSD-3-Clause License](https://img.shields.io/badge/license-BSD--3--clause-brightgreen.svg)](https://github.com/sosy-lab/cpu-energy-meter/blob/main/LICENSE)
 [![Releases](https://img.shields.io/github/release/sosy-lab/cpu-energy-meter.svg)](https://github.com/sosy-lab/cpu-energy-meter/releases)
 [![DOI via Zenodo](https://zenodo.org/badge/46493895.svg)](https://zenodo.org/badge/latestdoi/46493895)
 
@@ -39,7 +39,7 @@ it causes negligible overhead.
 CPU Energy Meter is a fork of the [Intel Power Gadget](https://software.intel.com/en-us/articles/intel-power-gadget-20)
 and developed at the [Software Systems Lab](https://www.sosy-lab.org)
 of the [Ludwig-Maximilians-Universität München (LMU Munich)](https://www.uni-muenchen.de)
-under the [BSD-3-Clause License](https://github.com/sosy-lab/cpu-energy-meter/blob/master/LICENSE).
+under the [BSD-3-Clause License](https://github.com/sosy-lab/cpu-energy-meter/blob/main/LICENSE).
 
 
 Installation
@@ -71,7 +71,7 @@ To do so, the following needs to be done:
 
 - Load kernel modules `msr` and `cpuid`.
 - Add a group `msr`.
-- Add a Udev rule that grants access to `/dev/cpu/*/msr` to group `msr` ([example](https://github.com/sosy-lab/cpu-energy-meter/blob/master/debian/additional_files/59-msr.rules)).
+- Add a Udev rule that grants access to `/dev/cpu/*/msr` to group `msr` ([example](https://github.com/sosy-lab/cpu-energy-meter/blob/main/debian/additional_files/59-msr.rules)).
 - Run `chgrp msr`, `chmod 2711`, and `setcap cap_sys_rawio=ep` on the binary (`make setup` is a shortcut for this).
 
 The provided Debian package in our [PPA](https://launchpad.net/~sosy-lab/+archive/ubuntu/benchmarking)
