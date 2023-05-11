@@ -85,9 +85,9 @@ int get_core_information(int os_cpu, APIC_ID_t *result) {
   const uint32_t pkg_id = (info_l1.edx & pkg_mask) >> core_mask_width;
 
   // all values have at most 31 bits and fit into an int
-  assert(result->smt_id < INT_MAX);
-  assert(result->core_id < INT_MAX);
-  assert(result->pkg_id < INT_MAX);
+  assert(smt_id < INT_MAX);
+  assert(core_id < INT_MAX);
+  assert(pkg_id < INT_MAX);
 
   result->smt_id = smt_id;
   result->core_id = core_id;
