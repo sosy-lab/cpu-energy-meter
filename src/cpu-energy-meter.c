@@ -187,7 +187,7 @@ static void usage(FILE *target) {
   fprintf(target, "\n");
   fprintf(target, "Usage: %s [OPTION]...\n", progname);
   fprintf(target, "  %-20s %s\n", "-d", "print additional debug information to the output");
-  fprintf(target, "  %-20s %s\n", "-e=MILLISEC", "set the sampling delay in ms");
+  fprintf(target, "  %-20s %s\n", "-e MILLISEC", "set the sampling delay in ms");
   fprintf(target, "  %-20s %s\n", "-h", "show this help text");
   fprintf(target, "  %-20s %s\n", "-r", "print the output as raw-text");
   fprintf(target, "\n");
