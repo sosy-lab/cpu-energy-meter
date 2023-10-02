@@ -205,6 +205,10 @@ static int read_cmdline(int argc, char **argv) {
       enable_debug();
       break;
     case 'e': {
+      if (*optarg == '=') {
+        // support "-e=100" syntax
+        optarg++;
+      }
       uint64_t delay_ms_temp = atoi(optarg);
       if (delay_ms_temp > 50) {
         delay = delay_ms_temp * 1000000; // delay in ns
