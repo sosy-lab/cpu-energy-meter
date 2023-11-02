@@ -56,13 +56,12 @@ and install it with `apt install ./cpu-energy-meter*.deb`.
 Dependencies of CPU Energy Meter are [libcap](https://sites.google.com/site/fullycapable/),
 which is available on most Linux distributions in package `libcap` (e.g., Fedora)
 or `libcap2` (e.g, Debian and Ubuntu: `sudo apt install libcap2`),
-and a Linux kernel with the MSR and CPUID modules (available by default)
+and a Linux kernel with the MSR module (available by default)
 
 Alternatively, for running CPU Energy Meter from source (quick and dirty):
 
     sudo apt install libcap-dev
     sudo modprobe msr
-    sudo modprobe cpuid
     make
     sudo ./cpu-energy-meter
 
