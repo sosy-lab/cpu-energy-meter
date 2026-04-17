@@ -40,6 +40,7 @@ CPU Energy Meter is a fork of the [Intel Power Gadget](https://software.intel.co
 and developed at the [Software Systems Lab](https://www.sosy-lab.org)
 of the [Ludwig-Maximilians-Universität München (LMU Munich)](https://www.uni-muenchen.de)
 under the [BSD-3-Clause License](https://github.com/sosy-lab/cpu-energy-meter/blob/main/LICENSE).
+An [article describing CPU Energy Meter](https://doi.org/10.1007/978-3-030-45237-7_8) was published 2020.
 
 
 Installation
@@ -116,3 +117,7 @@ cpu0_psys_joules=38.904785
 The parameter `-d` adds debug output.
 By default, CPU Energy Meter computes the necessary measurement interval automatically,
 this can be overridden with the parameter `-e`.
+
+### Literature
+
+- [CPU Energy Meter: A Tool for Energy-Aware Algorithms Engineering](https://doi.org/10.1007/978-3-030-45237-7_8), by D. Beyer and P. Wendler. In Proc. TACAS 2020, part 2, LNCS 12079, pages 126-133, 2020. Springer. [doi:10.1007/978-3-030-45237-7_8](https://doi.org/10.1007/978-3-030-45237-7_8) (open access)
