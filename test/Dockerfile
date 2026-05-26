@@ -14,7 +14,7 @@
 # podman build --pull -t registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test - < test/Dockerfile
 # podman push registry.gitlab.com/sosy-lab/software/cpu-energy-meter/test
 
-FROM ubuntu:bionic
+FROM ubuntu:resolute
 RUN apt-get update && apt-get install -y \
   build-essential \
   debhelper \
