@@ -56,19 +56,24 @@ deb:
 
 # Build Docker images
 # following this guideline: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+# Build container images
 .build-docker:
   stage: images
   image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  before_script: []
+    name: quay.io/podman/stable
+  variables:
+    BUILD_CONTEXT: "-"
+  tags:
+    - podman
+  before_script:
+    - podman login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD"
   script:
-    - mkdir -p /root/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --dockerfile $CI_PROJECT_DIR/$DOCKERFILE --destination $CI_REGISTRY_IMAGE/$IMAGE
-  only:
-    - schedules
-    - web
+    - echo "Building $CI_REGISTRY_IMAGE/$IMAGE from $DOCKERFILE"
+    - podman build --pull -t $CI_REGISTRY_IMAGE/$IMAGE $BUILD_CONTEXT < $CI_PROJECT_DIR/$DOCKERFILE
+    - podman push $CI_REGISTRY_IMAGE/$IMAGE
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
 
 build-docker:test:
   extends: .build-docker
