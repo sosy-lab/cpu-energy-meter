@@ -1,0 +1,9 @@
+version = 1
+SPDX-PackageName = "CPU Energy Meter"
+SPDX-PackageDownloadLocation = "https://github.com/sosy-lab/cpu-energy-meter"
+
+[[annotations]]
+path = "debian/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2018-2021 Dirk Beyer <https://www.sosy-lab.org>"
+SPDX-License-Identifier = "BSD-3-Clause"
