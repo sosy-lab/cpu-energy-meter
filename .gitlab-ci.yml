@@ -54,8 +54,6 @@ deb:
     paths:
       - "*.deb"
 
-# Build Docker images
-# following this guideline: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
 # Build container images
 .build-docker:
   stage: images
