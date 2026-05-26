@@ -38,7 +38,7 @@ void test_DropCapabilities_should_ClearCaps(void) {
 
   // Test that the previously added capability does in fact exist.
   cur_caps = cap_to_text(capabilities, NULL);
-  TEST_ASSERT_EQUAL_STRING("= cap_sys_rawio+ep", cur_caps);
+  TEST_ASSERT_EQUAL_STRING("cap_sys_rawio=ep", cur_caps);
 
   // Clear all capabilities and test that afterwards
   cap_clear(capabilities);
